@@ -1,0 +1,235 @@
+#include <iostream>
+#include <ctype.h>
+#include "clause.h"
+
+static int skip_line(FILE *infile) {
+  int c;
+  int ccount = 0;
+  while ((c = getc(infile)) != EOF) {
+    ccount++;
+    if (c == '\n')
+      return c;
+  }
+  return c;
+}
+
+// Put literals in descending order of the variables
+static bool abs_less(int32_t x, int32_t y) {
+  return abs(x) > abs(y);
+}
+
+
+Clause::Clause() { is_tautology = false;}
+
+Clause::Clause(int32_t *array, size_t len) {
+  is_tautology = false;
+  contents.resize(len, 0);
+  for (int i = 0; i < len; i++)
+    contents[i] = array[i];
+  canonize();
+}
+
+Clause::Clause(FILE *infile) {
+  is_tautology = false;
+  int rval;
+  int lit;
+    
+  int c;
+  // Skip blank lines and comments
+  while ((c = getc(infile)) != EOF) {
+    if (c == 'c')
+      c = skip_line(infile);
+    if (isspace(c))
+      continue;
+    else {
+      ungetc(c, infile);
+      break;
+    }
+  }
+
+  while ((rval = fscanf(infile, "%d", &lit)) == 1) {
+    if (lit == 0)
+      break;
+    else
+      add(lit);
+  }
+  canonize();
+}
+
+void Clause::add(int32_t val) {
+  if (!is_tautology)
+    contents.push_back(val);
+}
+
+size_t Clause::length() {
+  return contents.size();
+}
+
+bool Clause::tautology() {
+  return is_tautology;
+}
+
+int32_t Clause::max_variable() {
+  int32_t mvar = 0;
+  if (is_tautology)
+    return 0;
+  for (std::vector<int32_t>::iterator it = contents.begin(); it != contents.end(); it++) {
+    int32_t var = abs(*it);
+    mvar = std::max(var, mvar);
+  }
+  return mvar;
+}
+
+void Clause::canonize() {
+  std::sort(contents.begin(), contents.end(), abs_less);
+  int32_t last_lit = 0;
+  size_t read_pos = 0;
+  size_t write_pos = 0;
+  while(read_pos < contents.size()) {
+    int32_t lit = contents[read_pos++];
+    if (abs(lit) == abs(last_lit)) {
+      if (lit != last_lit) {
+	// Opposite literals encountered
+	is_tautology = true;
+	break;
+      }
+    } else {
+      contents[write_pos++] = lit;
+    }
+    last_lit = lit;
+  }
+  if (is_tautology) {
+    contents.resize(2, 0);
+    contents[0] = abs(last_lit);
+    contents[1] = -abs(last_lit);
+  } else
+    contents.resize(write_pos);
+}
+
+void Clause::show() {
+  if (is_tautology)
+    std::cout << "c Tautology" << std::endl;
+  for (std::vector<int32_t>::iterator it = contents.begin(); it != contents.end(); it++)
+    std::cout << *it << ' ';
+  std::cout << '0' << std::endl;
+}
+
+void Clause::show(std::ofstream &outstream) {
+  if (is_tautology)
+    outstream << "c Tautology" << std::endl;
+  for (std::vector<int32_t>::iterator it = contents.begin(); it != contents.end(); it++)
+    outstream << *it << ' ';
+  outstream << '0' << std::endl;
+}
+
+
+void Clause::show(FILE *outfile) {
+  if (is_tautology)
+    fprintf(outfile, "c Tautology\n");
+  for (std::vector<int32_t>::iterator it = contents.begin(); it != contents.end(); it++)
+    fprintf(outfile, "%d ", *it);
+  fprintf(outfile, "0\n");
+}
+
+CNF::CNF() { read_failed = false; maxVar = 0; }
+
+CNF::CNF(FILE *infile) { 
+  int32_t expectedMax = 0;
+  int32_t expectedCount = 0;
+  read_failed = false;
+  maxVar = 0;
+  int c;
+  // Look for CNF header
+  while ((c = getc(infile)) != EOF) {
+    if (isspace(c)) 
+      continue;
+    if (c == 'c')
+      c = skip_line(infile);
+    if (c == EOF) {
+      std::cerr << "Not valid CNF File.  No header line found" << std::endl;
+      read_failed = true;
+      return;
+    }
+    if (c == 'p') {
+      char field[20];
+      if (fscanf(infile, "%s", field) != 1) {
+	std::cerr << "Not valid CNF FILE.  No header line found" << std::endl;
+	read_failed = true;
+	return;
+      }
+      if (strcmp(field, "cnf") != 0) {
+	std::cerr << "Not valid CNF file.  Header shows type is '" << field << "'" << std::endl;
+	read_failed = true;
+	return;
+      }
+      if (fscanf(infile, "%d %d", &expectedMax, &expectedCount) != 2) {
+	std::cerr << "Invalid CNF header" << std::endl;
+	read_failed = true;
+	return;
+      } 
+      c = skip_line(infile);
+      break;
+    }
+    if (c == EOF) {
+      read_failed = true;
+      std::cerr << "EOF encountered before reading any clauses" << std::endl;
+      return;
+    }
+  }
+  while (1) {
+    Clause *clp = new Clause(infile);
+    if (clp->length() == 0)
+      break;
+    add(clp);
+    int32_t mvar = clp->max_variable();
+    maxVar = std::max(maxVar, mvar);
+  }
+  if (maxVar > expectedMax) {
+    std::cerr << "Encountered variable " << maxVar << ".  Expected max = " << expectedMax << std::endl;
+    read_failed = true;
+    return;
+  }
+  if (clause_count() != expectedCount) {
+    std::cerr << "Read " << clause_count() << " clauses.  Expected " << expectedCount << std::endl;
+    read_failed = true;
+    return;
+  }
+}
+
+bool CNF::failed() {
+  return read_failed;
+}
+
+void CNF::add(Clause *clp) {
+  clauses.push_back(clp);
+}
+
+void CNF::show() {
+  std::cout << "p cnf " << maxVar << " " << clause_count() << std::endl;
+  for (std::vector<Clause *>::iterator clp = clauses.begin(); clp != clauses.end(); clp++) {
+    (*clp)->show();
+  }
+}
+
+void CNF::show(std::ofstream &outstream) {
+  outstream << "p cnf " << maxVar << " " << clause_count() << std::endl;
+  for (std::vector<Clause *>::iterator clp = clauses.begin(); clp != clauses.end(); clp++) {
+    (*clp)->show(outstream);
+  }
+}
+
+void CNF::show(FILE *outfile) {
+  fprintf(outfile, "p cnf %d %d\n", maxVar, (int) clause_count());
+  for (std::vector<Clause *>::iterator clp = clauses.begin(); clp != clauses.end(); clp++) {
+    (*clp)->show(outfile);
+  }
+}
+
+size_t CNF::clause_count() {
+  return clauses.size();
+}
+
+int32_t CNF::max_variable() {
+  return maxVar;
+}
+
