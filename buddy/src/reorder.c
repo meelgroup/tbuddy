@@ -1626,7 +1626,10 @@ int bdd_reorder_ready(void)
    
 void bdd_reorder_auto(void)
 {
-   if (!bdd_reorder_ready)
+    // Bug Fix REB 2021-11-01
+    // Was:
+    //   if (!bdd_reorder_ready)
+   if (!bdd_reorder_ready())
       return;
    
    if (reorder_handler != NULL)
