@@ -80,6 +80,10 @@ int32_t Clause::max_variable() {
   return mvar;
 }
 
+int32_t& Clause::operator[](int i) {
+  return contents[i];
+}
+
 void Clause::canonize() {
   std::sort(contents.begin(), contents.end(), abs_less);
   int32_t last_lit = 0;
@@ -203,6 +207,11 @@ bool CNF::failed() {
 void CNF::add(Clause *clp) {
   clauses.push_back(clp);
 }
+
+Clause * CNF::operator[](int i) {
+  return clauses[i];
+}
+
 
 void CNF::show() {
   std::cout << "p cnf " << maxVar << " " << clause_count() << std::endl;

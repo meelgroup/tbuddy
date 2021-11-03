@@ -39,6 +39,8 @@ class Clause {
 
     void show(std::ofstream &outstream);
 
+    int32_t& operator[](int);
+
 };
 
 // CNF is a collection of clauses.  Can read from a DIMACS format CNF file
@@ -68,4 +70,6 @@ class CNF {
     size_t clause_count();
     // Return ID of maximum variable encountered
     int32_t max_variable();
+
+    Clause * operator[](int);    
 };
