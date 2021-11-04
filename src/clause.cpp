@@ -4,9 +4,7 @@
 
 static int skip_line(FILE *infile) {
   int c;
-  int ccount = 0;
   while ((c = getc(infile)) != EOF) {
-    ccount++;
     if (c == '\n')
       return c;
   }

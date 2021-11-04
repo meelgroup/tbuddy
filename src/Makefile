@@ -1,6 +1,7 @@
 CC=gcc
 CXX=g++
-CFLAGS=-g -Wno-nullability-completeness
+OPT=
+CFLAGS=-g $(OPT) -Wno-nullability-completeness
 INC=-I../buddy/include
 LDIR = ../buddy/lib
 LIB = $(LDIR)/buddy.a
@@ -22,5 +23,5 @@ ctest: ctest.cpp clause.cpp clause.h
 
 clean:
 	rm -f *.o *~
-	rm -f ctest
+	rm -f bsat ctest
 
