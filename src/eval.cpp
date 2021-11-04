@@ -37,6 +37,31 @@ static int skip_space(FILE *infile) {
   return c;
 }
 
+// Read rest of line, trimming off leading spaces and trailing newline.
+// Return line length
+static int getline(FILE *infile, char *buf, int maxlen) {
+  int c = skip_space(infile);
+  int pos = 0;
+  if (c == EOF || c == '\n') {
+    buf[pos] = 0;
+    return pos;
+  }
+  buf[pos++] = c;
+  while (true) {
+    c = getc(infile);
+    if (c == '\n' || c == EOF) {
+      if (pos < maxlen)
+	buf[pos] = 0;
+      else
+	buf[--pos] = 0;
+      break;
+    }
+    if (pos < maxlen)
+      buf[pos++] = c;
+  }
+  return pos;
+}
+
 // Read line and parse as set of numbers.  Return either \n or EOF
 static int get_numbers(FILE *infile, std::vector<int> &numbers) {
   int c;
@@ -270,9 +295,18 @@ public:
 	line++;
 	break;
       case '#':
-      case 'i': 
 	c = skip_line(schedfile);
 	line++;
+	break;
+      case 'i': 
+	if (term_stack.size() > 0 && verblevel > 0) {
+	  char buf[1024];
+	  int len = getline(schedfile, buf, 1024);
+	  Term *tp = term_stack.back();
+	  int id = tp->get_id();
+	  bdd root = tp->get_root();
+	  std::cout << "Term #" << id << ". Nodes = " << bdd_nodecount(root) << ". " << buf << std::endl;
+	}
 	break;
       case 'c':
 	c = get_numbers(schedfile, numbers);
