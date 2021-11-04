@@ -1,5 +1,5 @@
 CXX=g++
-CFLAGS = -std=c++11 -g -O2 -Wall 
+CFLAGS = -std=c++11 -g -O2
 
 parity-cnf: Source.cpp
 	$(CXX) $(CFLAGS) Source.cpp -DCNF_ONLY -o parity-cnf
