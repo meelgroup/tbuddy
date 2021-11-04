@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include "clause.h"
 
 extern bool solve(FILE *cnf_file, FILE *sched_file, bool bucket, int verblevel);
@@ -17,6 +18,14 @@ void usage(char *name) {
   exit(0);
 }
 
+
+double tod() {
+  struct timeval tv;
+  if (gettimeofday(&tv, NULL) == 0)
+    return (double) tv.tv_sec + 1e-6 * tv.tv_usec;
+  else
+    return 0.0;
+}
 
 int main(int argc, char *argv[]) {
   FILE *cnf_file = stdin;
@@ -54,9 +63,12 @@ int main(int argc, char *argv[]) {
       usage(argv[0]);
     }
   }
+  double start = tod();
   if (solve(cnf_file, sched_file, bucket, verb)) {
-    if (verb >= 1)
-      std::cout << "Done" << std::endl;
+    if (verb >= 1) {
+      printf("Elapsed time = %.2f seconds\n", tod()-start);
+    }
+      
   }
   return 0;
 }

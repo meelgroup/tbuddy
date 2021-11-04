@@ -4,9 +4,12 @@
 #include "clause.h"
 
 // Buddy paramters
-#define BUDDY_NODES (100*1000*1000)
+// Cutoff betweeen large and small allocations (in terms of clauses)
+#define BUDDY_THRESHOLD 1000
+#define BUDDY_NODES_LARGE (100*1000*1000)
+#define BUDDY_NODES_SMALL (    1000*1000)
 #define BUDDY_CACHE_RATIO 8
-#define BUDDY_INCREASE (20*1000*1000)
+#define BUDDY_INCREASE_RATIO 20
 
 // Functions to aid parsing of schedule lines
 
@@ -110,14 +113,17 @@ public:
 
   TermSet(CNF &cnf, int verb) {
     verblevel = verb;
-    bdd_init(BUDDY_NODES,BUDDY_NODES/BUDDY_CACHE_RATIO);
+    clause_count = cnf.clause_count();
+    int bnodes = clause_count < BUDDY_THRESHOLD ? BUDDY_NODES_SMALL : BUDDY_NODES_LARGE;
+    int bcache = bnodes/BUDDY_CACHE_RATIO;
+    int bincrease = bnodes/BUDDY_INCREASE_RATIO;
+    bdd_init(bnodes, bcache);
     bdd_setcacheratio(BUDDY_CACHE_RATIO);
-    bdd_setmaxincrease(BUDDY_INCREASE);
+    bdd_setmaxincrease(bincrease);
     max_variable = cnf.max_variable();
     bdd_setvarnum(max_variable+1);
-    clause_count = cnf.clause_count();
     // Want to number terms starting at 1
-    terms.push_back(NULL);
+    terms.resize(1, NULL);
     for (int i = 0; i < clause_count; i++)
       add(new Term(cnf[i]));
     min_active = 1;
@@ -404,9 +410,9 @@ bool solve(FILE *cnf_file, FILE *sched_file, bool bucket, int verblevel) {
   else
     r = tset.tree_reduce();
   if (r == bddtrue)
-    std::cout << "Tautology" << std::endl;
+    std::cout << "TAUTOLOGY" << std::endl;
   else if (r == bddfalse)
-    std::cout << "Unsatisfiable" << std::endl;
+    std::cout << "UNSATISFIABLE" << std::endl;
   else {
     std::cout << "Satisfiable.  BDD size = " << bdd_nodecount(r) << std::endl;
     if (verblevel >= 3)
