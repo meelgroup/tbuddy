@@ -4,6 +4,6 @@ install:
 
 clean:
 	rm -f *~ *.pyc
-	rm *.cnf *.order *.schedule
+	rm -f *.cnf *.order *.schedule
 	(cd chew-code; make clean)
 	(cd urquhart-li-code; make clean)
