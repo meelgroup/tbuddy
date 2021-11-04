@@ -1,6 +1,6 @@
 CC=gcc
 CXX=g++
-CFLAGS=-g -O1 -Wno-nullability-completeness
+CFLAGS=-g -O2 -Wno-nullability-completeness -DCACHESTATS
 INC = -I..
 LDIR = ../lib
 IDIR = ../include
