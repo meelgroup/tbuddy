@@ -1,6 +1,8 @@
 CC=gcc
 CXX=g++
-CFLAGS=-g -O2 -Wno-nullability-completeness -DCACHESTATS
+DFLAGS = -DPROVE -DCACHESTATS -DENABLE_TBDD
+#DFLAGS = -DPROVE -DCACHESTATS 
+CFLAGS=-g -O2 -Wno-nullability-completeness $(DFLAGS)
 INC = -I..
 LDIR = ../lib
 IDIR = ../include

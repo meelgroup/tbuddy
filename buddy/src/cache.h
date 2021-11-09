@@ -38,12 +38,24 @@
 #ifndef _CACHE_H
 #define _CACHE_H
 
+#ifndef ENABLE_TBDD
+#define ENABLE_TBDD 0
+#endif
+
 typedef struct
 {
    union
    {
       double dres;
+#if ENABLE_TBDD
       int res;
+#else
+       // C compiler needs to support anonymous structs
+       struct {
+	   int res;
+	   int jclause;
+       };
+#endif       
    } r;
    int a,b,c;
 } BddCacheData;
@@ -54,7 +66,6 @@ typedef struct
    BddCacheData *table;
    int tablesize;
 } BddCache;
-
 
 extern int  BddCache_init(BddCache *, int);
 extern void BddCache_done(BddCache *);

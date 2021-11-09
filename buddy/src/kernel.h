@@ -38,11 +38,22 @@
 #ifndef _KERNEL_H
 #define _KERNEL_H
 
+/** Enabling proof generation **/
+#ifndef ENABLE_TBDD
+#define ENABLE_TBDD 0
+#endif
+
 /*=== Includes =========================================================*/
 
 #include <limits.h>
 #include <setjmp.h>
+
+#if ENABLE_TBDD
+#include "tbdd.h"
+#include "prover.h"
+#else
 #include "bdd.h"
+#endif
 
 /*=== SANITY CHECKS ====================================================*/
 
@@ -84,6 +95,10 @@ typedef struct s_BddNode /* Node table entry */
    int high;
    int hash;
    int next;
+#if ENABLE_TBDD
+   int xvar;     /* Associated extension variable */
+   int dclause;  /* Base index of defining clause */
+#endif /* ENABLE_TBDD */
 } BddNode;
 
 
@@ -108,6 +123,10 @@ extern jmp_buf   bddexception;
 extern int       bddreorderdisabled;
 extern int       bddresized;
 extern bddCacheStat bddcachestats;
+
+#if ENABLE_TBDD
+extern FILE *proof_file;
+#endif
 
 #ifdef CPLUSPLUS
 }
@@ -154,6 +173,13 @@ extern bddCacheStat bddcachestats;
 #define LEVELp(p)   ((p)->level)
 #define LOWp(p)     ((p)->low)
 #define HIGHp(p)    ((p)->high)
+
+#if ENABLE_TBDD
+#define XVAR(a)      (bddnodes[a].xvar)
+#define DCLAUSE(a)   (bddnodes[a].dclause)
+#define XVARp(p)     ((p)->xvar)
+#define DCLAUSEp(p)  ((p)->dclause)
+#endif /* ENABLE_TBDD */
 
    /* Stacking for garbage collector */
 #define INITREF    bddrefstacktop = bddrefstack

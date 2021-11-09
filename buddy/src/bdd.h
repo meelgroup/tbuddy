@@ -43,7 +43,12 @@
 #define CPLUSPLUS
 #endif
 
+#ifndef ENABLE_TBDD
+#define ENABLE_TBDD 0
+#endif
+
 #include <stdio.h>
+#include <stdbool.h>
 
 /*=== Defined operators for apply calls ================================*/
 
@@ -61,6 +66,19 @@
    /* Should *not* be used in bdd_apply calls !!! */
 #define bddop_not      10
 #define bddop_simplify 11
+
+#if ENABLE_TBDD
+/* Additional operations */
+#define bddop_andj     12
+#define bddop_impj     13
+#define bddop_andimpj  14
+#endif
+
+/*=== Defining clauses ===================================================*/
+
+#if ENABLE_TBDD
+typedef enum { DEF_HU, DEF_LU, DEF_HD, DEF_LD } dclause_t;
+#endif
 
 
 /*=== User BDD types ===================================================*/
@@ -97,6 +115,10 @@ PROTO   {* typedef struct s_bddStat
    int varnum;
    int cachesize;
    int gbcnum;
+#if ENABLE_TBDD
+   int clausenum;
+   int variablenum;
+#endif
 } bddStat;  *}
 DESCR   {* The fields are \\[\baselineskip] \begin{tabular}{lp{10cm}}
   {\tt produced}     & total number of new nodes ever produced \\
@@ -108,6 +130,10 @@ DESCR   {* The fields are \\[\baselineskip] \begin{tabular}{lp{10cm}}
   {\tt varnum}       & number of defined bdd variables \\
   {\tt cachesize}    & number of entries in the internal caches \\
   {\tt gbcnum}       & number of garbage collections done until now
+#if ENABLE_TBDD
+  {\tt clausenum}    & total number of clauses in input and proof \\
+  {\tt variablenum}  & total number of input and extension variables \\
+#endif
   \end{tabular} *}
 ALSO    {* bdd\_stats *}
 */
@@ -121,6 +147,10 @@ typedef struct s_bddStat
    int varnum;
    int cachesize;
    int gbcnum;
+#if ENABLE_TBDD
+   int clausenum;
+   int variablenum;
+#endif
 } bddStat;
 
 
@@ -271,6 +301,10 @@ extern int      bdd_setbddpairs(bddPair*, int*, BDD*, int);
 extern void     bdd_resetpair(bddPair *);
 extern void     bdd_freepair(bddPair*);
 
+#if ENABLE_TBDD
+extern int      bdd_xvar(BDD);
+extern int      bdd_dclause(BDD, dclause_t);
+#endif     
   /* In bddop.c */
 
 extern int      bdd_setcacheratio(int);
@@ -310,7 +344,6 @@ extern int      bdd_anodecount(BDD *, int);
 extern int*     bdd_varprofile(BDD);
 extern double   bdd_pathcount(BDD);
 
-   
 /* In file "bddio.c" */
 
 extern void     bdd_printall(void);
@@ -687,7 +720,6 @@ inline int* bdd_varprofile(const bdd &r)
 
 inline double bdd_pathcount(const bdd &r)
 { return bdd_pathcount(r.root); }
-
 
    /* I/O extensions */
 
