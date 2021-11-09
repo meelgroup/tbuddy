@@ -64,7 +64,7 @@ ilist ilist_make(int *p, int max_length);
 ilist ilist_new(int max_length);
 
 /* Free allocated ilist.  Only call on ones allocated via ilist_new */
-void ilist_free();
+void ilist_free(ilist ils);
 
 /* Return number of elements in ilist */
 int ilist_length(ilist ils);
@@ -79,10 +79,10 @@ ilist ilist_push(ilist ils, int val);
   Populate ilist with 1, 2, 3, or 4 elements.
   For dynamic ilists, the value of the pointer may change
  */
-ilist ilist_fill1(ilist *ils, int val1);
-ilist ilist_fill2(ilist *ils, int val1, int val2);
-ilist ilist_fill3(ilist *ils, int val1, int val2, int val3);
-ilist ilist_fill4(ilist *ils, int val1, int val2, int val3, int val4);
+ilist ilist_fill1(ilist ils, int val1);
+ilist ilist_fill2(ilist ils, int val1, int val2);
+ilist ilist_fill3(ilist ils, int val1, int val2, int val3);
+ilist ilist_fill4(ilist ils, int val1, int val2, int val3, int val4);
 
 /*============================================
   Package setup.
