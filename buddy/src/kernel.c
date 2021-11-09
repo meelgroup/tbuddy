@@ -1454,19 +1454,20 @@ int bdd_makenode(unsigned int level, int low, int high)
        int lid = XVAR(low);
        int dbuf[3+ILIST_OVHD];
        int abuf[2+ILIST_OVHD];
+       ilist dlist = ilist_make(dbuf, 3);
        ilist alist = ilist_make(abuf, 2);
        int huid, luid;
        XVARp(node) = vid;
        DCLAUSEp(node) = last_clause_id + 1;
        print_proof_comment("Defining clauses for node N%d = ITE(L%d, N%d, N%d", res, level, high, low);
-       huid = generate_clause(defining_clause(dbuf, DEF_HU, vid, hid, lid), alist);
-       luid = generate_clause(defining_clause(dbuf, DEF_LU, vid, hid, lid), alist);
+       huid = generate_clause(defining_clause(dlist, DEF_HU, vid, hid, lid), alist);
+       luid = generate_clause(defining_clause(dlist, DEF_LU, vid, hid, lid), alist);
        if (huid != TAUTOLOGY)
 	   ilist_push(alist, huid);
        if (luid != TAUTOLOGY)
 	   ilist_push(alist, luid);
-       generate_clause(defining_clause(dbuf, DEF_HD, vid, hid, lid), alist);              
-       generate_clause(defining_clause(dbuf, DEF_LD, vid, hid, lid), alist);       
+       generate_clause(defining_clause(dlist, DEF_HD, vid, hid, lid), alist);              
+       generate_clause(defining_clause(dlist, DEF_LD, vid, hid, lid), alist);       
    }
    #endif
       /* Insert node */

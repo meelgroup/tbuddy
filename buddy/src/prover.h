@@ -13,11 +13,11 @@ int generate_clause(ilist literals, ilist antecedent);
 void delete_clauses(ilist clause_ids);
 
 /* 
-   Fill Convert buf to ilist and fill with defining clause
-   dbuf should be at least 3+ILIST_OVHD long 
-   Return either the converted buffer or TAUTOLOGY_CLAUSE 
+   Fill ilist with defining clause.
+   ilist should be big enough for 3 elemeents.
+   Return either the ilist argument or TAUTOLOGY_CLAUSE 
 */
-ilist defining_clause(int *buf, dclause_t dtype, int vid, int hid, int lid);
+ilist defining_clause(ilist ils, dclause_t dtype, int vid, int hid, int lid);
 
 /*
   Fix clause by removing redundant literals and tautologies.
