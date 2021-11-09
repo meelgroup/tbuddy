@@ -102,6 +102,16 @@ int*         bddlevel2var;      /* Level -> variable table */
 jmp_buf      bddexception;      /* Long-jump point for interrupting calc. */
 int          bddresized;        /* Flag indicating a resize of the nodetable */
 
+#if ENABLE_TBDD
+/* Note: May make some of these private */
+
+FILE *proof_file;               /* File for generating proof */
+int  variable_count;            /* Number of generated variables */
+int  clause_count;              /* Total number of clauses generated */
+int  last_clause_id;            /* ID of most recent proof clause generated */
+#endif
+
+
 bddCacheStat bddcachestats;
 
 
@@ -198,6 +208,10 @@ int bdd_init(int initnodesize, int cs)
    bddnodes[0].refcou = bddnodes[1].refcou = MAXREF;
    LOW(0) = HIGH(0) = 0;
    LOW(1) = HIGH(1) = 1;
+#if ENABLE_TBDD
+   XVAR(0) = -TAUTOLOGY;
+   XVAR(1) = TAUTOLOGY;
+#endif
    
    if ((err=bdd_operator_init(cs)) < 0)
    {
@@ -234,6 +248,14 @@ int bdd_init(int initnodesize, int cs)
    
    if (setjmp(bddexception) != 0)
       assert(0);
+
+#if ENABLE_TBDD
+   proof_file = NULL;
+   variable_count = 0;
+   clause_count = 0;  
+   last_clause_id = 0;
+#endif
+
 
    return 0;
 }
@@ -710,6 +732,11 @@ void bdd_stats(bddStat *s)
    s->varnum = bddvarnum;
    s->cachesize = cachesize;
    s->gbcnum = gbcollectnum;
+#if ENABLE_TBDD
+   s->clausenum = clause_count;
+   s->variablenum = variable_count;
+#endif
+
 }
 
 
@@ -980,6 +1007,73 @@ BDD bdd_high(BDD root)
    return (HIGH(root));
 }
 
+#if ENABLE_TBDD
+/*
+NAME    {* bdd\_xvar *}
+SECTION {* info *}
+SHORT   {* gets the extension variable associated with a bdd node *}
+PROTO   {* BDD bdd_xvar(BDD r) *}
+DESCR   {* Gets the true branch of the bdd {\tt r}.  *}
+RETURN  {* The bdd of the true branch *}
+ALSO    {* bdd\_low *}
+*/
+BDD bdd_xvar(BDD root)
+{
+   CHECK(root);
+   if (root < 2)
+       return TAUTOLOGY;
+   return (XVAR(root));
+}
+
+/*
+NAME    {* bdd\_dclause *}
+SECTION {* info *}
+SHORT   {* gets the extension variable associated with a bdd node *}
+PROTO   {* BDD bdd_dclause(BDD r) *}
+DESCR   {* Gets the true branch of the bdd {\tt r}.  *}
+RETURN  {* The bdd of the true branch *}
+ALSO    {* bdd\_low *}
+*/
+int bdd_dclause(BDD root, dclause_t dtype)
+{
+   CHECK(root);
+   if (root < 2)
+       return TAUTOLOGY;
+   int result = DCLAUSE(root) + dtype;
+   switch (dtype) {
+   case DEF_HU:
+       return ISZERO(HIGH(root)) ? TAUTOLOGY : result;
+   case DEF_LU:
+       return ISZERO(LOW(root)) ? TAUTOLOGY : result;
+   case DEF_HD:
+       return ISONE(HIGH(root)) ? TAUTOLOGY : result;
+   case DEF_LD:
+       return ISONE(LOW(root)) ? TAUTOLOGY : result;
+   default: /* Would like to throw exception here */
+       return TAUTOLOGY;
+   }
+}
+
+int bdd_dclause_p(BddNode *n, dclause_t dtype)
+{
+   int result = DCLAUSEp(n) + dtype;
+   switch (dtype) {
+   case DEF_HU:
+       return ISZERO(HIGHp(n)) ? TAUTOLOGY : result;
+   case DEF_LU:
+       return ISZERO(LOWp(n)) ? TAUTOLOGY : result;
+   case DEF_HD:
+       return ISONE(HIGHp(n)) ? TAUTOLOGY : result;
+   case DEF_LD:
+       return ISONE(LOWp(n)) ? TAUTOLOGY : result;
+   default: /* Would like to throw exception here */
+       return TAUTOLOGY;
+   }
+}
+
+
+
+#endif
 
 
 /*************************************************************************
@@ -1073,6 +1167,24 @@ void bdd_gbc(void)
       }
       else
       {
+#if ENABLE_TBDD	  
+         /* Delete defining clauses */
+         int dbuf[4+ILIST_OVHD];
+	 ilist dlist = ilist_make(dbuf, 4);
+	 int id;
+	 if ((id = bdd_dclause_p(node, DEF_HU)) != TAUTOLOGY)
+	     ilist_push(dlist, id);
+	 if ((id = bdd_dclause_p(node, DEF_LU)) != TAUTOLOGY)
+	     ilist_push(dlist, id);
+	 if ((id = bdd_dclause_p(node, DEF_HD)) != TAUTOLOGY)
+	     ilist_push(dlist, id);
+	 if ((id = bdd_dclause_p(node, DEF_LD)) != TAUTOLOGY)
+	     ilist_push(dlist, id);
+
+	 if (ilist_length(dlist) > 0)
+	     print_proof_comment("Delete defining clauses for node N%d", n);
+	 delete_clauses(dlist);
+#endif
 	 LOWp(node) = -1;
 	 node->next = bddfreepos;
 	 bddfreepos = n;
@@ -1265,7 +1377,7 @@ int bdd_makenode(unsigned int level, int low, int high)
    bddcachestats.uniqueAccess++;
 #endif
    
-      /* check whether childs are equal */
+      /* check whether children are equal */
    if (low == high)
       return low;
 
@@ -1335,10 +1447,31 @@ int bdd_makenode(unsigned int level, int low, int high)
    LOWp(node) = low;
    HIGHp(node) = high;
    
+   #if ENABLE_TBDD
+   {
+       int vid = ++variable_count;
+       int hid = XVAR(high);
+       int lid = XVAR(low);
+       int dbuf[3+ILIST_OVHD];
+       int abuf[2+ILIST_OVHD];
+       ilist alist = ilist_make(abuf, 2);
+       int huid, luid;
+       XVARp(node) = vid;
+       DCLAUSEp(node) = last_clause_id + 1;
+       print_proof_comment("Defining clauses for node N%d = ITE(L%d, N%d, N%d", res, level, high, low);
+       huid = generate_clause(defining_clause(dbuf, DEF_HU, vid, hid, lid), alist);
+       luid = generate_clause(defining_clause(dbuf, DEF_LU, vid, hid, lid), alist);
+       if (huid != TAUTOLOGY)
+	   ilist_push(alist, huid);
+       if (luid != TAUTOLOGY)
+	   ilist_push(alist, luid);
+       generate_clause(defining_clause(dbuf, DEF_HD, vid, hid, lid), alist);              
+       generate_clause(defining_clause(dbuf, DEF_LD, vid, hid, lid), alist);       
+   }
+   #endif
       /* Insert node */
    node->next = bddnodes[hash].hash;
    bddnodes[hash].hash = res;
-
    return res;
 }
 
