@@ -37,18 +37,16 @@ int ilist_length(ilist ils) {
     return ILIST_LENGTH(ils);
 }
 
-/*
-  Add new value(s) to end of ilist.
-  For dynamic ilists, the value of the pointer may change
-*/
-ilist ilist_push(ilist ils, int val) {
+static ilist ilist_resize(ilist ils, int nlength) {
     int list_max_length = ILIST_MAXLENGTH(ils);
     int true_max_length = IABS(list_max_length);
-    if (ILIST_LENGTH(ils) >= true_max_length) {
+    if (nlength > true_max_length) {
 	if (list_max_length < 0) {
 	    int *p = ILIST_BASE(ils);
 	    /* Dynamically resize */
 	    true_max_length *= 2;
+	    if (nlength > true_max_length)
+		true_max_length = nlength;
 	    p = realloc(p, true_max_length * sizeof(int) + ILIST_OVHD);
 	    if (p == NULL) {
 		/* Need to throw error here */
@@ -60,8 +58,20 @@ ilist ilist_push(ilist ils, int val) {
 	    /* Need to throw an error here */
 	    return NULL;
     }
-    ils[ILIST_LENGTH(ils)] = val;
-    ILIST_LENGTH(ils) ++;
+    ILIST_LENGTH(ils) = nlength;
+    return ils;
+}
+
+/*
+  Add new value(s) to end of ilist.
+  For dynamic ilists, the value of the pointer may change
+*/
+ilist ilist_push(ilist ils, int val) {
+    int length = ILIST_LENGTH(ils);
+    int nlength = length+1;
+    ils = ilist_resize(ils, nlength);
+    ils[length] = val;
+    ILIST_LENGTH(ils) = nlength;
     return ils;
 }
 
@@ -70,33 +80,32 @@ ilist ilist_push(ilist ils, int val) {
   For dynamic ilists, the value of the pointer may change
  */
 ilist ilist_fill1(ilist ils, int val1) {
-    ILIST_LENGTH(ils) = 0;
-    ils = ilist_push(ils, val1);
+    ils = ilist_resize(ils, 1);
+    ils[0] = val1;
     return ils;
 }
 
 ilist ilist_fill2(ilist ils, int val1, int val2) {
-    ILIST_LENGTH(ils) = 0;
-    ils = ilist_push(ils, val1);
-    ils = ilist_push(ils, val2);
+    ils = ilist_resize(ils, 2);
+    ils[0] = val1;
+    ils[1] = val2;
     return ils;
 }
 
 ilist ilist_fill3(ilist ils, int val1, int val2, int val3) {
-    ILIST_LENGTH(ils) = 0;
-    ils = ilist_push(ils, val1);
-    ils = ilist_push(ils, val2);
-    ils = ilist_push(ils, val3);
+    ils = ilist_resize(ils, 3);
+    ils[0] = val1;
+    ils[1] = val2;
+    ils[2] = val3;
     return ils;
-
 }
 
 ilist ilist_fill4(ilist ils, int val1, int val2, int val3, int val4) {
-    ILIST_LENGTH(ils) = 0;
-    ils = ilist_push(ils, val1);
-    ils = ilist_push(ils, val2);
-    ils = ilist_push(ils, val3);
-    ils = ilist_push(ils, val4);
+    ils = ilist_resize(ils, 4);
+    ils[0] = val1;
+    ils[1] = val2;
+    ils[2] = val3;
+    ils[3] = val4;
     return ils;
 
 }
