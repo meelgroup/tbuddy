@@ -49,6 +49,10 @@
 #include "cache.h"
 #include "prime.h"
 
+#if ENABLE_TBDD
+#include "prover.h"
+#endif
+
 /*************************************************************************
   Various definitions and global variables
 *************************************************************************/
@@ -101,16 +105,6 @@ int*         bddvar2level;      /* Variable -> level table */
 int*         bddlevel2var;      /* Level -> variable table */
 jmp_buf      bddexception;      /* Long-jump point for interrupting calc. */
 int          bddresized;        /* Flag indicating a resize of the nodetable */
-
-#if ENABLE_TBDD
-/* Note: May make some of these private */
-
-FILE *proof_file;               /* File for generating proof */
-int  variable_count;            /* Number of generated variables */
-int  clause_count;              /* Total number of clauses generated */
-int  last_clause_id;            /* ID of most recent proof clause generated */
-#endif
-
 
 bddCacheStat bddcachestats;
 
@@ -248,14 +242,6 @@ int bdd_init(int initnodesize, int cs)
    
    if (setjmp(bddexception) != 0)
       assert(0);
-
-#if ENABLE_TBDD
-   proof_file = NULL;
-   variable_count = 0;
-   clause_count = 0;  
-   last_clause_id = 0;
-#endif
-
 
    return 0;
 }
@@ -733,8 +719,8 @@ void bdd_stats(bddStat *s)
    s->cachesize = cachesize;
    s->gbcnum = gbcollectnum;
 #if ENABLE_TBDD
-   s->clausenum = clause_count;
-   s->variablenum = variable_count;
+   s->clausenum = total_clause_count;
+   s->variablenum = input_variable_count;
 #endif
 
 }
@@ -1182,7 +1168,7 @@ void bdd_gbc(void)
 	     ilist_push(dlist, id);
 
 	 if (ilist_length(dlist) > 0)
-	     print_proof_comment("Delete defining clauses for node N%d", n);
+	     print_proof_comment(2, "Delete defining clauses for node N%d", XVARp(node));
 	 delete_clauses(dlist);
 #endif
 	 LOWp(node) = -1;
@@ -1448,26 +1434,29 @@ int bdd_makenode(unsigned int level, int low, int high)
    HIGHp(node) = high;
    
    #if ENABLE_TBDD
-   {
-       int vid = ++variable_count;
+   if (level > 0) {
+       int nid = ++last_variable;
+       int vid = level;
        int hid = XVAR(high);
        int lid = XVAR(low);
+       int hname = NNAME(high);
+       int lname = NNAME(low);
        int dbuf[3+ILIST_OVHD];
        int abuf[2+ILIST_OVHD];
        ilist dlist = ilist_make(dbuf, 3);
        ilist alist = ilist_make(abuf, 2);
        int huid, luid;
-       XVARp(node) = vid;
+       XVARp(node) = nid;
        DCLAUSEp(node) = last_clause_id + 1;
-       print_proof_comment("Defining clauses for node N%d = ITE(L%d, N%d, N%d", res, level, high, low);
-       huid = generate_clause(defining_clause(dlist, DEF_HU, vid, hid, lid), alist);
-       luid = generate_clause(defining_clause(dlist, DEF_LU, vid, hid, lid), alist);
+       print_proof_comment(2, "Defining clauses for node N%d = ITE(V%d, N%d, N%d)", nid, vid, hname, lname);
+       huid = generate_clause(defining_clause(dlist, DEF_HU, nid, vid, hid, lid), alist);
+       luid = generate_clause(defining_clause(dlist, DEF_LU, nid, vid, hid, lid), alist);
        if (huid != TAUTOLOGY)
 	   ilist_push(alist, huid);
        if (luid != TAUTOLOGY)
 	   ilist_push(alist, luid);
-       generate_clause(defining_clause(dlist, DEF_HD, vid, hid, lid), alist);              
-       generate_clause(defining_clause(dlist, DEF_LD, vid, hid, lid), alist);       
+       generate_clause(defining_clause(dlist, DEF_HD, nid, vid, hid, lid), alist);              
+       generate_clause(defining_clause(dlist, DEF_LD, nid, vid, hid, lid), alist);       
    }
    #endif
       /* Insert node */
@@ -1621,6 +1610,11 @@ BDD bdd_makeset(int *varset, int varnum)
 
    return res;
 }
+
+/**********  This is a hack to work around issues about the C++ interface, getting direct access to the C version of the functions ******/
+BDD BDD_makeset(int *varset, int varnum) { return bdd_makeset(varset, varnum); }
+BDD BDD_ithvar(int var) { return bdd_ithvar(var); }
+BDD BDD_nithvar(int var) { return bdd_nithvar(var); }
 
 
 /* EOF */

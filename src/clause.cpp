@@ -78,6 +78,10 @@ int32_t Clause::max_variable() {
   return mvar;
 }
 
+int * Clause::data() {
+  return contents.data();
+}
+
 int32_t& Clause::operator[](int i) {
   return contents[i];
 }

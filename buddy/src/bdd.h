@@ -385,6 +385,12 @@ extern void     bdd_setvarorder(int *);
 extern void     bdd_printorder(void);
 extern void     bdd_fprintorder(FILE *);
 
+   /**** A Grimy Hack ****/
+extern BDD BDD_ithvar(int);
+extern BDD BDD_nithvar(int);
+extern BDD BDD_makeset(int*, int);
+
+
 #ifdef CPLUSPLUS
 }
 #endif

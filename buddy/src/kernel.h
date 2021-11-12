@@ -124,10 +124,6 @@ extern int       bddreorderdisabled;
 extern int       bddresized;
 extern bddCacheStat bddcachestats;
 
-#if ENABLE_TBDD
-extern FILE *proof_file;
-#endif
-
 #ifdef CPLUSPLUS
 }
 #endif
@@ -179,7 +175,9 @@ extern FILE *proof_file;
 #define DCLAUSE(a)   (bddnodes[a].dclause)
 #define XVARp(p)     ((p)->xvar)
 #define DCLAUSEp(p)  ((p)->dclause)
+#define NNAME(a) ((a) < 2?(a):XVAR(a))
 #endif /* ENABLE_TBDD */
+
 
    /* Stacking for garbage collector */
 #define INITREF    bddrefstacktop = bddrefstack

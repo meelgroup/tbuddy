@@ -39,6 +39,8 @@ class Clause {
 
     void show(std::ofstream &outstream);
 
+    int *data();
+
     int32_t& operator[](int);
 
 };
