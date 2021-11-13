@@ -141,17 +141,21 @@ TBDD tbdd_from_clause_id(int id) {
   implication from another TBDD
  */
 TBDD tbdd_validate(BDD r, TBDD tr) {
-    TBDD rr;
-    int cbuf[2+ILIST_OVHD];
-    ilist clause = ilist_make(cbuf, 2);
+    int cbuf[1+ILIST_OVHD];
+    ilist clause = ilist_make(cbuf, 1);
     int abuf[2+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 2);
-    ilist_fill2(clause, XVAR(r), -XVAR(tr.root));
-    print_proof_comment(2, "Proof of implication N%d --> N%d", NNAME(tr.root), NNAME(r));
-    int reason = generate_clause(clause, ant);
-    print_proof_comment(2, "Justification of N%d",NNAME(r));
+    TBDD t = bdd_imptstj(bdd_addref(tr.root), bdd_addref(r));
+    bdd_delref(tr.root);
+    bdd_delref(r);
+    if (t.root != bdd_true()) {
+	fprintf(stderr, "Failed to prove implication N%d --> N%d\n", NNAME(tr.root), NNAME(r));
+	exit(1);
+    }
+    print_proof_comment(2, "Validation of unit clause for N%d by implication from N%d",NNAME(r), NNAME(tr.root));
     ilist_fill1(clause, XVAR(r));
-    ilist_fill2(ant, reason, tr.clause_id);
+    ilist_fill2(ant, t.clause_id, tr.clause_id);
+    TBDD rr;
     rr.clause_id = generate_clause(clause, ant);
     rr.root = r;
     return rr;
@@ -179,17 +183,20 @@ TBDD tbdd_trust(BDD r) {
   Form conjunction of two TBDDs and prove
   their conjunction implies the new one
  */
-TBDD fake_tbdd_and(TBDD tr1, TBDD tr2) {
-    TBDD rr;
-    BDD nr = bdd_and(bdd_addref(tr1.root), bdd_addref(tr2.root));
-    int cbuf[3+ILIST_OVHD];
-    ilist clause = ilist_make(cbuf, 3);
+TBDD tbdd_and(TBDD tr1, TBDD tr2) {
+    TBDD t = bdd_andj(bdd_addref(tr1.root), bdd_addref(tr2.root));
+    bdd_delref(tr1.root);
+    bdd_delref(tr2.root);
+    int cbuf[1+ILIST_OVHD];
+    ilist clause = ilist_make(cbuf, 1);
     int abuf[3+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 3);
-    print_proof_comment(2, "Proof that N%d & N%d --> N%d", NNAME(tr1.root), NNAME(tr2.root), NNAME(nr));
-    ilist_fill3(clause, -XVAR(tr1.root), -XVAR(tr2.root), XVAR(nr));
-    int implication = generate_clause(clause, ant);
-    return rr;
+    print_proof_comment(2, "Validate unit clause for node N%d = N%d & N%d", NNAME(t.root), NNAME(tr1.root), NNAME(tr2.root));
+    ilist_fill1(clause, XVAR(t.root));
+    ilist_fill3(ant, t.clause_id, tr1.clause_id, tr2.clause_id);
+    /* Insert proof of unit clause into t's justification */
+    t.clause_id = generate_clause(clause, ant);
+    return t;
 }
 
 /*
@@ -201,7 +208,7 @@ int tbdd_validate_clause(ilist clause, TBDD tr) {
     int abuf[1+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 1);
     ilist_fill1(ant, tr.clause_id);
-    print_proof_comment(2, "Validation of clause from N%d", NNAME(tr.root));
+    print_proof_comment(2, "Fake Validation of clause from N%d", NNAME(tr.root));
     return generate_clause(clause, ant);
 }
 

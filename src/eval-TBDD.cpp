@@ -184,36 +184,24 @@ public:
   }
 
   Term *conjunct(Term *tp1, Term *tp2) {
-    int cbuf[1+ILIST_OVHD];
-    ilist clause = ilist_make(cbuf, 3);
-    int abuf[3+ILIST_OVHD];
-    ilist ant = ilist_make(abuf, 3);
     TBDD tr1 = tp1->get_fun();
     TBDD tr2 = tp2->get_fun();
-    
     TBDD nfun = tbdd_and(tr1, tr2);
-    BDD nr = nfun.root;
-    bdd_addref(nr);
-    int id = terms.size() + 1;
-    print_proof_comment(2, (char *) "Justification of term T%d N%d = N%d & N%d.  xvar=%d",id, bdd_nameid(nr), bdd_nameid(tr1.root), bdd_nameid(tr2.root), bdd_xvar(nr));
-    ilist_fill1(clause, bdd_xvar(nr));
-    ilist_fill3(ant, nfun.clause_id, tp1->get_clause_id(), tp2->get_clause_id());
-    nfun.clause_id = generate_clause(clause, ant);
     add(new Term(nfun));
     tp1->deactivate();
     tp2->deactivate();
     and_count++;
-    bdd_delref(nr);
     return terms.back();
   }
 
   Term *equantify(Term *tp, std::vector<int> &vars) {
     int *varset = vars.data();
     BDD varbdd = bdd_addref(BDD_makeset(varset, vars.size()));
-    BDD nroot = bdd_exist(tp->get_root(), varbdd);
+    BDD nroot = bdd_addref(bdd_exist(tp->get_root(), varbdd));
     TBDD tfun = tbdd_validate(nroot, tp->get_fun());
     add(new Term(tfun));
     bdd_delref(varbdd);
+    bdd_delref(nroot);
     tp->deactivate();
     quant_count++;
     return terms.back();
@@ -221,10 +209,11 @@ public:
 
   Term *equantify(Term *tp, int32_t var) {
     BDD varbdd = bdd_addref(BDD_ithvar(var));
-    BDD nroot = bdd_exist(tp->get_root(), varbdd);
+    BDD nroot = bdd_addref(bdd_exist(tp->get_root(), varbdd));
     TBDD tfun = tbdd_validate(nroot, tp->get_fun());
     add(new Term(tfun));
     bdd_delref(varbdd);
+    bdd_delref(nroot);
     tp->deactivate();
     quant_count++;
     return terms.back();

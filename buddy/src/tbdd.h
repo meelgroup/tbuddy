@@ -116,11 +116,13 @@ extern TBDD tbdd_null();
 extern TBDD tbdd_from_clause(ilist clause);
 extern TBDD tbdd_from_clause_id(int id);
 
+
 /* Operations on TBDDs */
 extern TBDD      tbdd_and(TBDD, TBDD);
-extern TBDD      tbdd_imp(TBDD, TBDD);
-extern TBDD      tbdd_andimp(TBDD, TBDD, TBDD);
 
+/* Low-level functions to implement operations on TBDDs */
+extern TBDD      bdd_andj(BDD, BDD);    
+extern TBDD      bdd_imptstj(BDD, BDD);    
 /*
   Upgrade ordinary BDD to TBDD by proving
   implication from another TBDD

@@ -70,7 +70,7 @@
 #if ENABLE_TBDD
 /* Proof generating apply operations */
 #define bddop_andj     12
-#define bddop_impj     13
+#define bddop_imptstj  13
 #define bddop_andimpj  14
 #endif
 

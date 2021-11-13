@@ -147,8 +147,8 @@ static int    varset2vartable(BDD);
 static int    varset2svartable(BDD);
 
 #if ENABLE_TBDD
-static TBDD    tbdd_apply(TBDD, TBDD, int op);
-static TBDD    tbdd_apply_rec(BDD, BDD);
+static TBDD    bdd_applyj(BDD, BDD, int op);
+static TBDD    bdd_applyj_rec(BDD, BDD);
 #endif
 
    /* Hashvalues */
@@ -738,25 +738,23 @@ DESCR   {* The {\tt tbdd\_apply} function performs basic
         & {\bf C++ opr.} \\
      {\tt bddop\_andj}    & logical and    ($A \wedge B$)   & $A \wedge B \rightarrow C$      & [0,0,0,1]
         & \verb%&% \\
-     {\tt bddop\_impj}    & implication    ($A \Rightarrow B$) & $\forall X (A \rightarrow B)$    & [1,1,0,1]
+     {\tt bddop\_imptstj}    & implication    ($A \Rightarrow B$) & $\forall X (A \rightarrow B)$    & [1,1,0,1]
         & \verb%>>% \\
    \end{tabular}
    *}
    RETURN  {* The result of the operation. *}
    ALSO    {* bdd\_apply *}
 */
-static TBDD tbdd_apply(TBDD tl, TBDD tr, int op)
+static TBDD bdd_applyj(BDD l, BDD r, int op)
 {
    TBDD res;
-   BDD l = tl.root;
-   BDD r = tr.root;
 
    firstReorder = 1;
    
    CHECKa(l, tbdd_null());
    CHECKa(r, tbdd_null());
 
-   if (op<bddop_andj || op>bddop_impj)
+   if (op<bddop_andj || op>bddop_imptstj)
    {
       bdd_error(BDD_OP);
       res = tbdd_null();
@@ -771,7 +769,7 @@ static TBDD tbdd_apply(TBDD tl, TBDD tr, int op)
       
       if (!firstReorder)
 	 bdd_disable_reorder();
-      res = tbdd_apply_rec(l, r);
+      res = bdd_applyj_rec(l, r);
       if (!firstReorder)
 	 bdd_enable_reorder();
    }
@@ -790,12 +788,12 @@ static TBDD tbdd_apply(TBDD tl, TBDD tr, int op)
 }
 
 
-static TBDD tbdd_apply_rec(BDD l, BDD r)
+static TBDD bdd_applyj_rec(BDD l, BDD r)
 {
    BddCacheData *entry;
    TBDD res;
 
-   //   printf("tbdd_apply_rec called with l=%d (N%d), r=%d (N%d), op = %d\n", (int) l, NNAME(l), (int) r, NNAME(r), applyop);
+   //   printf("bdd_applyj_rec called with l=%d (N%d), r=%d (N%d), op = %d\n", (int) l, NNAME(l), (int) r, NNAME(r), applyop);
 
    res.root = 0;
    res.clause_id = TAUTOLOGY;
@@ -811,36 +809,36 @@ static TBDD tbdd_apply_rec(BDD l, BDD r)
        if (ISONE(r))
 	   { res.root = l; return res; }
        break;
-   case bddop_imp:
+   case bddop_imptstj:
        if (l == r)
 	   { res.root = BDDONE ; return res; }
-      if (ISZERO(l))
-	  { res.root = BDDONE; return res; }
-      if (ISONE(r))
-	  { res.root = BDDONE; return res; }
-      if (ISONE(l))
-	  /* Implication cannot hold for all arguments */
-	  { res.root = BDDZERO; return res; }
-      if (ISZERO(r))
+       if (ISZERO(l))
+	   { res.root = BDDONE; return res; }
+       if (ISONE(r))
+	   { res.root = BDDONE; return res; }
+       if (ISONE(l))
 	   /* Implication cannot hold for all arguments */
-	  { res.root = BDDZERO; return res; }
-      break;
+	   { res.root = BDDZERO; return res; }
+       if (ISZERO(r))
+	   /* Implication cannot hold for all arguments */
+	   { res.root = BDDZERO; return res; }
+       break;
    }
 
 
    {
-       jtype_t hints[HINT_COUNT];
        int tbuf[3+ILIST_OVHD];
        ilist tlist = ilist_make(tbuf, 3);
+       jtype_t hints[HINT_COUNT];
        int splitVariable = 0;
-       ilist target_clause;
+
 
        switch (applyop) {
        case bddop_andj:
 	   ilist_fill2(tlist, -XVAR(l), -XVAR(r));
 	   break;
-       case bddop_impj:
-	   ilist_fill2(tlist, -XVAR(l), -XVAR(r));
+       case bddop_imptstj:
+	   ilist_fill2(tlist, XVAR(r), -XVAR(l));
 	   break;
        }
 
@@ -869,12 +867,12 @@ static TBDD tbdd_apply_rec(BDD l, BDD r)
 	  hints[HINT_ARG1LD] = bdd_dclause(l, DEF_LD);
 	  hints[HINT_ARG2HD] = bdd_dclause(r, DEF_HD);
 	  hints[HINT_ARG2LD] = bdd_dclause(r, DEF_LD);
-	  TBDD lres = tbdd_apply_rec(LOW(l), LOW(r));
+	  TBDD lres = bdd_applyj_rec(LOW(l), LOW(r));
 	  BDD lroot = lres.root;
 	  PUSHREF(lroot);
 	  hints[HINT_OPL] = lres.clause_id;
 	  hints[HINT_RESLU] = bdd_dclause(lroot, DEF_LU);
-	  TBDD hres = tbdd_apply_rec(HIGH(l), HIGH(r));
+	  TBDD hres = bdd_applyj_rec(HIGH(l), HIGH(r));
 	  BDD hroot = hres.root;
 	  PUSHREF(hroot);
 	  hints[HINT_OPH] = hres.clause_id;
@@ -887,12 +885,12 @@ static TBDD tbdd_apply_rec(BDD l, BDD r)
 	  splitVariable = LEVEL(l);
 	  hints[HINT_ARG1HD] = bdd_dclause(l, DEF_HD);
 	  hints[HINT_ARG1LD] = bdd_dclause(l, DEF_LD);
-	  TBDD lres = tbdd_apply_rec(LOW(l), r);
+	  TBDD lres = bdd_applyj_rec(LOW(l), r);
 	  BDD lroot = lres.root;
 	  PUSHREF(lroot);
 	  hints[HINT_OPL] = lres.clause_id;
 	  hints[HINT_RESLU] = bdd_dclause(lroot, DEF_LU);
-	  TBDD hres = tbdd_apply_rec(HIGH(l), r);
+	  TBDD hres = bdd_applyj_rec(HIGH(l), r);
 	  BDD hroot = hres.root;
 	  PUSHREF(hroot);
 	  hints[HINT_OPH] = hres.clause_id;
@@ -904,17 +902,17 @@ static TBDD tbdd_apply_rec(BDD l, BDD r)
 	  splitVariable = LEVEL(r);
 	  hints[HINT_ARG2HD] = bdd_dclause(r, DEF_HD);
 	  hints[HINT_ARG2LD] = bdd_dclause(r, DEF_LD);
-	  TBDD lres = tbdd_apply_rec(l, LOW(r));
+	  TBDD lres = bdd_applyj_rec(l, LOW(r));
 	  BDD lroot = lres.root;
 	  PUSHREF(lroot);
 	  hints[HINT_OPL] = lres.clause_id;
 	  hints[HINT_RESLU] = bdd_dclause(lroot, DEF_LU);
-	  TBDD hres = tbdd_apply_rec(l, HIGH(r));
+	  TBDD hres = bdd_applyj_rec(l, HIGH(r));
 	  BDD hroot = hres.root;
 	  PUSHREF(hroot);
 	  hints[HINT_OPH] = hres.clause_id;
 	  hints[HINT_RESHU] = bdd_dclause(hroot, DEF_HU);
-	  if (applyop == bddop_impj) {
+	  if (applyop == bddop_imptstj) {
 	      res.root = (ISONE(READREF(2)) && ISONE(READREF(1))) ? BDDONE : BDDZERO;
 	  } else {
 	      res.root = bdd_makenode(splitVariable, READREF(2), READREF(1));
@@ -941,39 +939,39 @@ static TBDD tbdd_apply_rec(BDD l, BDD r)
       entry->r.jclause = res.clause_id;
    }
 
-   //   printf("tbdd_apply_rec called with l=%d (N%d), r=%d (N%d), op = %d.  Returns fun %d (N%d, xvar=%d), clause %d\n",
+   //   printf("bdd_applyj_rec called with l=%d (N%d), r=%d (N%d), op = %d.  Returns fun %d (N%d, xvar=%d), clause %d\n",
    //	  (int) l, NNAME(l), (int) r, NNAME(r), applyop, res.root, NNAME(res.root), XVAR(res.root), res.clause_id);
 
    return res;
 }
 
 /*
-NAME    {* tbdd\_and *}
+NAME    {* bdd\_andj *}
 SECTION {* operator *}
 SHORT   {* The logical 'and' of two BDDs, with proof generation *}
-PROTO   {* TBDD tbdd_and(TBDD tl, TBDD tr) *}
-DESCR   {* This a wrapper that calls {\tt tbdd\_apply\_justify(tl,tr,bddop\_andj)}. *}
-RETURN  {* The logical 'and' of {\tt tl} and {\tt tr} plus a proof. *}
-ALSO    {* bdd\_and *}
+PROTO   {* TBDD tbdd_and(BDD l, BDD r) *}
+DESCR   {* This a wrapper that calls {\tt bdd\_applyj(l,r,bddop\_andj)}. *}
+RETURN  {* The logical 'and' of {\tt l} and {\tt r} plus a proof. *}
+ALSO    {* tbdd\_and *}
 */
-TBDD tbdd_and(TBDD tl, TBDD tr)
+TBDD bdd_andj(BDD l, BDD r)
 {
-   TBDD res= tbdd_apply(tl,tr,bddop_andj);
+   TBDD res= bdd_applyj(l,r,bddop_andj);
    return res;
 }
 
 /*
-NAME    {* tbdd\_imp *}
+NAME    {* bdd\_impj *}
 SECTION {* operator *}
 SHORT   {* Confirm the logical 'implication' between two BDDs and generate the proof *}
-PROTO   {* TBDD tbdd_imp(TBDD tl, TBDD tr) *}
-DESCR   {* This a wrapper that calls {\tt tbdd\_apply(tl,tr,bddop\_impj)}. *}
+PROTO   {* TBDD bdd_impj(TBDD l, TBDD r) *}
+DESCR   {* This a wrapper that calls {\tt bdd\_applyj(l,r,bddop\_imptstj)}. *}
 RETURN  {* BDD 1 if the implication holds, 0 if it does not, plus a proof. *}
-ALSO    {* bdd\_imp *}
+ALSO    {* tbdd\_imptst *}
 */
-TBDD tbdd_imp(TBDD tl, TBDD tr)
+TBDD bdd_imptstj(BDD l, BDD r)
 {
-   return tbdd_apply(tl,tr,bddop_impj);
+   return bdd_applyj(l,r,bddop_imptstj);
 }
 #endif /* ENABLE_TBDD */
 
