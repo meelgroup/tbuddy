@@ -6,6 +6,16 @@
 #include "tbdd.h"
 #include <stdarg.h>
 
+/* Allow this headerfile to define C++ constructs if requested */
+#ifdef __cplusplus
+#define CPLUSPLUS
+#endif
+
+#ifdef CPLUSPLUS
+extern "C" {
+#endif
+
+
 /* Global variables exported by prover */
 extern bool do_lrat;
 extern int verbosity_level;
@@ -15,33 +25,26 @@ extern int total_clause_count;
 extern int input_variable_count;
 
 /* Prover setup and completion */
-int prover_init(FILE *pfile, int input_variable_count, int input_clause_count, ilist *clauses, bool lrat);
-void prover_done();
+extern int prover_init(FILE *pfile, int input_variable_count, int input_clause_count, ilist *clauses, bool lrat);
+extern void prover_done();
 
 /* Return clause ID */
 /* For DRAT proof, antecedents can be NULL */
-int generate_clause(ilist literals, ilist antecedent);
-void delete_clauses(ilist clause_ids);
+extern int generate_clause(ilist literals, ilist antecedent);
+extern void delete_clauses(ilist clause_ids);
 
 /* Retrieve input clause.  NULL if invalid */
-ilist get_input_clause(int id);
+extern ilist get_input_clause(int id);
 
 /* 
    Fill ilist with defining clause.
    ils should be big enough for 3 elemeents.
    Return either the list of literals or TAUTOLOGY_CLAUSE 
 */
-ilist defining_clause(ilist ils, dclause_t dtype, int nid, int vid, int hid, int lid);
-
-/*
-  Fix clause by removing redundant literals and tautologies.
-  Detect if clause is tautological
-  Will return either argument ilist or CLAUSE_TAUTOLOGY
-*/
-ilist clean_clause(ilist clause);
+extern ilist defining_clause(ilist ils, dclause_t dtype, int nid, int vid, int hid, int lid);
 
 /* Print clause */
-void print_clause(FILE *out, ilist clause);
+extern void print_clause(FILE *out, ilist clause);
 
 /*
   Print comment in proof. Don't need to include "c" in string.
@@ -49,9 +52,28 @@ void print_clause(FILE *out, ilist clause);
   Newline printed at end
  */
 
-void print_proof_comment(int vlevel, char *fmt, ...);
+extern void print_proof_comment(int vlevel, char *fmt, ...);
 
+/*
+  Support for generating apply operation proofs.
+ */
 
+/*
+  Enumerated type for the hint types
+ */
+typedef enum { HINT_RESHU, HINT_ARG1HD, HINT_ARG2HD, HINT_OPH, HINT_RESLU, HINT_ARG1LD, HINT_ARG2LD, HINT_OPL, HINT_COUNT } jtype_t;
+
+/* In the following, hints should be an array of size HINT_COUNT */
+
+/* Initialize set of hints with TAUTOLOGY */
+extern void fill_hints(jtype_t *hints);
+
+/* Justify results of apply operation.  Return clause ID */
+extern int justify_apply(ilist target_clause, int split_variable, jtype_t *hints);
+
+#ifdef CPLUSPLUS
+}
+#endif
 
 #endif /* PROVER_H */
 

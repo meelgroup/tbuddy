@@ -1,27 +1,27 @@
-
 #ifndef _TBDD_H
 #define _TBDD_H
 
-#include <limits.h>
-#include "bdd.h"
-#include "ilist.h"
-
-/*============================================
-API for trusted extension to BuDDy BDD package
-============================================*/
+/* Turn on TBDD-specific information in files */
+#ifndef ENABLE_TBDD
+#define ENABLE_TBDD 1
+#endif
 
 /* Allow this headerfile to define C++ constructs if requested */
 #ifdef __cplusplus
 #define CPLUSPLUS
 #endif
 
+/*============================================
+ API for trusted extension to BuDDy BDD package
+============================================*/
+
+
+#include <limits.h>
+#include "ilist.h"
+#include "bdd.h"
 
 /* Value representing logical truth */
 #define TAUTOLOGY INT_MAX 
-
-#ifdef CPLUSPLUS
-extern "C" {
-#endif
 
 /* 
    A trusted BDD is one for which a proof has
@@ -36,6 +36,10 @@ typedef struct {
 //#ifndef CPLUSPLUS
 typedef TBDD tbdd;
 //#endif
+
+#ifdef CPLUSPLUS
+extern "C" {
+#endif
 
 
 /*============================================
@@ -86,14 +90,21 @@ extern void tbdd_set_verbose(int level);
 /*
   Increment/decrement reference count for BDD
  */
-extern tbdd tbdd_addref(tbdd tr);
-extern void tbdd_delref(tbdd tr);
+extern TBDD tbdd_addref(TBDD tr);
+extern void tbdd_delref(TBDD tr);
 
 /* 
    proof_step = TAUTOLOGY
    root = 1
  */
-extern tbdd tbdd_tautology();
+extern TBDD tbdd_tautology();
+
+/* 
+   proof_step = TAUTOLOGY
+   root = 0 (Used as an error return)
+ */
+
+extern TBDD tbdd_null();
 
 /*
   Generate BDD representation of specified input clause.
@@ -102,34 +113,39 @@ extern tbdd tbdd_tautology();
 
   clause_id should be number between 1 and the number of input clauses
  */
-extern tbdd tbdd_from_clause(ilist clause);
-extern tbdd tbdd_from_clause_id(int id);
+extern TBDD tbdd_from_clause(ilist clause);
+extern TBDD tbdd_from_clause_id(int id);
+
+/* Operations on TBDDs */
+extern TBDD      tbdd_and(TBDD, TBDD);
+extern TBDD      tbdd_imp(TBDD, TBDD);
+extern TBDD      tbdd_andimp(TBDD, TBDD, TBDD);
 
 /*
   Upgrade ordinary BDD to TBDD by proving
   implication from another TBDD
  */
-extern tbdd tbdd_validate(BDD r, tbdd tr);
+extern TBDD tbdd_validate(BDD r, TBDD tr);
 
 /*
   Declare BDD to be trustworthy.  Proof
   checker must provide validation.
   Only works when generating DRAT proofs
  */
-extern tbdd tbdd_trust(BDD r);
+extern TBDD tbdd_trust(BDD r);
 
 /*
   Form conjunction of two TBDDs and prove
   their conjunction implies the new one
  */
-extern tbdd tbdd_and(tbdd tr1, tbdd tr2);
+extern TBDD tbdd_and(TBDD tr1, TBDD tr2);
 
 /*
   Validate that a clause is implied by a TBDD.
   Use this version when generating LRAT proofs
   Returns clause id.
  */
-extern int tbdd_validate_clause(ilist clause, tbdd tr);
+extern int tbdd_validate_clause(ilist clause, TBDD tr);
 
 /*
   Assert that a clause holds.  Proof checker

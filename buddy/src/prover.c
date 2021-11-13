@@ -111,7 +111,7 @@ int literal_compare(const void *l1p, const void *l2p) {
      return 0;
 }
 
-ilist clean_clause(ilist clause) {
+static ilist clean_clause(ilist clause) {
 #if 0
     printf("Cleaning clause : [");
     ilist_print(clause, stdout, " ");
@@ -149,11 +149,26 @@ ilist clean_clause(ilist clause) {
     return clause;
 }
 
+static ilist clean_hints(ilist hints) {
+    int len = ilist_length(hints);
+    int geti = 0;
+    int puti = 0;
+    while (geti < len) {
+	int lit = hints[geti++];
+	if (lit != TAUTOLOGY)
+	    hints[puti++] = lit;
+    }
+    hints = ilist_resize(hints, puti);
+    return hints;
+}
+
+
 /* Return clause ID */
 /* For DRAT proof, antecedents can be NULL */
-int generate_clause(ilist literals, ilist antecedent) {
+int generate_clause(ilist literals, ilist hints) {
     ilist clause = clean_clause(literals);
     int cid = ++last_clause_id;
+    hints = clean_hints(hints);
     if (clause == TAUTOLOGY_CLAUSE)
 	return TAUTOLOGY;
     if (proof_file == NULL) {
@@ -165,7 +180,7 @@ int generate_clause(ilist literals, ilist antecedent) {
     ilist_print(clause, proof_file, " ");
     if (do_lrat) {
 	fprintf(proof_file, " 0 ");
-	ilist_print(antecedent, proof_file, " ");
+	ilist_print(hints, proof_file, " ");
     }
     fprintf(proof_file, " 0\n");
     total_clause_count++;
@@ -249,5 +264,25 @@ ilist defining_clause(ilist ils, dclause_t dtype, int nid, int vid, int hid, int
 	ils = TAUTOLOGY_CLAUSE;
     }
     return ils;
+}
+
+/* Initialize set of hints with TAUTOLOGY */
+void fill_hints(jtype_t *hints) {
+    jtype_t i;
+    for (i = (jtype_t) 0; i < HINT_COUNT; i++)
+	hints[i] = TAUTOLOGY;
+}
+
+/* Justify results of apply operation.  Return clause ID */
+int justify_apply(ilist target_clause, int split_variable, jtype_t *hints) {
+    int abuf[HINT_COUNT+ILIST_OVHD];
+    ilist ant = ilist_make(abuf, HINT_COUNT);
+    target_clause = clean_clause(target_clause);
+    if (target_clause == TAUTOLOGY_CLAUSE)
+	return TAUTOLOGY;
+    jtype_t i;
+    for (i = (jtype_t) 0; i < HINT_COUNT; i++)
+	ilist_push(ant, hints[i]);
+    return generate_clause(target_clause, ant);
 }
 

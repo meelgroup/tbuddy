@@ -48,13 +48,13 @@ typedef struct
    {
       double dres;
 #if ENABLE_TBDD
-      int res;
-#else
        // C compiler needs to support anonymous structs
        struct {
 	   int res;
 	   int jclause;
        };
+#else
+       int res;
 #endif       
    } r;
    int a,b,c;

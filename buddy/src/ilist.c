@@ -178,13 +178,13 @@ ilist ilist_copy(ilist ils) {
 /*
   Reverse elements in ilist
  */
-extern void ilist_reverse(int *ls) {
+void ilist_reverse(int *ils) {
     int left = 0;
-    int right = ilist_length(ls)-1;
+    int right = ilist_length(ils)-1;
     while (left < right) {
-	int v = ls[left];
-	ls[left] = ls[right];
-	ls[right] = v;
+	int v = ils[left];
+	ils[left] = ils[right];
+	ils[right] = v;
 	left++;
 	right--;
     }

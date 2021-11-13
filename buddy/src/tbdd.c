@@ -39,18 +39,30 @@ void tbdd_set_verbose(int level) {
    proof_step = TAUTOLOGY
    root = 1
  */
-tbdd tbdd_tautology() {
-    tbdd rr;
+TBDD tbdd_tautology() {
+    TBDD rr;
     rr.root = bdd_true();
     rr.clause_id = TAUTOLOGY;
     return rr;
 }
 
+/* 
+   proof_step = TAUTOLOGY
+   root = 0
+ */
+TBDD tbdd_null() {
+    TBDD rr;
+    rr.root = bdd_false();
+    rr.clause_id = TAUTOLOGY;
+    return rr;
+}
+
+
 /*
   Increment/decrement reference count for BDD
  */
-tbdd tbdd_addref(tbdd tr) { bdd_addref(tr.root); return tr; }
-void tbdd_delref(tbdd tr) { bdd_delref(tr.root); }
+TBDD tbdd_addref(TBDD tr) { bdd_addref(tr.root); return tr; }
+void tbdd_delref(TBDD tr) { bdd_delref(tr.root); }
 
 /*
   Generate BDD representation of specified input clause.
@@ -61,14 +73,14 @@ void tbdd_delref(tbdd tr) { bdd_delref(tr.root); }
 
 static BDD bdd_from_clause(ilist clause) {
     int len = ilist_length(clause);
-    bdd r = bdd_false();
+    BDD r = bdd_false();
     int i;
     if (clause == TAUTOLOGY_CLAUSE)
 	return r;
     for (i = 0; i < len; i++) {
 	int lit = clause[i];
-	bdd vr = bdd_addref(lit < 0 ? bdd_nithvar(-lit) : bdd_ithvar(lit));
-	bdd nr = bdd_or(r, vr);
+	BDD vr = bdd_addref(lit < 0 ? bdd_nithvar(-lit) : bdd_ithvar(lit));
+	BDD nr = bdd_or(r, vr);
 	bdd_addref(nr);
 	bdd_delref(vr);
 	bdd_delref(r);
@@ -78,44 +90,39 @@ static BDD bdd_from_clause(ilist clause) {
     return r;
 }
 
-tbdd tbdd_from_clause(ilist clause) {
-    bdd r = bdd_from_clause(clause);
+TBDD tbdd_from_clause(ilist clause) {
+    BDD r = bdd_from_clause(clause);
     return tbdd_trust(r);
 }
 
-tbdd tbdd_from_clause_id(int id) {
-    tbdd rr;
+TBDD tbdd_from_clause_id(int id) {
+    TBDD rr;
     ilist clause = get_input_clause(id);
     if (clause == NULL) {
 	fprintf(stderr, "Invalid input clause id #%d\n", id);
 	exit(1);
     }
     print_proof_comment(2, "Build BDD representation of clause #%d", id);
-    bdd r = bdd_addref(bdd_from_clause(clause));
+    BDD r = bdd_addref(bdd_from_clause(clause));
     int len = ilist_length(clause);
-    int nlits = 2*len;
+    int nlits = 2*len+1;
     int abuf[nlits+ILIST_OVHD];
     ilist ant = ilist_make(abuf, nlits);
     /* Clause literals are in descending order */
     ilist_reverse(clause);
-    bdd nd = r;
+    BDD nd = r;
     int i;
     for (i = 0; i < len; i++) {
 	int lit = clause[i];
-	int ida, idb;
 	if (lit < 0) {
-	    ida = bdd_dclause(nd, DEF_LU);
-	    idb = bdd_dclause(nd, DEF_HU);
-	    nd = bdd_high(r);
+	    ilist_push(ant, bdd_dclause(nd, DEF_LU));
+	    ilist_push(ant, bdd_dclause(nd, DEF_HU));
+	    nd = bdd_high(nd);
 	} else {
-	    ida = bdd_dclause(nd, DEF_HU);
-	    idb = bdd_dclause(nd, DEF_LU);
-	    nd = bdd_low(r);
+	    ilist_push(ant, bdd_dclause(nd, DEF_HU));
+	    ilist_push(ant, bdd_dclause(nd, DEF_LU));
+	    nd = bdd_low(nd);
 	}
-	if (ida != TAUTOLOGY)
-	    ilist_push(ant, ida);
-	if (idb != TAUTOLOGY)
-	    ilist_push(ant, idb);
     } 
     ilist_push(ant, id);
     int cbuf[1+ILIST_OVHD];
@@ -133,8 +140,8 @@ tbdd tbdd_from_clause_id(int id) {
   Upgrade ordinary BDD to TBDD by proving
   implication from another TBDD
  */
-tbdd tbdd_validate(bdd r, tbdd tr) {
-    tbdd rr;
+TBDD tbdd_validate(BDD r, TBDD tr) {
+    TBDD rr;
     int cbuf[2+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 2);
     int abuf[2+ILIST_OVHD];
@@ -155,8 +162,8 @@ tbdd tbdd_validate(bdd r, tbdd tr) {
   checker must provide validation.
   Only works when generating DRAT proofs
  */
-tbdd tbdd_trust(bdd r) {
-    tbdd rr;
+TBDD tbdd_trust(BDD r) {
+    TBDD rr;
     int cbuf[2+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 2);
     int abuf[2+ILIST_OVHD];
@@ -172,9 +179,9 @@ tbdd tbdd_trust(bdd r) {
   Form conjunction of two TBDDs and prove
   their conjunction implies the new one
  */
-tbdd tbdd_and(tbdd tr1, tbdd tr2) {
-    tbdd rr;
-    bdd nr = bdd_and(bdd_addref(tr1.root), bdd_addref(tr2.root));
+TBDD fake_tbdd_and(TBDD tr1, TBDD tr2) {
+    TBDD rr;
+    BDD nr = bdd_and(bdd_addref(tr1.root), bdd_addref(tr2.root));
     int cbuf[3+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 3);
     int abuf[3+ILIST_OVHD];
@@ -182,13 +189,6 @@ tbdd tbdd_and(tbdd tr1, tbdd tr2) {
     print_proof_comment(2, "Proof that N%d & N%d --> N%d", NNAME(tr1.root), NNAME(tr2.root), NNAME(nr));
     ilist_fill3(clause, -XVAR(tr1.root), -XVAR(tr2.root), XVAR(nr));
     int implication = generate_clause(clause, ant);
-    print_proof_comment(2, "Justification of N%d",NNAME(nr));
-    ilist_fill1(clause, XVAR(nr));
-    ilist_fill3(ant, implication, tr1.clause_id, tr2.clause_id);
-    rr.clause_id = generate_clause(clause, ant);
-    rr.root = nr;
-    bdd_delref(tr1.root);
-    bdd_delref(tr2.root);
     return rr;
 }
 
@@ -197,7 +197,7 @@ tbdd tbdd_and(tbdd tr1, tbdd tr2) {
   Use this version when generating LRAT proofs
   Returns clause id.
  */
-int tbdd_validate_clause(ilist clause, tbdd tr) {
+int tbdd_validate_clause(ilist clause, TBDD tr) {
     int abuf[1+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 1);
     ilist_fill1(ant, tr.clause_id);
@@ -224,12 +224,12 @@ void assert_clause(ilist clause) {
 /*
   Build BDD representation of XOR (phase = 1) or XNOR (phase = 0)
  */
-bdd bdd_build_xor(ilist variables, int phase) {
-    bdd r = phase ? bdd_true() : bdd_false();
+BDD bdd_build_xor(ilist variables, int phase) {
+    BDD r = phase ? bdd_true() : bdd_false();
     int i;
     for (i = 0; i < ilist_length(variables); i++) {
-	bdd lit = bdd_ithvar(variables[i]);
-	bdd nr = bdd_xor(r, lit);
+	BDD lit = bdd_ithvar(variables[i]);
+	BDD nr = bdd_xor(r, lit);
 	bdd_addref(nr);
 	bdd_delref(r);
 	r = nr;

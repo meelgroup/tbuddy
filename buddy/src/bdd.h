@@ -68,7 +68,7 @@
 #define bddop_simplify 11
 
 #if ENABLE_TBDD
-/* Additional operations */
+/* Proof generating apply operations */
 #define bddop_andj     12
 #define bddop_impj     13
 #define bddop_andimpj  14
@@ -88,7 +88,6 @@ typedef int BDD;
 #ifndef CPLUSPLUS
 typedef BDD bdd;
 #endif /* CPLUSPLUS */
-
 
 typedef struct s_bddPair
 {
@@ -303,6 +302,7 @@ extern void     bdd_freepair(bddPair*);
 
 #if ENABLE_TBDD
 extern int      bdd_xvar(BDD);
+extern int      bdd_nameid(BDD);
 extern int      bdd_dclause(BDD, dclause_t);
 #endif     
   /* In bddop.c */
@@ -545,7 +545,6 @@ private:
    friend int      bdd_anodecountpp(const bdd *, int);
    friend int*     bdd_varprofile(const bdd &);
    friend double   bdd_pathcount(const bdd &);
-   
    friend void   bdd_fprinttable(FILE *, const bdd &);
    friend void   bdd_printtable(const bdd &);
    friend void   bdd_fprintset(FILE *, const bdd &);

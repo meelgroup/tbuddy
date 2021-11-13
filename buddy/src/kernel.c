@@ -999,26 +999,24 @@ NAME    {* bdd\_xvar *}
 SECTION {* info *}
 SHORT   {* gets the extension variable associated with a bdd node *}
 PROTO   {* BDD bdd_xvar(BDD r) *}
-DESCR   {* Gets the true branch of the bdd {\tt r}.  *}
-RETURN  {* The bdd of the true branch *}
-ALSO    {* bdd\_low *}
+DESCR   {* Gets the extension variable assoicated with bdd node {\tt r} *}
+RETURN  {* The extension variable *}
+ALSO    {* bdd\_nameid*}
 */
 BDD bdd_xvar(BDD root)
 {
    CHECK(root);
-   if (root < 2)
-       return TAUTOLOGY;
    return (XVAR(root));
 }
 
 /*
 NAME    {* bdd\_dclause *}
 SECTION {* info *}
-SHORT   {* gets the extension variable associated with a bdd node *}
-PROTO   {* BDD bdd_dclause(BDD r) *}
-DESCR   {* Gets the true branch of the bdd {\tt r}.  *}
+SHORT   {* gets the id of specified defining clause of a node *}
+PROTO   {* BDD bdd_dclause(BDD r dclause_t dtype) *}
+DESCR   {* gets id of defining clause {\tt dtype} for node {\tt r} *}
 RETURN  {* The bdd of the true branch *}
-ALSO    {* bdd\_low *}
+ALSO    {* bdd\_xvar *}
 */
 int bdd_dclause(BDD root, dclause_t dtype)
 {
@@ -1036,6 +1034,7 @@ int bdd_dclause(BDD root, dclause_t dtype)
    case DEF_LD:
        return ISONE(LOW(root)) ? TAUTOLOGY : result;
    default: /* Would like to throw exception here */
+       fprintf(stderr, "bdd_dclause got type %d\n", dtype);
        return TAUTOLOGY;
    }
 }
@@ -1055,6 +1054,21 @@ int bdd_dclause_p(BddNode *n, dclause_t dtype)
    default: /* Would like to throw exception here */
        return TAUTOLOGY;
    }
+}
+
+/*
+NAME    {* bdd\_nameid *}
+SECTION {* info *}
+SHORT   {* gets an integer representation of a node for documentation purposes *}
+PROTO   {* BDD bdd_nameid(BDD r) *}
+DESCR   {* gets an integer representation of {\tt r} for documentation purposes *}
+RETURN  {* The integer *}
+ALSO    {* bdd\_xvar *}
+*/
+BDD bdd_nameid(BDD root)
+{
+   CHECK(root);
+   return (NNAME(root));
 }
 
 

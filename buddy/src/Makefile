@@ -18,6 +18,7 @@ all: buddy.a tbuddy.a
 	cp -p bdd.h $(IDIR)
 	cp -p tbdd.h $(IDIR)
 	cp -p ilist.h $(IDIR)
+	cp -p prover.h $(IDIR)
 
 buddy.a: $(FILES)
 	ar cr buddy.a $(FILES)

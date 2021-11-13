@@ -40,6 +40,9 @@
 #include <time.h>
 #include <assert.h>
 
+/* Debugging */
+#include <stdio.h>
+
 #include "kernel.h"
 #include "cache.h"
 
@@ -143,6 +146,10 @@ static double bdd_pathcount_rec(BDD);
 static int    varset2vartable(BDD);
 static int    varset2svartable(BDD);
 
+#if ENABLE_TBDD
+static TBDD    tbdd_apply(TBDD, TBDD, int op);
+static TBDD    tbdd_apply_rec(BDD, BDD);
+#endif
 
    /* Hashvalues */
 #define NOTHASH(r)           (r)
@@ -711,6 +718,265 @@ BDD bdd_biimp(BDD l, BDD r)
 {
    return bdd_apply(l,r,bddop_biimp);
 }
+
+
+/*=== Justifying APPLY ============================================================*/
+#if ENABLE_TBDD
+/*
+NAME    {* tbdd\_apply *}
+SECTION {* operator *}
+SHORT   {* basic bdd operations, with proof generation  *}
+PROTO   {* TBDD tbdd_apply(TBDD left, TBDD right, int opr) *}
+DESCR   {* The {\tt tbdd\_apply} function performs basic
+           proof-generating bdd operations with two operands.
+	   The {\tt left} argument is the left bdd operand and {\tt right}
+	   is the right operand. The {\tt opr} argument is the requested
+	   operation and must be one of the following\\
+	   
+   \begin{tabular}{llllc}
+     {\bf Identifier}    & {\bf Description} & {\bf Proof} & {\bf Truth table}
+        & {\bf C++ opr.} \\
+     {\tt bddop\_andj}    & logical and    ($A \wedge B$)   & $A \wedge B \rightarrow C$      & [0,0,0,1]
+        & \verb%&% \\
+     {\tt bddop\_impj}    & implication    ($A \Rightarrow B$) & $\forall X (A \rightarrow B)$    & [1,1,0,1]
+        & \verb%>>% \\
+   \end{tabular}
+   *}
+   RETURN  {* The result of the operation. *}
+   ALSO    {* bdd\_apply *}
+*/
+static TBDD tbdd_apply(TBDD tl, TBDD tr, int op)
+{
+   TBDD res;
+   BDD l = tl.root;
+   BDD r = tr.root;
+
+   firstReorder = 1;
+   
+   CHECKa(l, tbdd_null());
+   CHECKa(r, tbdd_null());
+
+   if (op<bddop_andj || op>bddop_impj)
+   {
+      bdd_error(BDD_OP);
+      res = tbdd_null();
+      return res;
+   }
+
+ again:
+   if (setjmp(bddexception) == 0)
+   {
+      INITREF;
+      applyop = op;
+      
+      if (!firstReorder)
+	 bdd_disable_reorder();
+      res = tbdd_apply_rec(l, r);
+      if (!firstReorder)
+	 bdd_enable_reorder();
+   }
+   else
+   {
+      bdd_checkreorder();
+
+      if (firstReorder-- == 1)
+	 goto again;
+      res = tbdd_tautology();
+   }
+   
+   checkresize();
+   //   printf("tbdd_apply l=%d (N%d), r=%d (N%d) returning %d (N%d), %d\n", (int) l, NNAME(l), (int) r, NNAME(r), (int) res.root, NNAME(res.root), res.clause_id);
+   return res;
+}
+
+
+static TBDD tbdd_apply_rec(BDD l, BDD r)
+{
+   BddCacheData *entry;
+   TBDD res;
+
+   //   printf("tbdd_apply_rec called with l=%d (N%d), r=%d (N%d), op = %d\n", (int) l, NNAME(l), (int) r, NNAME(r), applyop);
+
+   res.root = 0;
+   res.clause_id = TAUTOLOGY;
+   switch (applyop)
+   {
+    case bddop_andj:
+       if (l == r)
+	   { res.root = l ; return res; }
+       if (ISZERO(l)  ||  ISZERO(r))
+	   { res.root = 0; return res; }
+       if (ISONE(l))
+	   { res.root = r; return res; }
+       if (ISONE(r))
+	   { res.root = l; return res; }
+       break;
+   case bddop_imp:
+       if (l == r)
+	   { res.root = BDDONE ; return res; }
+      if (ISZERO(l))
+	  { res.root = BDDONE; return res; }
+      if (ISONE(r))
+	  { res.root = BDDONE; return res; }
+      if (ISONE(l))
+	  /* Implication cannot hold for all arguments */
+	  { res.root = BDDZERO; return res; }
+      if (ISZERO(r))
+	   /* Implication cannot hold for all arguments */
+	  { res.root = BDDZERO; return res; }
+      break;
+   }
+
+
+   {
+       jtype_t hints[HINT_COUNT];
+       int tbuf[3+ILIST_OVHD];
+       ilist tlist = ilist_make(tbuf, 3);
+       int splitVariable = 0;
+       ilist target_clause;
+
+       switch (applyop) {
+       case bddop_andj:
+	   ilist_fill2(tlist, -XVAR(l), -XVAR(r));
+	   break;
+       case bddop_impj:
+	   ilist_fill2(tlist, -XVAR(l), -XVAR(r));
+	   break;
+       }
+
+      entry = BddCache_lookup(&applycache, APPLYHASH(l,r,applyop));
+      
+      if (entry->a == l  &&  entry->b == r  &&  entry->c == applyop)
+      {
+#ifdef CACHESTATS
+	 bddcachestats.opHit++;
+#endif
+	 res.root = entry->r.res;
+	 res.clause_id = entry->r.jclause;
+	 return res;
+      }
+#ifdef CACHESTATS
+      bddcachestats.opMiss++;
+#endif
+      
+
+      fill_hints(hints);
+
+      if (LEVEL(l) == LEVEL(r))
+      {
+	  splitVariable = LEVEL(l);
+	  hints[HINT_ARG1HD] = bdd_dclause(l, DEF_HD);
+	  hints[HINT_ARG1LD] = bdd_dclause(l, DEF_LD);
+	  hints[HINT_ARG2HD] = bdd_dclause(r, DEF_HD);
+	  hints[HINT_ARG2LD] = bdd_dclause(r, DEF_LD);
+	  TBDD lres = tbdd_apply_rec(LOW(l), LOW(r));
+	  BDD lroot = lres.root;
+	  PUSHREF(lroot);
+	  hints[HINT_OPL] = lres.clause_id;
+	  hints[HINT_RESLU] = bdd_dclause(lroot, DEF_LU);
+	  TBDD hres = tbdd_apply_rec(HIGH(l), HIGH(r));
+	  BDD hroot = hres.root;
+	  PUSHREF(hroot);
+	  hints[HINT_OPH] = hres.clause_id;
+	  hints[HINT_RESHU] = bdd_dclause(hroot, DEF_HU);
+	  res.root = bdd_makenode(splitVariable, READREF(2), READREF(1));
+      }
+      else
+      if (LEVEL(l) < LEVEL(r))
+      {
+	  splitVariable = LEVEL(l);
+	  hints[HINT_ARG1HD] = bdd_dclause(l, DEF_HD);
+	  hints[HINT_ARG1LD] = bdd_dclause(l, DEF_LD);
+	  TBDD lres = tbdd_apply_rec(LOW(l), r);
+	  BDD lroot = lres.root;
+	  PUSHREF(lroot);
+	  hints[HINT_OPL] = lres.clause_id;
+	  hints[HINT_RESLU] = bdd_dclause(lroot, DEF_LU);
+	  TBDD hres = tbdd_apply_rec(HIGH(l), r);
+	  BDD hroot = hres.root;
+	  PUSHREF(hroot);
+	  hints[HINT_OPH] = hres.clause_id;
+	  hints[HINT_RESHU] = bdd_dclause(hroot, DEF_HU);
+	  res.root = bdd_makenode(splitVariable, READREF(2), READREF(1));
+      }
+      else
+      {
+	  splitVariable = LEVEL(r);
+	  hints[HINT_ARG2HD] = bdd_dclause(r, DEF_HD);
+	  hints[HINT_ARG2LD] = bdd_dclause(r, DEF_LD);
+	  TBDD lres = tbdd_apply_rec(l, LOW(r));
+	  BDD lroot = lres.root;
+	  PUSHREF(lroot);
+	  hints[HINT_OPL] = lres.clause_id;
+	  hints[HINT_RESLU] = bdd_dclause(lroot, DEF_LU);
+	  TBDD hres = tbdd_apply_rec(l, HIGH(r));
+	  BDD hroot = hres.root;
+	  PUSHREF(hroot);
+	  hints[HINT_OPH] = hres.clause_id;
+	  hints[HINT_RESHU] = bdd_dclause(hroot, DEF_HU);
+	  if (applyop == bddop_impj) {
+	      res.root = (ISONE(READREF(2)) && ISONE(READREF(1))) ? BDDONE : BDDZERO;
+	  } else {
+	      res.root = bdd_makenode(splitVariable, READREF(2), READREF(1));
+
+	  }
+      }
+
+      POPREF(2);
+
+      if (applyop == bddop_andj) {
+	  ilist_push(tlist, XVAR(res.root));
+	  print_proof_comment(2, "Justification that N%d & N%d --> N%d", NNAME(l), NNAME(r), NNAME(res.root));
+    
+      } else {
+	  print_proof_comment(2, "Justification that N%d --> N%d", NNAME(l), NNAME(r));
+      }
+
+      res.clause_id = justify_apply(tlist, splitVariable, hints);
+
+      entry->a = l;
+      entry->b = r;
+      entry->c = applyop;
+      entry->r.res = res.root;
+      entry->r.jclause = res.clause_id;
+   }
+
+   //   printf("tbdd_apply_rec called with l=%d (N%d), r=%d (N%d), op = %d.  Returns fun %d (N%d, xvar=%d), clause %d\n",
+   //	  (int) l, NNAME(l), (int) r, NNAME(r), applyop, res.root, NNAME(res.root), XVAR(res.root), res.clause_id);
+
+   return res;
+}
+
+/*
+NAME    {* tbdd\_and *}
+SECTION {* operator *}
+SHORT   {* The logical 'and' of two BDDs, with proof generation *}
+PROTO   {* TBDD tbdd_and(TBDD tl, TBDD tr) *}
+DESCR   {* This a wrapper that calls {\tt tbdd\_apply\_justify(tl,tr,bddop\_andj)}. *}
+RETURN  {* The logical 'and' of {\tt tl} and {\tt tr} plus a proof. *}
+ALSO    {* bdd\_and *}
+*/
+TBDD tbdd_and(TBDD tl, TBDD tr)
+{
+   TBDD res= tbdd_apply(tl,tr,bddop_andj);
+   return res;
+}
+
+/*
+NAME    {* tbdd\_imp *}
+SECTION {* operator *}
+SHORT   {* Confirm the logical 'implication' between two BDDs and generate the proof *}
+PROTO   {* TBDD tbdd_imp(TBDD tl, TBDD tr) *}
+DESCR   {* This a wrapper that calls {\tt tbdd\_apply(tl,tr,bddop\_impj)}. *}
+RETURN  {* BDD 1 if the implication holds, 0 if it does not, plus a proof. *}
+ALSO    {* bdd\_imp *}
+*/
+TBDD tbdd_imp(TBDD tl, TBDD tr)
+{
+   return tbdd_apply(tl,tr,bddop_impj);
+}
+#endif /* ENABLE_TBDD */
+
 
 
 /*=== ITE ==============================================================*/
