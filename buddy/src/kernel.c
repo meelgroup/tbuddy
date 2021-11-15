@@ -720,7 +720,7 @@ void bdd_stats(bddStat *s)
    s->gbcnum = gbcollectnum;
 #if ENABLE_TBDD
    s->clausenum = total_clause_count;
-   s->variablenum = input_variable_count;
+   s->variablenum = last_variable;
 #endif
 
 }

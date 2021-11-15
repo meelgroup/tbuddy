@@ -266,23 +266,80 @@ ilist defining_clause(ilist ils, dclause_t dtype, int nid, int vid, int hid, int
     return ils;
 }
 
-/* Initialize set of hints with TAUTOLOGY */
-void fill_hints(jtype_t *hints) {
-    jtype_t i;
-    for (i = (jtype_t) 0; i < HINT_COUNT; i++)
-	hints[i] = TAUTOLOGY;
+/******* Support for Apply Proof generation *****/
+
+/*
+  Enumerated type for the hint types
+ */
+typedef enum { HINT_RESHU, HINT_ARG1HD, HINT_ARG2HD, HINT_OPH, HINT_RESLU, HINT_ARG1LD, HINT_ARG2LD, HINT_OPL, HINT_COUNT } jtype_t;
+
+/*
+  Data structures used during proof generation
+ */
+static int int_id[HINT_COUNT];
+static int hint_buf[HINT_COUNT][3+ILIST_OVHD];
+static ilist hint_clause[HINT_COUNT];
+
+static ilist target_and(ilist ils, BDD l, BDD r, BDD s) {
+    return ilist_fill3(ils, -NNAME(l), -NNAME(r), NNAME(s));
 }
 
+static ilist target_imply(ilist ils, BDD l, BDD r) {
+    return ilist_fill2(ils, -NNAME(l), NNAME(r));
+}
+	
+
+int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD reslow, TBDD reshigh, BDD res) {
+    int tbuf[3+ILIST_OVHD];
+    ilist targ = ilist_make(tbuf, 3);
+    int abuf[2+ILIST_OVHD];
+    ilist ant = ilist_make(abuf, 2);
+    ilist_fill2(ant, reslow.clause_id, reshigh.clause_id);
+    if (op == bddop_andj) {
+	targ = target_and(targ, l, r, res);
+	print_proof_comment(2, "Generating proof that N%d & N%d --> N%d", bdd_nameid(l), bdd_nameid(r), bdd_nameid(res));
+	return generate_clause(targ, ant);
+	
+    } else {
+	targ = target_imply(targ, l, r);
+	print_proof_comment(2, "Generating proof that N%d --> N%d", bdd_nameid(l), bdd_nameid(r));
+	return generate_clause(targ, ant);
+    }
+}
+
+
+#if 0
+/* Initialize set of hints with TAUTOLOGY, and the hint clauses to empty clauses  */
+void fill_hints(jtype_t hint_id[HINT_COUNT], int hint_buf[HINT_COUNT][3+ILIST_OVHD], ilist hint_clause[HINT_COUNT]) {
+    jtype_t i;
+    for (i = (jtype_t) 0; i < HINT_COUNT; i++) {
+	hint_id[i] = TAUTOLOGY;
+	hint_clause[i] = ilist_make(hint_buf[i], 3);
+    }
+}
+
+
 /* Justify results of apply operation.  Return clause ID */
-int justify_apply(ilist target_clause, int split_variable, jtype_t *hints) {
-    int abuf[HINT_COUNT+ILIST_OVHD];
+int justify_apply(ilist target_clause, int split_variable, jtype_t hint_id[HINT_COUNT], ilist hint_clause[HINT_COUNT]) {
+    int abuf[HINT_COUNT+1+ILIST_OVHD];
     ilist ant = ilist_make(abuf, HINT_COUNT);
     target_clause = clean_clause(target_clause);
     if (target_clause == TAUTOLOGY_CLAUSE)
 	return TAUTOLOGY;
     jtype_t i;
-    for (i = (jtype_t) 0; i < HINT_COUNT; i++)
-	ilist_push(ant, hints[i]);
+    for (i = (jtype_t) 0; i < HINT_COUNT; i++) {
+	if (hint_id[i] == TAUTOLOGY)
+	    hint_clause[i] = TAUTOLOGY_CLAUSE;
+	else {
+	    hint_clause[i] = clean_clause(hint_clause[i]);
+	    if (hint_clause[i] == TAUTOLOGY_CLAUSE)
+		hint_id[i] = TAUTOLOGY;
+	    else
+		ilist_push(ant, hint_id[i]);
+	}
+    }
     return generate_clause(target_clause, ant);
 }
+#endif
+
 

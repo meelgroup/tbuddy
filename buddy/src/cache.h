@@ -50,7 +50,7 @@ typedef struct
 #if ENABLE_TBDD
        // C compiler needs to support anonymous structs
        struct {
-	   int res;
+	   BDD res;
 	   int jclause;
        };
 #else

@@ -71,7 +71,7 @@
 /* Proof generating apply operations */
 #define bddop_andj     12
 #define bddop_imptstj  13
-#define bddop_andimpj  14
+#define bddop_andimptstj  14
 #endif
 
 /*=== Defining clauses ===================================================*/

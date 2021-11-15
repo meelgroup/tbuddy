@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
   double start = tod();
   if (solve(cnf_file, proof_file, sched_file, bucket, verb)) {
     if (verb >= 1) {
-      printf("Elapsed time = %.2f seconds\n", tod()-start);
+      printf("Elapsed seconds: %.2f\n", tod()-start);
     }
       
   }
