@@ -107,6 +107,11 @@ extern TBDD tbdd_tautology();
 extern TBDD tbdd_null();
 
 /*
+   Test whether underlying BDD is 0
+ */
+extern bool tbdd_is_false(TBDD tr);
+
+/*
   Generate BDD representation of specified input clause.
   Generate proof that BDD will evaluate to TRUE
   for all assignments satisfying clause.

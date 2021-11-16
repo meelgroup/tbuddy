@@ -57,6 +57,9 @@ TBDD tbdd_null() {
     return rr;
 }
 
+bool tbdd_is_false(TBDD tr) {
+    return ISZERO(tr.root);
+}
 
 /*
   Increment/decrement reference count for BDD
