@@ -60,7 +60,10 @@ extern void print_proof_comment(int vlevel, char *fmt, ...);
 
     
 /* Complete proof of apply operation */
+/* Absolute of returned value indicates the ID of the justifying proof step */
+/* Value will be < 0 when previous clause ID also used as intermediate step */
 extern int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BDD res);
+
 
 #ifdef CPLUSPLUS
 }

@@ -201,6 +201,7 @@ extern bddCacheStat bddcachestats;
 
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define ABS(a) ((a)<0?-(a):(a))
 #define NEW(t,n) ( (t*)malloc(sizeof(t)*(n)) )
 
 

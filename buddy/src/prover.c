@@ -486,9 +486,9 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	    hint_id[HINT_RESHU] = bdd_dclause(r, DEF_HU);
 	    hint_clause[HINT_RESHU] = defining_clause(hint_clause[HINT_RESHU], DEF_HU, XVAR(r), splitVar, XVAR(HIGH(r)), XVAR(LOW(r)));
 	}
-	hint_id[HINT_OPL] = tresl.clause_id;
+	hint_id[HINT_OPL] = ABS(tresl.clause_id);
 	hint_clause[HINT_OPL] = target_imply(hint_clause[HINT_OPL], ll, rl);
-	hint_id[HINT_OPH] = tresh.clause_id;
+	hint_id[HINT_OPH] = ABS(tresh.clause_id);
 	hint_clause[HINT_OPH] = target_imply(hint_clause[HINT_OPH], lh, rh);
     } else {
 	if (LEVEL(r) == splitVar) {
@@ -503,9 +503,9 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	    hint_id[HINT_RESHU] = bdd_dclause(res, DEF_HU);
 	    hint_clause[HINT_RESHU] = defining_clause(hint_clause[HINT_RESHU], DEF_HU, XVAR(res), splitVar, XVAR(HIGH(res)), XVAR(LOW(res)));
 	}
-	hint_id[HINT_OPL] = tresl.clause_id;
+	hint_id[HINT_OPL] = ABS(tresl.clause_id);
 	hint_clause[HINT_OPL] = target_and(hint_clause[HINT_OPL], ll, rl, tresl.root);
-	hint_id[HINT_OPH] = tresh.clause_id;
+	hint_id[HINT_OPH] = ABS(tresh.clause_id);
 	hint_clause[HINT_OPH] = target_and(hint_clause[HINT_OPH], lh, rh, tresh.root);
     }
 
@@ -556,7 +556,8 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	    if (hint_used[hi])
 		ilist_push(ant, hint_id[hi]);
 	}
-	hint_id[HINT_EXTRA] = generate_clause(itarg, ant);
+	int iid = generate_clause(itarg, ant);
+	hint_id[HINT_EXTRA] = ABS(iid);
 	hint_clause[HINT_EXTRA] = itarg;
 	if (!rup_check(targ, hint_l_order, HINT_COUNT/2+1)) {
 	    fprintf(proof_file, "c  Uh-Oh.  RUP check failed in second half of proof.  Target = [");
@@ -571,7 +572,8 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	    if (hint_used[hi])
 		ilist_push(ant, hint_id[hi]);
 	}
-	jid = generate_clause(targ, ant);
+	// Negate ID to show that two clauses were generated
+	jid = -generate_clause(targ, ant);
     }
     return jid;
 }

@@ -72,6 +72,10 @@ extern void BddCache_done(BddCache *);
 extern int  BddCache_resize(BddCache *, int);
 extern void BddCache_reset(BddCache *);
 
+#if ENABLE_TBDD
+extern void BddCache_clear_clauses(BddCache *);
+#endif
+
 #define BddCache_lookup(cache, hash) (&(cache)->table[hash % (cache)->tablesize])
 
 

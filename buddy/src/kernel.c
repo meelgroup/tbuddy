@@ -1128,6 +1128,13 @@ void bdd_gbc(void)
    int n;
    long int c2, c1 = clock();
 
+#if ENABLE_TBDD
+   int dbuf[4+ILIST_OVHD];
+   ilist dlist;
+   int id;
+#endif
+
+
    if (gbc_handler != NULL)
    {
       bddGbcStat s;
@@ -1139,13 +1146,25 @@ void bdd_gbc(void)
       gbc_handler(1, &s);
    }
    
-   for (r=bddrefstack ; r<bddrefstacktop ; r++)
-      bdd_mark(*r);
+#if 0
+   printf("Marking:\n");
+#endif
+
+   for (r=bddrefstack ; r<bddrefstacktop ; r++) {
+#if 0 && ENABLE_TBDD
+       printf("Node N%d on stack\n", NNAME(*r));
+#endif
+       bdd_mark(*r);
+   }
 
    for (n=0 ; n<bddnodesize ; n++)
    {
-      if (bddnodes[n].refcou > 0)
-	 bdd_mark(n);
+       if (bddnodes[n].refcou > 0) {
+#if 0 && ENABLE_TBDD
+	   printf("Node N%d has reference count %d\n", NNAME(n), bddnodes[n].refcou);
+#endif
+	   bdd_mark(n);
+       }
       bddnodes[n].hash = 0;
    }
    
@@ -1168,22 +1187,22 @@ void bdd_gbc(void)
       else
       {
 #if ENABLE_TBDD	  
-         /* Delete defining clauses */
-         int dbuf[4+ILIST_OVHD];
-	 ilist dlist = ilist_make(dbuf, 4);
-	 int id;
-	 if ((id = bdd_dclause_p(node, DEF_HU)) != TAUTOLOGY)
-	     ilist_push(dlist, id);
-	 if ((id = bdd_dclause_p(node, DEF_LU)) != TAUTOLOGY)
-	     ilist_push(dlist, id);
-	 if ((id = bdd_dclause_p(node, DEF_HD)) != TAUTOLOGY)
-	     ilist_push(dlist, id);
-	 if ((id = bdd_dclause_p(node, DEF_LD)) != TAUTOLOGY)
-	     ilist_push(dlist, id);
+	  if (LOWp(node) != -1) {
+	      dlist = ilist_make(dbuf, 4);
+	      /* Delete defining clauses */
+	      if ((id = bdd_dclause_p(node, DEF_HU)) != TAUTOLOGY)
+		  ilist_push(dlist, id);
+	      if ((id = bdd_dclause_p(node, DEF_LU)) != TAUTOLOGY)
+		  ilist_push(dlist, id);
+	      if ((id = bdd_dclause_p(node, DEF_HD)) != TAUTOLOGY)
+		  ilist_push(dlist, id);
+	      if ((id = bdd_dclause_p(node, DEF_LD)) != TAUTOLOGY)
+		  ilist_push(dlist, id);
 
-	 if (ilist_length(dlist) > 0)
-	     print_proof_comment(2, "Delete defining clauses for node N%d", XVARp(node));
-	 delete_clauses(dlist);
+	      if (ilist_length(dlist) > 0)
+		  print_proof_comment(2, "Delete defining clauses for node N%d", XVARp(node));
+	      delete_clauses(dlist);
+	  }
 #endif
 	 LOWp(node) = -1;
 	 node->next = bddfreepos;

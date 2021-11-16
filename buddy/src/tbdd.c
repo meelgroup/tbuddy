@@ -157,7 +157,7 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     }
     print_proof_comment(2, "Validation of unit clause for N%d by implication from N%d",NNAME(r), NNAME(tr.root));
     ilist_fill1(clause, XVAR(r));
-    ilist_fill2(ant, t.clause_id, tr.clause_id);
+    ilist_fill2(ant, ABS(t.clause_id), ABS(tr.clause_id));
     TBDD rr;
     rr.clause_id = generate_clause(clause, ant);
     rr.root = r;
@@ -196,7 +196,7 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     ilist ant = ilist_make(abuf, 3);
     print_proof_comment(2, "Validate unit clause for node N%d = N%d & N%d", NNAME(t.root), NNAME(tr1.root), NNAME(tr2.root));
     ilist_fill1(clause, XVAR(t.root));
-    ilist_fill3(ant, tr1.clause_id, tr2.clause_id, t.clause_id);
+    ilist_fill3(ant, ABS(tr1.clause_id), ABS(tr2.clause_id), ABS(t.clause_id));
     /* Insert proof of unit clause into t's justification */
     t.clause_id = generate_clause(clause, ant);
     return t;
@@ -210,7 +210,7 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
 int tbdd_validate_clause(ilist clause, TBDD tr) {
     int abuf[1+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 1);
-    ilist_fill1(ant, tr.clause_id);
+    ilist_fill1(ant, ABS(tr.clause_id));
     print_proof_comment(2, "Fake Validation of clause from N%d", NNAME(tr.root));
     return generate_clause(clause, ant);
 }

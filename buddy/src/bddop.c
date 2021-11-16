@@ -226,6 +226,9 @@ void bdd_operator_done(void)
 
 void bdd_operator_reset(void)
 {
+#if ENABLE_TBDD
+   BddCache_clear_clauses(&applycache);
+#endif
    BddCache_reset(&applycache);
    BddCache_reset(&itecache);
    BddCache_reset(&quantcache);
@@ -835,7 +838,7 @@ static TBDD applyj_rec(BDD l, BDD r)
 	 bddcachestats.opHit++;
 #endif
 	 tres.root = entry->r.res;
-	 tres.clause_id = entry->r.jclause;
+	 tres.clause_id = ABS(entry->r.jclause);
 	 return tres;
       }
 #ifdef CACHESTATS
@@ -955,7 +958,7 @@ static TBDD applyj_rec(BDD l, BDD r)
 	 bddcachestats.opHit++;
 #endif
 	 res.root = entry->r.res;
-	 res.clause_id = entry->r.jclause;
+	 res.clause_id = ABS(entry->r.jclause);
 	 return res;
       }
 #ifdef CACHESTATS
@@ -987,7 +990,7 @@ static TBDD applyj_rec(BDD l, BDD r)
 	  TBDD lres = applyj_rec(LOW(l), LOW(r));
 	  BDD lroot = lres.root;
 	  PUSHREF(lroot);
-	  hint_id[HINT_OPL] = lres.clause_id;
+	  hint_id[HINT_OPL] = ABS(lres.clause_id);
 	  if (apply_op == bddop_imptstj)
 	      hint_clause[HINT_OPL] = ilist_fill2(hint_clause[HINT_OPL], -llid, rlid);
 	  else 
@@ -997,7 +1000,7 @@ static TBDD applyj_rec(BDD l, BDD r)
 	  TBDD hres = applyj_rec(HIGH(l), HIGH(r));
 	  BDD hroot = hres.root;
 	  PUSHREF(hroot);
-	  hint_id[HINT_OPH] = hres.clause_id;
+	  hint_id[HINT_OPH] = ABS(hres.clause_id);
 	  if (apply_op == bddop_imptstj)
 	      hint_clause[HINT_OPH] = ilist_fill2(hint_clause[HINT_OPH], -lhid, rhid);
 	  else 
@@ -1017,7 +1020,7 @@ static TBDD applyj_rec(BDD l, BDD r)
 	  TBDD lres = applyj_rec(LOW(l), r);
 	  BDD lroot = lres.root;
 	  PUSHREF(lroot);
-	  hint_id[HINT_OPL] = lres.clause_id;
+	  hint_id[HINT_OPL] = ABS(lres.clause_id);
 	  if (apply_op == bddop_imptstj)
 	      hint_clause[HINT_OPL] = ilist_fill2(hint_clause[HINT_OPL], -llid, rlid);
 	  else 
@@ -1028,7 +1031,7 @@ static TBDD applyj_rec(BDD l, BDD r)
 	  TBDD hres = applyj_rec(HIGH(l), r);
 	  BDD hroot = hres.root;
 	  PUSHREF(hroot);
-	  hint_id[HINT_OPH] = hres.clause_id;
+	  hint_id[HINT_OPH] = ABS(hres.clause_id);
 	  hint_clause[HINT_OPH] = bdd_dclause(hroot, DEF_HU);
 	  resl = READREF(2);
 	  resh = READREF(1);
@@ -1044,8 +1047,8 @@ static TBDD applyj_rec(BDD l, BDD r)
 	  TBDD lres = applyj_rec(l, LOW(r));
 	  BDD lroot = lres.root;
 	  PUSHREF(lroot);
-	  hint_id[HINT_OPL] = lres.clause_id;
-	  hint_id[HINT_OPH] = hres.clause_id;
+	  hint_id[HINT_OPL] = ABS(lres.clause_id);
+	  hint_id[HINT_OPH] = ABS(hres.clause_id);
 	  if (apply_op == bddop_imptstj)
 	      hint_clause[HINT_OPH] = ilist_fill2(hint_clause[HINT_OPH], -lhid, rhid);
 	  else 
@@ -1053,7 +1056,7 @@ static TBDD applyj_rec(BDD l, BDD r)
 	  TBDD hres = applyj_rec(l, HIGH(r));
 	  BDD hroot = hres.root;
 	  PUSHREF(hroot);
-	  hint_id[HINT_OPH] = hres.clause_id;
+	  hint_id[HINT_OPH] = ABS(hres.clause_id);
 	  if (apply_op == bddop_imptstj)
 	      hint_clause[HINT_OPH] = ilist_fill2(hint_clause[HINT_OPH], -lhid, rhid);
 	  else 
