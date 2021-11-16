@@ -15,11 +15,20 @@
 // Cutoff betweeen large and small allocations (in terms of clauses)
 #define BUDDY_THRESHOLD 1000
 //#define BUDDY_THRESHOLD 10
-#define BUDDY_NODES_LARGE (100*1000*1000)
+#define BUDDY_NODES_LARGE (1000*1000)
 //#define BUDDY_NODES_LARGE (10*1000)
-#define BUDDY_NODES_SMALL (    1000*1000)
+#define BUDDY_NODES_SMALL (    100*1000)
 #define BUDDY_CACHE_RATIO 8
 #define BUDDY_INCREASE_RATIO 20
+
+// GC Parameters
+
+// Minimum number of dead nodes to trigger GC
+#define COLLECT_MIN 50000
+// Maximum number of nodes to keep around without GC
+#define COLLECT_MAX 500000
+// Minimum fraction of dead:total nodes to trigger GC
+#define COLLECT_FRACTION 0.20
 
 // Functions to aid parsing of schedule lines
 
@@ -98,13 +107,24 @@ private:
   int id;
   bool is_active;
   TBDD tfun;
+  int node_count;
 
 public:
-  Term (TBDD t) { id = next_id++; tfun = t; bdd_addref(t.root); is_active = true; }
+  Term (TBDD t) { 
+    id = next_id++;
+    is_active = true; 
+    tfun = t;
+    bdd_addref(t.root);
+    node_count = bdd_nodecount(t.root);
+  }
 
-  void deactivate() {
+  // Returns number of dead nodes generated
+  int deactivate() {
     bdd_delref(tfun.root);
     is_active = false;
+    int rval = node_count;
+    node_count = 0;
+    return rval;
   }
 
   bool active() {
@@ -121,6 +141,8 @@ public:
 
   int get_id() { return id; }
 
+  int get_node_count() { return node_count; }
+
 private:
 
 };
@@ -132,16 +154,34 @@ private:
   int clause_count;
   int32_t max_variable;
   int verblevel;
+  // Estimated total number of nodes
+  int total_count;
+  // Estimated number of unreachable nodes
+  int dead_count;
+  
   // Statistics
   int and_count;
   int quant_count;
   int max_bdd;
+
+  void check_gc() {
+    if (dead_count >= COLLECT_MAX 
+	|| (dead_count >= COLLECT_MIN && (double) dead_count / total_count >= COLLECT_FRACTION)) {
+      if (verbosity_level >= 2) {
+	std::cout << "Initiating GC.  Estimated total nodes = " << total_count << ".  Estimated dead nodes = " << dead_count << std::endl;
+      }
+      bdd_gbc();
+      total_count -= dead_count;
+      dead_count = 0;
+    }
+  }
 
 public:
 
   TermSet(CNF &cnf, FILE *proof_file, int verb) {
     verblevel = verb;
     tbdd_set_verbose(verb);
+    total_count = dead_count = 0;
     clause_count = cnf.clause_count();
     max_variable = cnf.max_variable();
 
@@ -181,6 +221,9 @@ public:
     tp->set_id(terms.size());
     max_bdd = std::max(max_bdd, bdd_nodecount(tp->get_root()));
     terms.push_back(tp);
+    if (verblevel >= 3) 
+      std::cout << "Adding term #" << tp->get_id() << std::endl;
+    total_count += tp->get_node_count();
   }
 
   Term *conjunct(Term *tp1, Term *tp2) {
@@ -194,8 +237,9 @@ public:
     else
       nfun = tbdd_and(tr1, tr2);
     add(new Term(nfun));
-    tp1->deactivate();
-    tp2->deactivate();
+    dead_count += tp1->deactivate();
+    dead_count += tp2->deactivate();
+    check_gc();
     and_count++;
     return terms.back();
   }
@@ -208,7 +252,8 @@ public:
     add(new Term(tfun));
     bdd_delref(varbdd);
     bdd_delref(nroot);
-    tp->deactivate();
+    dead_count += tp->deactivate();
+    check_gc();
     quant_count++;
     return terms.back();
   }
@@ -220,9 +265,22 @@ public:
     add(new Term(tfun));
     bdd_delref(varbdd);
     bdd_delref(nroot);
-    tp->deactivate();
+    dead_count += tp->deactivate();
+    check_gc();
     quant_count++;
     return terms.back();
+  }
+
+  void flush() {
+    while (min_active < terms.size()) {
+      Term *tp = terms[min_active];
+      if (tp->active()) {
+	if (verblevel >= 3) 
+	  std::cout << "Flushing term #" << tp->get_id() << std::endl;
+	tp->deactivate();
+      }
+      min_active++;
+    }
   }
 
   // Form conjunction of terms until reduce to <= 1 term
@@ -247,6 +305,11 @@ public:
       }
       tp2 = terms[min_active++];
       Term *tpn = conjunct(tp1, tp2);
+      if (tpn->get_root() == BDD_FALSE) {
+	TBDD result = tpn->get_fun();
+	flush();
+	return result;
+      }
     }
   }
 
@@ -259,9 +322,12 @@ public:
       if (!tp->active())
 	continue;
       BDD root = tp->get_root();
-      if (root == BDD_FALSE)
+      if (root == BDD_FALSE) {
 	// Formula is trivially false
-	return tp->get_fun();
+	TBDD result = tp->get_fun();
+	flush();
+	return result;
+      }
       if (root != BDD_TRUE) {
 	int top = bdd_var(root);
 	if (buckets[top].size() == 0)
@@ -285,7 +351,9 @@ public:
 	  if (verblevel >= 3)
 	    std::cout << "Bucket " << bvar << " Conjunction of terms " 
 		      << tp1->get_id() << " and " << tp2->get_id() << " yields FALSE" << std::endl;
-	  return tpn->get_fun();
+	  TBDD result = tpn->get_fun();
+	  flush();
+	  return result;
 	}
 	int top = bdd_var(root);
 	if (verblevel >= 3)
@@ -361,7 +429,7 @@ public:
 	  }
 	  term_stack.push_back(terms[ci]);
 	}
-	if (verblevel >= 2) {
+	if (verblevel >= 3) {
 	  std::cout << "Schedule line #" << line << ".  Pushed " << numbers.size() 
 		    << " clauses.  Stack size = " << term_stack.size() << std::endl;
 	}
@@ -402,12 +470,14 @@ public:
 	      if (verblevel >= 2) {
 		std::cout << "Schedule line #" << line << ".  Generated BDD 0" << std::endl;
 	      }
-	      return product->get_fun();
+	      TBDD result = product->get_fun();
+	      flush();
+	      return result;
 	    }
 	  }
 	  term_stack.push_back(product);
 	}
-	if (verblevel >= 2) {
+	if (verblevel >= 3) {
 	  std::cout << "Schedule line #" << line << ".  Performed " << numbers[0]
 		    << " conjunctions.  Stack size = " << term_stack.size() << std::endl;
 	}
@@ -435,7 +505,7 @@ public:
 	  Term *tpn = equantify(tp, numbers);
 	  term_stack.push_back(tpn);
 	}
-	if (verblevel >= 2) {
+	if (verblevel >= 3) {
 	  std::cout << "Schedule line #" << line << ".  Quantified " << numbers.size()
 		    << " variables.  Stack size = " << term_stack.size() << std::endl;
 	}
@@ -499,6 +569,8 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int 
   }
   if (verblevel >= 1)
     tset.show_statistics();
+  //  std::cout << "Running garbage collector" << std::endl;
+  //  bdd_gbc();
   bdd_done();
   return true;
 }
