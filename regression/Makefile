@@ -1,4 +1,4 @@
-BSAT = ~/repos/bsat/src/bsat-TBDD
+BSAT = ../src/bsat-TBDD
 LRAT = ~/repos/drat-trim/lrat-check
 
 VLEVEL=1
