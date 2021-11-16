@@ -60,7 +60,7 @@ extern void print_proof_comment(int vlevel, char *fmt, ...);
 
     
 /* Complete proof of apply operation */
-extern int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD reslow, TBDD reshigh, BDD res);
+extern int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BDD res);
 
 #ifdef CPLUSPLUS
 }

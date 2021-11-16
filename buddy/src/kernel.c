@@ -1466,9 +1466,9 @@ int bdd_makenode(unsigned int level, int low, int high)
        huid = generate_clause(defining_clause(dlist, DEF_HU, nid, vid, hid, lid), alist);
        luid = generate_clause(defining_clause(dlist, DEF_LU, nid, vid, hid, lid), alist);
        if (huid != TAUTOLOGY)
-	   ilist_push(alist, huid);
+	   ilist_push(alist, -huid);
        if (luid != TAUTOLOGY)
-	   ilist_push(alist, luid);
+	   ilist_push(alist, -luid);
        generate_clause(defining_clause(dlist, DEF_HD, nid, vid, hid, lid), alist);              
        generate_clause(defining_clause(dlist, DEF_LD, nid, vid, hid, lid), alist);       
    }

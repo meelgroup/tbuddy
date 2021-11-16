@@ -1,6 +1,6 @@
 CC=gcc
 CXX=g++
-OPT=
+OPT=-O2
 CFLAGS=-g $(OPT) -Wno-nullability-completeness
 INC=-I../buddy/include
 LDIR = ../buddy/lib

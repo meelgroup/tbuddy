@@ -269,42 +269,311 @@ ilist defining_clause(ilist ils, dclause_t dtype, int nid, int vid, int hid, int
 /******* Support for Apply Proof generation *****/
 
 /*
+  Maxima
+ */
+#define MAX_CLAUSE 4
+#define MAX_HINT 8
+
+/*
   Enumerated type for the hint types
  */
-typedef enum { HINT_RESHU, HINT_ARG1HD, HINT_ARG2HD, HINT_OPH, HINT_RESLU, HINT_ARG1LD, HINT_ARG2LD, HINT_OPL, HINT_COUNT } jtype_t;
+typedef enum { HINT_RESHU, HINT_ARG1HD, HINT_ARG2HD, HINT_OPH, HINT_RESLU, HINT_ARG1LD, HINT_ARG2LD, HINT_OPL, HINT_EXTRA } jtype_t;
+
+#define HINT_COUNT HINT_EXTRA
+
+/* There are 8 basic hints, plus possibly an extra one from an intermediate clause */
+const char *hint_name[HINT_COUNT+1] = {"RESHU", "ARG1HD", "ARG2HD", "OPH", "RESLU", "ARG1LD", "ARG2LD", "OPL", "EXTRA"};
 
 /*
   Data structures used during proof generation
  */
-static int int_id[HINT_COUNT];
-static int hint_buf[HINT_COUNT][3+ILIST_OVHD];
-static ilist hint_clause[HINT_COUNT];
+
+static int hint_id[HINT_COUNT+1];
+static int hint_buf[HINT_COUNT+1][MAX_CLAUSE+ILIST_OVHD];
+static ilist hint_clause[HINT_COUNT+1];
+static bool hint_used[HINT_COUNT+1];
+
+static jtype_t hint_hl_order[HINT_COUNT] = 
+    { HINT_RESHU, HINT_ARG1HD, HINT_ARG2HD, HINT_OPH, HINT_RESLU, HINT_ARG1LD, HINT_ARG2LD, HINT_OPL };
+
+static jtype_t hint_lh_order[HINT_COUNT] = 
+    { HINT_RESLU, HINT_ARG1LD, HINT_ARG2LD, HINT_OPL, HINT_RESHU, HINT_ARG1HD, HINT_ARG2HD, HINT_OPH };
+
+static jtype_t hint_h_order[HINT_COUNT/2] = 
+    { HINT_RESHU, HINT_ARG1HD, HINT_ARG2HD, HINT_OPH };
+
+/* This one gets used in second half of split proof */
+static jtype_t hint_l_order[HINT_COUNT/2+1] = 
+    { HINT_EXTRA, HINT_RESLU, HINT_ARG1LD, HINT_ARG2LD, HINT_OPL };
+
+
+static char hstring[1024];
+
+static void initialize_hints() {
+    jtype_t hi;
+    for (hi = (jtype_t) 0; hi < HINT_COUNT+1; hi++) {
+	hint_id[hi] = TAUTOLOGY;
+	hint_clause[hi] = ilist_make(hint_buf[hi], 3);
+    }
+}
+
+static void complete_hints() {
+    jtype_t hi;
+    for (hi = (jtype_t) 0; hi < HINT_COUNT+1; hi++) {
+	if (hint_id[hi] == TAUTOLOGY)
+	    hint_clause[hi] = TAUTOLOGY_CLAUSE;
+	else {
+	    hint_clause[hi] = clean_clause(hint_clause[hi]);
+	    if (hint_clause[hi] == TAUTOLOGY_CLAUSE)
+		hint_id[hi] = TAUTOLOGY;
+	}
+    }
+}
+
+static void show_hints() {
+    jtype_t hi;
+    for (hi = (jtype_t) 0; hi < HINT_COUNT+1; hi++) {
+	if (hint_id[hi] != TAUTOLOGY) {
+	    fprintf(proof_file, "c    %s: #%d = [", hint_name[hi], hint_id[hi]);
+	    ilist_print(hint_clause[hi], proof_file, " ");
+	    fprintf(proof_file, "]\n");
+	}
+    }
+}
+
 
 static ilist target_and(ilist ils, BDD l, BDD r, BDD s) {
-    return ilist_fill3(ils, -NNAME(l), -NNAME(r), NNAME(s));
+    return ilist_fill3(ils, -XVAR(l), -XVAR(r), XVAR(s));
 }
 
 static ilist target_imply(ilist ils, BDD l, BDD r) {
-    return ilist_fill2(ils, -NNAME(l), NNAME(r));
+    return ilist_fill2(ils, -XVAR(l), XVAR(r));
 }
 	
 
-int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD reslow, TBDD reshigh, BDD res) {
-    int tbuf[3+ILIST_OVHD];
-    ilist targ = ilist_make(tbuf, 3);
-    int abuf[2+ILIST_OVHD];
-    ilist ant = ilist_make(abuf, 2);
-    ilist_fill2(ant, reslow.clause_id, reshigh.clause_id);
-    if (op == bddop_andj) {
-	targ = target_and(targ, l, r, res);
-	print_proof_comment(2, "Generating proof that N%d & N%d --> N%d", bdd_nameid(l), bdd_nameid(r), bdd_nameid(res));
-	return generate_clause(targ, ant);
-	
-    } else {
-	targ = target_imply(targ, l, r);
-	print_proof_comment(2, "Generating proof that N%d --> N%d", bdd_nameid(l), bdd_nameid(r));
-	return generate_clause(targ, ant);
+static bool rup_check(ilist target_clause, jtype_t *horder, int hcount) {
+    int ubuf[8+ILIST_OVHD];
+    ilist ulist = ilist_make(ubuf, 8);
+    int cbuf[MAX_CLAUSE+ILIST_OVHD];
+    ilist cclause = ilist_make(cbuf, MAX_CLAUSE);
+    int oi, hi, li, ui;
+    for (ui = 0; ui < ilist_length(target_clause); ui++)
+	ilist_push(ulist, -target_clause[ui]);
+    if (verbosity_level >= 4) {
+	fprintf(proof_file, "c RUP start.  Target = [");
+	ilist_print(target_clause, proof_file, " ");
+	fprintf(proof_file, "]\n");
     }
+    for (hi = 0; hi < HINT_COUNT; hi++) 
+	hint_used[hi] = false;
+    for (oi = 0; oi < hcount; oi++) {
+	jtype_t hi = horder[oi];
+	if (hint_id[hi] != TAUTOLOGY) {
+	    ilist clause = hint_clause[hi];
+	    /* Operate on copy of clause so that can manipulate */
+	    ilist_resize(cclause, 0);
+	    for (li = 0; li < ilist_length(clause); li++)
+		ilist_push(cclause, clause[li]);
+	    if (verbosity_level >= 4) {
+		fprintf(proof_file, "c   RUP step.  Units = [");
+		ilist_print(ulist, proof_file, " ");
+		fprintf(proof_file, "] Clause = %s\n", hint_name[hi]);
+	    }
+	    li = 0;
+	    while (li < ilist_length(cclause)) {
+		int lit = cclause[li];
+		if (verbosity_level >= 5) {
+		    fprintf(proof_file, "c     cclause = [");
+		    ilist_print(cclause, proof_file, " ");
+		    fprintf(proof_file, "]  ");
+		}
+		bool found = false;
+		for (ui = 0; ui < ilist_length(ulist); ui++) {
+		    if (lit == -ulist[ui]) {
+			found = true;
+			break;
+		    }
+		    if (lit == ulist[ui]) {
+			if (verbosity_level >= 5)
+			    fprintf(proof_file, "Unit %d Found.  Creates tautology\n", -lit);
+			return false;
+		    }
+		}
+		if (found) { 
+		    if (verbosity_level >= 5)
+			fprintf(proof_file, "Unit %d found.  Deleting %d\n", -lit, lit);
+		    if (ilist_length(cclause) == 1) {
+			print_proof_comment(4, "   Conflict detected");
+			/* Conflict detected */
+			hint_used[hi] = true;
+			return true;
+		    } else {
+			/* Remove lit from cclause by swapping with last one */
+			int nlength = ilist_length(cclause)-1;
+			cclause[li] = cclause[nlength];
+			ilist_resize(cclause, nlength);
+		    }
+		} else {
+		    if (verbosity_level >= 5)
+			fprintf(proof_file, "Unit %d NOT found.  Keeping %d\n", -lit, lit);
+		    li++;
+		}
+	    }
+	    if (ilist_length(cclause) == 1) {
+		/* Unit propagation */
+		print_proof_comment(5, "  Unit propagation of %d", cclause[0]);
+		ilist_push(ulist, cclause[0]);
+		hint_used[hi] = true;
+	    }
+	}
+    }
+    /* Didn't find conflict */
+    print_proof_comment(4, "  RUP failed");
+    return false;
+}
+
+
+
+int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BDD res) {
+    int tbuf[MAX_CLAUSE+ILIST_OVHD];
+    ilist targ = ilist_make(tbuf, MAX_CLAUSE);
+    int itbuf[MAX_CLAUSE+ILIST_OVHD];
+    ilist itarg = ilist_make(itbuf, MAX_CLAUSE);
+    int abuf[8+ILIST_OVHD];
+    ilist ant = ilist_make(abuf, 8);
+    int oi, hi, li;
+
+    int jid = 0;
+    if (op == bddop_andj) {
+	targ = clean_clause(target_and(targ, l, r, res));
+	print_proof_comment(2, "Generating proof that N%d & N%d --> N%d", bdd_nameid(l), bdd_nameid(r), bdd_nameid(res));
+	print_proof_comment(3, "splitVar = %d, tresl.root = N%d, tresh.root = N%d", splitVar, bdd_nameid(tresl.root), bdd_nameid(tresh.root));
+    } else {
+	targ = clean_clause(target_imply(targ, l, r));
+	print_proof_comment(2, "Generating proof that N%d --> N%d", bdd_nameid(l), bdd_nameid(r));
+	print_proof_comment(3, "splitVar = %d", splitVar);
+    }
+    if (targ == TAUTOLOGY_CLAUSE) {
+	print_proof_comment(2, "Tautology");
+	return TAUTOLOGY;
+    }
+    if (verbosity_level >= 3) {
+	fprintf(proof_file, "Target clause = [");
+	ilist_print(targ, proof_file, " ");
+	fprintf(proof_file, "]\n");
+    }
+    
+
+    /* Prepare the candidates */
+    initialize_hints();
+
+    if (LEVEL(l) == splitVar) {
+	hint_id[HINT_ARG1LD] = bdd_dclause(l, DEF_LD);
+	hint_clause[HINT_ARG1LD] = defining_clause(hint_clause[HINT_ARG1LD], DEF_LD, XVAR(l), splitVar, XVAR(HIGH(l)), XVAR(LOW(l)));
+	hint_id[HINT_ARG1HD] = bdd_dclause(l, DEF_HD);
+	hint_clause[HINT_ARG1HD] = defining_clause(hint_clause[HINT_ARG1HD], DEF_HD, XVAR(l), splitVar, XVAR(HIGH(l)), XVAR(LOW(l)));
+    }
+
+    BDD ll = LEVEL(l) == splitVar ? LOW(l) : l;
+    BDD lh = LEVEL(l) == splitVar ? HIGH(l) : l;
+    BDD rl = LEVEL(r) == splitVar ? LOW(r) : r;
+    BDD rh = LEVEL(r) == splitVar ? HIGH(r) : r;
+
+    if (op == bddop_imptstj) {
+	if (LEVEL(r) == splitVar) {
+	    hint_id[HINT_RESLU] = bdd_dclause(r, DEF_LU);
+	    hint_clause[HINT_RESLU] = defining_clause(hint_clause[HINT_RESLU], DEF_LU, XVAR(r), splitVar, XVAR(HIGH(r)), XVAR(LOW(r)));
+	    hint_id[HINT_RESHU] = bdd_dclause(r, DEF_HU);
+	    hint_clause[HINT_RESHU] = defining_clause(hint_clause[HINT_RESHU], DEF_HU, XVAR(r), splitVar, XVAR(HIGH(r)), XVAR(LOW(r)));
+	}
+	hint_id[HINT_OPL] = tresl.clause_id;
+	hint_clause[HINT_OPL] = target_imply(hint_clause[HINT_OPL], ll, rl);
+	hint_id[HINT_OPH] = tresh.clause_id;
+	hint_clause[HINT_OPH] = target_imply(hint_clause[HINT_OPH], lh, rh);
+    } else {
+	if (LEVEL(r) == splitVar) {
+	    hint_id[HINT_ARG2LD] = bdd_dclause(r, DEF_LD);
+	    hint_clause[HINT_ARG2LD] = defining_clause(hint_clause[HINT_ARG2LD], DEF_LD, XVAR(r), splitVar, XVAR(HIGH(r)), XVAR(LOW(r)));
+	    hint_id[HINT_ARG2HD] = bdd_dclause(r, DEF_HD);
+	    hint_clause[HINT_ARG2HD] = defining_clause(hint_clause[HINT_ARG2HD], DEF_HD, XVAR(r), splitVar, XVAR(HIGH(r)), XVAR(LOW(r)));
+	}
+	if (tresl.root != tresh.root) {
+	    hint_id[HINT_RESLU] = bdd_dclause(res, DEF_LU);
+	    hint_clause[HINT_RESLU] = defining_clause(hint_clause[HINT_RESLU], DEF_LU, XVAR(res), splitVar, XVAR(HIGH(res)), XVAR(LOW(res)));
+	    hint_id[HINT_RESHU] = bdd_dclause(res, DEF_HU);
+	    hint_clause[HINT_RESHU] = defining_clause(hint_clause[HINT_RESHU], DEF_HU, XVAR(res), splitVar, XVAR(HIGH(res)), XVAR(LOW(res)));
+	}
+	hint_id[HINT_OPL] = tresl.clause_id;
+	hint_clause[HINT_OPL] = target_and(hint_clause[HINT_OPL], ll, rl, tresl.root);
+	hint_id[HINT_OPH] = tresh.clause_id;
+	hint_clause[HINT_OPH] = target_and(hint_clause[HINT_OPH], lh, rh, tresh.root);
+    }
+
+    complete_hints();
+    if (verbosity_level >= 3) {
+	print_proof_comment(3, "Hints:");
+	show_hints();
+    }
+
+    bool checked = false;
+    if (hint_id[HINT_OPH] == TAUTOLOGY) {
+	/* Try for single clause proof */
+	if (rup_check(targ, hint_hl_order, HINT_COUNT)) {
+	    checked = true;
+	    for (oi = 0; oi < HINT_COUNT; oi++) {
+		hi = hint_hl_order[oi];
+		if (hint_used[hi])
+		    ilist_push(ant, hint_id[hi]);
+	    }
+	    jid = generate_clause(targ, ant);
+	}
+
+    }
+    if (!checked && hint_id[HINT_OPL] == TAUTOLOGY) {
+	if (rup_check(targ, hint_lh_order, HINT_COUNT)) {
+	    checked = true;
+	    for (oi = 0; oi < HINT_COUNT; oi++) {
+		hi = hint_lh_order[oi];
+		if (hint_used[hi])
+		    ilist_push(ant, hint_id[hi]);
+	    }
+	    jid = generate_clause(targ, ant);
+	}
+    }
+    if (!checked) {
+	ilist_push(itarg, -splitVar);
+	for (li = 0; li < ilist_length(targ); li++)
+	    ilist_push(itarg, targ[li]);
+	itarg = clean_clause(itarg);
+	if (!rup_check(itarg, hint_h_order, HINT_COUNT/2)) {
+	    fprintf(proof_file, "c  Uh-Oh.  RUP check failed in first half of proof.  Target = [");
+	    ilist_print(itarg, proof_file, " ");
+	    fprintf(proof_file, "].  SKIPPING\n");
+	    // exit(1);
+	}
+	for (oi = 0; oi < HINT_COUNT/2; oi++) {
+	    hi = hint_h_order[oi];
+	    if (hint_used[hi])
+		ilist_push(ant, hint_id[hi]);
+	}
+	hint_id[HINT_EXTRA] = generate_clause(itarg, ant);
+	hint_clause[HINT_EXTRA] = itarg;
+	if (!rup_check(targ, hint_l_order, HINT_COUNT/2+1)) {
+	    fprintf(proof_file, "c  Uh-Oh.  RUP check failed in second half of proof.  Target = [");
+	    ilist_print(itarg, proof_file, " ");
+	    fprintf(proof_file, "].  SKIPPING\n");
+	    //	    exit(1);
+
+	}
+	ilist_resize(ant, 0);
+	for (oi = 0; oi < HINT_COUNT/2+1; oi++) {
+	    hi = hint_l_order[oi];
+	    if (hint_used[hi])
+		ilist_push(ant, hint_id[hi]);
+	}
+	jid = generate_clause(targ, ant);
+    }
+    return jid;
 }
 
 

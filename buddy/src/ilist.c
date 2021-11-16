@@ -206,3 +206,21 @@ void ilist_print(ilist ils, FILE *out, char *sep) {
 	space = sep;
     }
 }
+
+/*
+  Print elements of an ilist separated by sep
+ */
+void ilist_format(ilist ils, char *out, char *sep, int maxlen) {
+    int i;
+    char *space = "";
+    if (ils == TAUTOLOGY_CLAUSE) {
+	snprintf(out, maxlen, "TAUT");
+	return;
+    }
+    int len = 0;
+    for (i = 0; i < ilist_length(ils); i++) {
+	snprintf(out+len, maxlen-len, "%s%d", space, ils[i]);
+	len += strlen(out+len);
+	space = sep;
+    }
+}

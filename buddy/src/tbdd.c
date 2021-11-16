@@ -193,7 +193,7 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     ilist ant = ilist_make(abuf, 3);
     print_proof_comment(2, "Validate unit clause for node N%d = N%d & N%d", NNAME(t.root), NNAME(tr1.root), NNAME(tr2.root));
     ilist_fill1(clause, XVAR(t.root));
-    ilist_fill3(ant, t.clause_id, tr1.clause_id, tr2.clause_id);
+    ilist_fill3(ant, tr1.clause_id, tr2.clause_id, t.clause_id);
     /* Insert proof of unit clause into t's justification */
     t.clause_id = generate_clause(clause, ant);
     return t;

@@ -95,6 +95,11 @@ extern void ilist_reverse(int *ls);
  */
 extern void ilist_print(ilist ils, FILE *out, char *sep);
 
+/*
+  Format string of elements of an ilist separated by sep
+ */
+extern void ilist_format(ilist ils, char *out, char *sep, int maxlen);
+    
 
 #ifdef CPLUSPLUS
 }
