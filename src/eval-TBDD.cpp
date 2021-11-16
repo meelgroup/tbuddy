@@ -186,7 +186,13 @@ public:
   Term *conjunct(Term *tp1, Term *tp2) {
     TBDD tr1 = tp1->get_fun();
     TBDD tr2 = tp2->get_fun();
-    TBDD nfun = tbdd_and(tr1, tr2);
+    TBDD nfun;
+    if (tbdd_is_false(tr1))
+      nfun = tr1;
+    else if (tbdd_is_false(tr2))
+      nfun = tr2;
+    else
+      nfun = tbdd_and(tr1, tr2);
     add(new Term(nfun));
     tp1->deactivate();
     tp2->deactivate();
@@ -392,6 +398,12 @@ public:
 	      exit(1);
 	    }
 	    product = conjunct(product, tp);
+	    if (product->get_root() == BDD_FALSE) {
+	      if (verblevel >= 2) {
+		std::cout << "Schedule line #" << line << ".  Generated BDD 0" << std::endl;
+	      }
+	      return product->get_fun();
+	    }
 	  }
 	  term_stack.push_back(product);
 	}
