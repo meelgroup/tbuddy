@@ -23,6 +23,7 @@ extern int last_variable;
 extern int last_clause_id;
 extern int total_clause_count;
 extern int input_variable_count;
+extern int max_live_clause_count;
 
 /* Prover setup and completion */
 extern int prover_init(FILE *pfile, int input_variable_count, int input_clause_count, ilist *clauses, bool lrat);

@@ -11,16 +11,6 @@
 #include "clause.h"
 
 
-// Buddy parameters
-// Cutoff betweeen large and small allocations (in terms of clauses)
-#define BUDDY_THRESHOLD 1000
-//#define BUDDY_THRESHOLD 10
-#define BUDDY_NODES_LARGE (1000*1000)
-//#define BUDDY_NODES_LARGE (10*1000)
-#define BUDDY_NODES_SMALL (    100*1000)
-#define BUDDY_CACHE_RATIO 8
-#define BUDDY_INCREASE_RATIO 20
-
 // GC Parameters
 
 // Minimum number of dead nodes to trigger GC
@@ -532,6 +522,7 @@ public:
     std::cout << "Total BDD nodes: " << s.produced <<std::endl;
     std::cout << "Max BDD size: " << max_bdd << std::endl;
     std::cout << "Total clauses: " << s.clausenum << std::endl;
+    std::cout << "Max live clauses: " << s.maxclausenum << std::endl;
     std::cout << "Total variables: " << s.variablenum << std::endl;
   }
 

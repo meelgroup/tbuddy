@@ -116,6 +116,7 @@ PROTO   {* typedef struct s_bddStat
    int gbcnum;
 #if ENABLE_TBDD
    int clausenum;
+   int maxclausenum;
    int variablenum;
 #endif
 } bddStat;  *}
@@ -131,6 +132,7 @@ DESCR   {* The fields are \\[\baselineskip] \begin{tabular}{lp{10cm}}
   {\tt gbcnum}       & number of garbage collections done until now
 #if ENABLE_TBDD
   {\tt clausenum}    & total number of clauses in input and proof \\
+  {\tt maxclausenum} & Maximum number of live clauses in proof \\
   {\tt variablenum}  & total number of input and extension variables \\
 #endif
   \end{tabular} *}
@@ -148,6 +150,7 @@ typedef struct s_bddStat
    int gbcnum;
 #if ENABLE_TBDD
    int clausenum;
+   int maxclausenum;
    int variablenum;
 #endif
 } bddStat;

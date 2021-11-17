@@ -11,6 +11,7 @@ int last_variable = 0;
 int last_clause_id = 0;
 int total_clause_count = 0;
 int input_variable_count = 0;
+int max_live_clause_count = 0;
 
 /* Global variables used by prover */
 static FILE *proof_file = NULL;
@@ -22,14 +23,15 @@ static FILE *proof_file = NULL;
 static ilist *all_clauses = NULL;
 static int input_clause_count = 0;
 static int alloc_clause_count = 0;
+static int live_clause_count = 0;
 
 // Parameters
 // Cutoff betweeen large and small allocations (in terms of clauses)
 #define BUDDY_THRESHOLD 1000
 //#define BUDDY_THRESHOLD 10
-#define BUDDY_NODES_LARGE (100*1000*1000)
+#define BUDDY_NODES_LARGE (1*1000*1000)
 //#define BUDDY_NODES_LARGE (1000)
-#define BUDDY_NODES_SMALL (    1000*1000)
+#define BUDDY_NODES_SMALL (    200*1000)
 #define BUDDY_CACHE_RATIO 8
 #define BUDDY_INCREASE_RATIO 20
 
@@ -49,6 +51,7 @@ int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_
 
     input_variable_count = last_variable = variable_count;
     last_clause_id = input_clause_count = total_clause_count = clause_count;
+    live_clause_count = max_live_clause_count = clause_count;
     alloc_clause_count = clause_count + INITIAL_CLAUSE_COUNT;
     all_clauses = calloc(alloc_clause_count, sizeof(ilist *));
     if (all_clauses == NULL) {
@@ -184,6 +187,8 @@ int generate_clause(ilist literals, ilist hints) {
     }
     fprintf(proof_file, " 0\n");
     total_clause_count++;
+    live_clause_count++;
+    max_live_clause_count = MAX(max_live_clause_count, live_clause_count);
     
     if (!do_lrat) {
 	/* Must store copy of clause */
@@ -215,6 +220,7 @@ void delete_clauses(ilist clause_ids) {
 	    all_clauses[cid] = NULL;
 	}
     }
+    live_clause_count -= ilist_length(clause_ids);
 }
 
 /* Retrieve input clause.  NULL if invalid */
