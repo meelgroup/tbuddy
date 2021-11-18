@@ -48,7 +48,7 @@ extern ilist ilist_make(int *p, int max_length);
 /* Allocate a new ilist. */
 extern ilist ilist_new(int max_length);
 
-/* Free allocated ilist.  Only call on ones allocated via ilist_new */
+/* Free allocated ilist.  Will only free ones allocated via ilist_new */
 extern void ilist_free(ilist ils);
 
 /* Return number of elements in ilist */
@@ -93,18 +93,42 @@ extern void ilist_reverse(int *ls);
 /*
   Print elements of an ilist separated by sep
  */
-extern void ilist_print(ilist ils, FILE *out, char *sep);
+extern void ilist_print(ilist ils, FILE *out, const char *sep);
 
 /*
   Format string of elements of an ilist separated by sep
  */
-extern void ilist_format(ilist ils, char *out, char *sep, int maxlen);
+extern void ilist_format(ilist ils, char *out, const char *sep, int maxlen);
     
 
 #ifdef CPLUSPLUS
 }
 #endif
 
+#ifdef CPLUSPLUS
+class Ilist {
+
+public:
+    
+    inline Ilist(int *buf, int max_length) { list = ilist_make(buf, max_length); }
+    inline Ilist(int max_length) { list = ilist_new(max_length); } 
+    inline ~Ilist() { ilist_free(list); }
+    inline void push(int val) { list = ilist_push(list, val); }
+    inline void fill1(int val1) { list = ilist_fill1(list, val1); }
+    inline void fill2(int val1, int val2) { list = ilist_fill2(list, val1, val2); }
+    inline void fill3(int val1, int val2, int val3) { list = ilist_fill3(list, val1, val2, val3); }
+    inline void fill4(int val1, int val2, int val3, int val4) { list = ilist_fill4(list, val1, val2, val3, val4); }
+    inline void resize(int nlength) { list = ilist_resize(list, nlength); }
+    inline int length()  { return ilist_length(list); }
+    inline void print(FILE *out, const char *sep) { ilist_print(list, out, sep); }
+    inline void format(char *out, const char *sep, int maxlen) { ilist_format(list, out, sep, maxlen); }
+    inline int& operator[](int i) { return list[i]; }
+private:
+    ilist list;
+
+
+};
+#endif
 
 #endif /* _ILIST_H */
 /* EOF */

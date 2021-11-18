@@ -375,9 +375,9 @@ BDD bdd_ibuildcube(int value, int width, int *variables)
       BDD v;
       
       if (value & 0x1)
-	 v = bdd_ithvar(variables[width-z-1]);
+	 v = BDD_ithvar(variables[width-z-1]);
       else
-	 v = bdd_nithvar(variables[width-z-1]);
+	 v = BDD_nithvar(variables[width-z-1]);
 
       bdd_addref(result);
       tmp = bdd_apply(result,v,bddop_and);
@@ -1312,8 +1312,8 @@ DESCR   {* This function restricts the variables in {\tt r} to constant
 	   restricted to true and variable 3 to false.
 	   \begin{verbatim}
   bdd X = make_user_bdd();
-  bdd R1 = bdd_ithvar(1);
-  bdd R2 = bdd_nithvar(3);
+  bdd R1 = BDD_ithvar(1);
+  bdd R2 = BDD_nithvar(3);
   bdd R = bdd_addref( bdd_apply(R1,R2, bddop_and) );
   bdd RES = bdd_addref( bdd_restrict(X,R) );
 \end{verbatim}

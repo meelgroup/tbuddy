@@ -297,7 +297,7 @@ DESCR   {* This function is used to define the number of variables used in
 	   to increase the number of variables. The argument
 	   {\tt num} is the number of variables to use. *}
 RETURN  {* Zero on succes, otherwise a negative error code. *}
-ALSO    {* bdd\_ithvar, bdd\_varnum, bdd\_extvarnum *}
+ALSO    {* BDD\_ithvar, bdd\_varnum, bdd\_extvarnum *}
 */
 int bdd_setvarnum(int num)
 {
@@ -394,7 +394,7 @@ PROTO   {* int bdd_extvarnum(int num) *}
 DESCR   {* Extends the current number of allocated BDD variables with
            {\tt num} extra variables. *}
 RETURN  {* The old number of allocated variables or a negative error code. *}
-ALSO    {* bdd\_setvarnum, bdd\_ithvar, bdd\_nithvar *}
+ALSO    {* bdd\_setvarnum, BDD\_ithvar, BDD\_nithvar *}
 */
 int bdd_extvarnum(int num)
 {
@@ -869,23 +869,23 @@ BDD bdd_false(void)
 
 
 /*
-NAME    {* bdd\_ithvar *}
+NAME    {* BDD\_ithvar *}
 SECTION {* kernel *}
 SHORT   {* returns a bdd representing the I'th variable *}
-PROTO   {* BDD bdd_ithvar(int var) *}
+PROTO   {* BDD BDD_ithvar(int var) *}
 DESCR   {* This function is used to get a bdd representing the I'th
            variable (one node with the childs true and false). The requested
 	   variable must be in the range define by {\tt
 	   bdd\_setvarnum} starting with 0 being the first. For ease
-	   of use then the bdd returned from {\tt bdd\_ithvar} does
+	   of use then the bdd returned from {\tt BDD\_ithvar} does
 	   not have to be referenced counted with a call to {\tt
 	   bdd\_addref}. The initial variable order is defined by the
 	   the index {\tt var} that also defines the position in the
 	   variable order -- variables with lower indecies are before
 	   those with higher indecies. *}
 RETURN  {* The I'th variable on succes, otherwise the constant false bdd *}
-ALSO {* bdd\_setvarnum, bdd\_nithvar, bddtrue, bddfalse *} */
-BDD bdd_ithvar(int var)
+ALSO {* bdd\_setvarnum, BDD\_nithvar, bddtrue, bddfalse *} */
+BDD BDD_ithvar(int var)
 {
    if (var < 0  ||  var >= bddvarnum)
    {
@@ -898,20 +898,20 @@ BDD bdd_ithvar(int var)
 
 
 /*
-NAME    {* bdd\_nithvar *}
+NAME    {* BDD\_nithvar *}
 SECTION {* kernel *}
 SHORT   {* returns a bdd representing the negation of the I'th variable *}
-PROTO   {* BDD bdd_nithvar(int var) *}
+PROTO   {* BDD BDD_nithvar(int var) *}
 DESCR   {* This function is used to get a bdd representing the negation of
            the I'th variable (one node with the childs false and true).
 	   The requested variable must be in the range define by
 	   {\tt bdd\_setvarnum} starting with 0 being the first. For ease of
-	   use then the bdd returned from {\tt bdd\_nithvar} does not have
+	   use then the bdd returned from {\tt BDD\_nithvar} does not have
 	   to be referenced counted with a call to {\tt bdd\_addref}. *}
 RETURN  {* The negated I'th variable on succes, otherwise the constant false bdd *}	   
-ALSO    {* bdd\_setvarnum, bdd\_ithvar, bddtrue, bddfalse *}
+ALSO    {* bdd\_setvarnum, BDD\_ithvar, bddtrue, bddfalse *}
 */
-BDD bdd_nithvar(int var)
+BDD BDD_nithvar(int var)
 {
    if (var < 0  ||  var >= bddvarnum)
    {
@@ -931,7 +931,7 @@ PROTO   {* int bdd_varnum(void) *}
 DESCR   {* This function returns the number of variables defined by
            a call to {\tt bdd\_setvarnum}.*}
 RETURN  {* The number of defined variables *}
-ALSO    {* bdd\_setvarnum, bdd\_ithvar *}
+ALSO    {* bdd\_setvarnum, BDD\_ithvar *}
 */
 int bdd_varnum(void)
 {
@@ -1620,10 +1620,10 @@ int bdd_scanset(BDD r, int **varset, int *varnum)
 
 
 /*
-NAME    {* bdd\_makeset *}
+NAME    {* BDD\_makeset *}
 SECTION {* kernel *}
 SHORT   {* builds a BDD variable set from an integer array *}
-PROTO   {* BDD bdd_makeset(int *v, int n) *}
+PROTO   {* BDD BDD_makeset(int *v, int n) *}
 DESCR   {* Reads a set of variable numbers from the integer array {\tt v}
            which must hold exactly {\tt n} integers and then builds a BDD
 	   representing the variable set.
@@ -1635,7 +1635,7 @@ DESCR   {* Reads a set of variable numbers from the integer array {\tt v}
 	   time the set is needed. *}
 ALSO    {* bdd\_scanset *}
 RETURN {* A BDD variable set. *} */
-BDD bdd_makeset(int *varset, int varnum)
+BDD BDD_makeset(int *varset, int varnum)
 {
    int v, res=1;
    
@@ -1643,18 +1643,12 @@ BDD bdd_makeset(int *varset, int varnum)
    {
       BDD tmp;
       bdd_addref(res);
-      tmp = bdd_apply(res, bdd_ithvar(varset[v]), bddop_and);
+      tmp = bdd_apply(res, BDD_ithvar(varset[v]), bddop_and);
       bdd_delref(res);
       res = tmp;
    }
 
    return res;
 }
-
-/**********  This is a hack to work around issues about the C++ interface, getting direct access to the C version of the functions ******/
-BDD BDD_makeset(int *varset, int varnum) { return bdd_makeset(varset, varnum); }
-BDD BDD_ithvar(int var) { return bdd_ithvar(var); }
-BDD BDD_nithvar(int var) { return bdd_nithvar(var); }
-
 
 /* EOF */

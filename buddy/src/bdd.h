@@ -497,6 +497,9 @@ class bdd
    int operator==(const bdd &r) const;
    int operator!=(const bdd &r) const;
    
+   // Backdoor to access private value
+   inline BDD get_BDD() { return root; }
+
 private:
    BDD root;
 

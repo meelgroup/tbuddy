@@ -554,7 +554,7 @@ static int bdd_loaddata(FILE *ifile)
       if (low<0 || high<0 || var<0)
 	 return bdd_error(BDD_FORMAT);
 
-      root = bdd_addref( bdd_ite(bdd_ithvar(var), high, low) );
+      root = bdd_addref( bdd_ite(BDD_ithvar(var), high, low) );
 
       loadhash_add(key, root);
    }

@@ -50,10 +50,12 @@ ilist ilist_new(int max_length) {
     return result;
 }
 
-/* Free allocated ilist.  Only call on ones allocated via ilist_new */
+/* Free allocated ilist.  Will only free ones allocated via ilist_new */
 void ilist_free(ilist ils) {
-    int *p = ILIST_BASE(ils);
-    free(p);
+    if (ILIST_MAXLENGTHFIELD(ils) < 0) {
+	int *p = ILIST_BASE(ils);
+	free(p);
+    }
 }
 
 /* Return number of elements in ilist */
@@ -194,9 +196,9 @@ void ilist_reverse(int *ils) {
 /*
   Print elements of an ilist separated by sep
  */
-void ilist_print(ilist ils, FILE *out, char *sep) {
+void ilist_print(ilist ils, FILE *out, const char *sep) {
     int i;
-    char *space = "";
+    const char *space = "";
     if (ils == TAUTOLOGY_CLAUSE) {
 	fprintf(out, "TAUT");
 	return;
@@ -210,9 +212,9 @@ void ilist_print(ilist ils, FILE *out, char *sep) {
 /*
   Print elements of an ilist separated by sep
  */
-void ilist_format(ilist ils, char *out, char *sep, int maxlen) {
+void ilist_format(ilist ils, char *out, const char *sep, int maxlen) {
     int i;
-    char *space = "";
+    const char *space = "";
     if (ils == TAUTOLOGY_CLAUSE) {
 	snprintf(out, maxlen, "TAUT");
 	return;

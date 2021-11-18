@@ -193,7 +193,7 @@ bvec bvec_var(int bitnum, int offset, int step)
    v = bvec_build(bitnum,0);
    
    for (n=0 ; n<bitnum ; n++)
-      v.bitvec[n] = bdd_ithvar(offset+n*step);
+      v.bitvec[n] = BDD_ithvar(offset+n*step);
 
    return v;
 }
@@ -226,7 +226,7 @@ bvec bvec_varfdd(int var)
    v = bvec_build(varbitnum,0);
    
    for (n=0 ; n<v.bitnum ; n++)
-      v.bitvec[n] = bdd_ithvar(bddvar[n]);
+      v.bitvec[n] = BDD_ithvar(bddvar[n]);
 
    return v;
 }
@@ -250,7 +250,7 @@ bvec bvec_varvec(int bitnum, int *var)
    v = bvec_build(bitnum,0);
    
    for (n=0 ; n<bitnum ; n++)
-      v.bitvec[n] = bdd_ithvar(var[n]);
+      v.bitvec[n] = BDD_ithvar(var[n]);
 
    return v;
 }

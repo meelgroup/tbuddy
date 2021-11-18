@@ -82,7 +82,7 @@ static BDD bdd_from_clause(ilist clause) {
 	return r;
     for (i = 0; i < len; i++) {
 	int lit = clause[i];
-	BDD vr = bdd_addref(lit < 0 ? bdd_nithvar(-lit) : bdd_ithvar(lit));
+	BDD vr = bdd_addref(lit < 0 ? BDD_nithvar(-lit) : BDD_ithvar(lit));
 	BDD nr = bdd_or(r, vr);
 	bdd_addref(nr);
 	bdd_delref(vr);
@@ -238,7 +238,7 @@ BDD bdd_build_xor(ilist variables, int phase) {
     BDD r = phase ? bdd_true() : bdd_false();
     int i;
     for (i = 0; i < ilist_length(variables); i++) {
-	BDD lit = bdd_ithvar(variables[i]);
+	BDD lit = BDD_ithvar(variables[i]);
 	BDD nr = bdd_xor(r, lit);
 	bdd_addref(nr);
 	bdd_delref(r);
