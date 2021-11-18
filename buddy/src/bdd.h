@@ -287,8 +287,8 @@ extern BDD      bdd_true(void);
 extern BDD      bdd_false(void);
 #endif
 extern int      bdd_varnum(void);
-extern BDD      bdd_ithvar(int);
-extern BDD      bdd_nithvar(int);
+extern BDD      BDD_ithvar(int);
+extern BDD      BDD_nithvar(int);
 extern int      bdd_var(BDD);
 extern BDD      bdd_low(BDD);
 extern BDD      bdd_high(BDD);
@@ -297,7 +297,7 @@ extern BDD      bdd_addref(BDD);
 extern BDD      bdd_delref(BDD);
 extern void     bdd_gbc(void);
 extern int      bdd_scanset(BDD, int**, int*);
-extern BDD      bdd_makeset(int *, int);
+extern BDD      BDD_makeset(int *, int);
 extern bddPair* bdd_newpair(void);
 extern int      bdd_setpair(bddPair*, int, int);
 extern int      bdd_setpairs(bddPair*, int*, int*, int);
@@ -391,11 +391,6 @@ extern void     bdd_setvarorder(int *);
 extern void     bdd_printorder(void);
 extern void     bdd_fprintorder(FILE *);
 
-   /**** A Grimy Hack ****/
-extern BDD BDD_ithvar(int);
-extern BDD BDD_nithvar(int);
-extern BDD BDD_makeset(int*, int);
-
 
 #ifdef CPLUSPLUS
 }
@@ -455,6 +450,18 @@ extern const BDD bddtrue;
 #define BVEC_DIVZERO (-22) /* Division by zero */
 
 #define BDD_ERRNUM 24
+
+/*************************************************************************
+ The following hack gives functions the names expected from the C interface 
+ When writing C++, can still access the BDD functions
+*************************************************************************/
+
+#ifndef CPLUSPLUS
+#define bdd_ithvar BDD_ithvar
+#define bdd_nithvar BDD_nithvar
+#define bdd_makeset BDD_makeset
+#endif
+
 
 /*************************************************************************
    If this file is included from a C++ compiler then the following
@@ -611,10 +618,10 @@ inline void bdd_stats(bddStat& s)
 { bdd_stats(&s); }
 
 inline bdd bdd_ithvarpp(int v)
-{ return bdd_ithvar(v); }
+{ return BDD_ithvar(v); }
 
 inline bdd bdd_nithvarpp(int v)
-{ return bdd_nithvar(v); }
+{ return BDD_nithvar(v); }
 
 inline int bdd_var(const bdd &r)
 { return bdd_var(r.root); }
@@ -629,7 +636,7 @@ inline int bdd_scanset(const bdd &r, int *&v, int &n)
 { return bdd_scanset(r.root, &v, &n); }
 
 inline bdd bdd_makesetpp(int *v, int n)
-{ return bdd(bdd_makeset(v,n)); }
+{ return bdd(BDD_makeset(v,n)); }
 
 inline int bdd_setbddpair(bddPair *p, int ov, const bdd &nv)
 { return bdd_setbddpair(p,ov,nv.root); }
