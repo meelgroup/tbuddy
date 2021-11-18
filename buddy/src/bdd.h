@@ -164,6 +164,7 @@ PROTO   {* typedef struct s_bddGbcStat
 {
    int nodes;
    int freenodes;
+   int prevfreednodes;
    long time;
    long sumtime;
    int num;
@@ -171,6 +172,7 @@ PROTO   {* typedef struct s_bddGbcStat
 DESCR   {* The fields are \\[\baselineskip] \begin{tabular}{ll}
   {\tt nodes}     & Total number of allocated nodes in the nodetable \\
   {\tt freenodes} & Number of free nodes in the nodetable \\
+  {\tt prevfreednodes} & number of bdd nodes that were freed during the preceding garbage collection \\
   {\tt time}      & Time used for garbage collection this time \\
   {\tt sumtime}   & Total time used for garbage collection \\
   {\tt num}       & number of garbage collections done until now
@@ -181,6 +183,7 @@ typedef struct s_bddGbcStat
 {
    int nodes;
    int freenodes;
+   int prevfreednodes;
    long time;
    long sumtime;
    int num;

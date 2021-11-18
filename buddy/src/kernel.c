@@ -1085,8 +1085,8 @@ void bdd_default_gbchandler(int pre, bddGbcStat *s)
 {
    if (!pre)
    {
-      printf("Garbage collection #%d: %d nodes / %d free",
-	     s->num, s->nodes, s->freenodes);
+      printf("Garbage collection #%d: %d nodes / %d free / %d previously freed ",
+	     s->num, s->nodes, s->freenodes, s->prevfreednodes);
       printf(" / %.1fs / %.1fs total\n",
 	     (float)s->time/(float)(CLOCKS_PER_SEC),
 	     (float)s->sumtime/(float)CLOCKS_PER_SEC);
@@ -1128,6 +1128,7 @@ void bdd_gbc(void)
    int *r;
    int n;
    long int c2, c1 = clock();
+   int freed = 0;
 
 #if ENABLE_TBDD
    int dbuf[4+ILIST_OVHD];
@@ -1189,6 +1190,7 @@ void bdd_gbc(void)
       {
 #if ENABLE_TBDD	  
 	  if (LOWp(node) != -1) {
+	      freed++;
 	      dlist = ilist_make(dbuf, 4);
 	      /* Delete defining clauses */
 	      if ((id = bdd_dclause_p(node, DEF_HU)) != TAUTOLOGY)
@@ -1204,6 +1206,9 @@ void bdd_gbc(void)
 		  print_proof_comment(2, "Delete defining clauses for node N%d", XVARp(node));
 	      delete_clauses(dlist);
 	  }
+#else
+	 if (LOWp(node) != 1)
+	     freed++;
 #endif
 	 LOWp(node) = -1;
 	 node->next = bddfreepos;
@@ -1226,6 +1231,7 @@ void bdd_gbc(void)
       s.time = c2-c1;
       s.sumtime = gbcclock;
       s.num = gbcollectnum;
+      s.prevfreednodes = freed;
       gbc_handler(0, &s);
    }
 }
