@@ -105,31 +105,6 @@ extern void ilist_format(ilist ils, char *out, char *sep, int maxlen);
 }
 #endif
 
-#ifdef CPLUSPLUS
-class Ilist {
-
-public:
-    
-    Ilist(int *buf, int max_length) { list = ilist_make(buf, max_length); }
-    Ilist(int max_length) { list = ilist_new(max_length); }
-    ~Ilist() { ilist_free(list); }
-    push(int val) { list = ilist_push(list, val);
-    fill1(int val1) { list = ilist_fill1(list, val1); }
-    fill2(int val1, int val2) { list = ilist_fill1(list, val1, val2); }
-    fill3(int val1, int val2, int val3) { list = ilist_fill1(list, val1, val2, val3); }
-    fill4(int val1, int val2, int val4) { list = ilist_fill1(list, val1, val2, val3, val4); }
-    resize(int nlength) { list = ilist_resize(list, nlength); }
-    int length()  { return ilist_length(list); }
-    print(FILE *out, const char *sep) { ilist_print(out, sep); }
-    format(char *out, const char *sep, int maxlen) { ilist_format(out, sep, maxlen); }
-    int& operator[](int i) { return list[i]; }
-private:
-    ilist list;
-
-
-};
-#endif
-
 
 #endif /* _ILIST_H */
 /* EOF */
