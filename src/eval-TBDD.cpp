@@ -14,9 +14,9 @@
 // GC Parameters
 
 // Minimum number of dead nodes to trigger GC
-#define COLLECT_MIN 50000
+#define COLLECT_MIN 100000
 // Maximum number of nodes to keep around without GC
-#define COLLECT_MAX 500000
+#define COLLECT_MAX 1000000
 // Minimum fraction of dead:total nodes to trigger GC
 #define COLLECT_FRACTION 0.20
 
