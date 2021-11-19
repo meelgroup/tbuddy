@@ -206,8 +206,8 @@ public:
     tp->set_term_id(terms.size());
     max_bdd = std::max(max_bdd, bdd_nodecount(tp->get_root()));
     terms.push_back(tp);
-    if (verblevel >= 3) 
-      std::cout << "Adding term #" << tp->get_term_id() << std::endl;
+    //    if (verblevel >= 3) 
+    //      std::cout << "Adding term #" << tp->get_term_id() << std::endl;
     total_count += tp->get_node_count();
   }
 
@@ -288,7 +288,6 @@ public:
       Term *tpn = conjunct(tp1, tp2);
       if (tpn->get_root() == bdd_false()) {
 	tbdd result = tpn->get_fun();
-	flush();
 	return result;
       }
     }
@@ -306,7 +305,6 @@ public:
       if (root == bdd_false()) {
 	// Formula is trivially false
 	tbdd result = tp->get_fun();
-	flush();
 	return result;
       }
       if (root != bdd_true()) {
@@ -321,11 +319,15 @@ public:
       std::cout << "Placed " << tcount << " terms into " << bcount << " buckets." << std::endl;
 
     for (int bvar = 1 ; bvar <= max_variable; bvar++) {
-      while (buckets[bvar].size() > 1) {
-	Term *tp1 = terms[buckets[bvar].back()];
-	buckets[bvar].pop_back();
-	Term *tp2 = terms[buckets[bvar].back()];
-	buckets[bvar].pop_back();
+      int next_idx = 0;
+      if (buckets[bvar].size() == 0) {
+	if (verblevel >= 3)
+	  std::cout << "Bucket " << bvar << " empty.  Skipping" << std::endl;
+	continue;
+      }
+      while (next_idx < buckets[bvar].size() - 1) {
+	Term *tp1 = terms[buckets[bvar][next_idx++]];
+	Term *tp2 = terms[buckets[bvar][next_idx++]];
 	Term *tpn = conjunct(tp1, tp2);
 	bdd root = tpn->get_root();
 	if (root == bdd_false()) {
@@ -333,7 +335,6 @@ public:
 	    std::cout << "Bucket " << bvar << " Conjunction of terms " 
 		      << tp1->get_term_id() << " and " << tp2->get_term_id() << " yields FALSE" << std::endl;
 	  tbdd result = tpn->get_fun();
-	  flush();
 	  return result;
 	}
 	int top = bdd_var(root);
@@ -343,9 +344,8 @@ public:
 		    << tpn->get_term_id() << " with top variable " << top << std::endl;
 	buckets[top].push_back(tpn->get_term_id());
       }
-      if (buckets[bvar].size() == 1) {
-	Term *tp = terms[buckets[bvar].back()];
-	buckets[bvar].pop_back();
+      if (next_idx == buckets[bvar].size()-1) {
+	Term *tp = terms[buckets[bvar][next_idx]];
 	Term *tpn = equantify(tp, bvar);
 	bdd root = tpn->get_root();
 	if (verblevel >= 1 && bvar % 100 == 0)
@@ -357,14 +357,19 @@ public:
 	} else {
 	  int top = bdd_var(root);
 	  buckets[top].push_back(tpn->get_term_id());
-	  if (verblevel >= 3)
+	  if (verblevel >= 3) {
 	    std::cout << "Bucket " << bvar << " Quantification of term " 
 		      << tp->get_term_id() << " yields term " << tpn->get_term_id() 
 		      << " with top variable " << top << std::endl;
+	  }
+
 	}
       }
     }
     // If get here, formula must be satisfiable
+    if (verblevel >= 1) {
+      std::cout << "Tautology" << std::endl;
+    }
     return tbdd_tautology();
   }
 
@@ -454,7 +459,6 @@ public:
 		std::cout << "Schedule line #" << line << ".  Generated BDD 0" << std::endl;
 	      }
 	      tbdd result = product->get_fun();
-	      flush();
 	      return result;
 	    }
 	  }

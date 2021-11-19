@@ -174,10 +174,6 @@ int generate_clause(ilist literals, ilist hints) {
     hints = clean_hints(hints);
     if (clause == TAUTOLOGY_CLAUSE)
 	return TAUTOLOGY;
-    if (proof_file == NULL) {
-	fprintf(stderr, "Invalid proof file!.  Switching to stdout\n");
-	proof_file = stdout;
-    }
     if (do_lrat)
 	fprintf(proof_file, "%d ", cid);
     ilist_print(clause, proof_file, " ");
