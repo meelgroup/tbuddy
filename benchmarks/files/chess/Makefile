@@ -3,7 +3,7 @@ N = 08
 GDIR=../../generators
 GENERATOR = $(GDIR)/chess.py
 BSAT = ../../../src/bsat
-BSATT = ../../../src/bsat-TBDD
+TBSAT = ../../../src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
 VLEVEL=1
 
@@ -11,25 +11,31 @@ VLEVEL=1
 chess-$(N): $(GENERATOR)
 	$(INTERP) $(GENERATOR) -n $(N) -r chess-$(N)
 
-.SUFFIXES: .cnf .ldata .bdata .sdata .fsdata
+.SUFFIXES: .cnf .ldata .bdata .sdata .fldata .fbdata .fsdata
 
 .cnf.ldata:
-	$(BSATT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
+	$(TBSAT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	rm $*.lrat
 
 .cnf.bdata:
-	$(BSATT) -v $(VLEVEL) -b -i $< -o $*.lrat | tee $@
+	$(TBSAT) -v $(VLEVEL) -b -i $< -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	rm $*.lrat
 
 .cnf.sdata:
-	$(BSATT) -v $(VLEVEL) -i $< -s $*.schedule -o $*.lrat | tee $@
+	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	rm $*.lrat
+
+.cnf.fldata:
+	$(BSAT) -v $(VLEVEL) -i $< | tee $@
+
+.cnf.fbdata:
+	$(BSAT) -v $(VLEVEL) -i $< -b | tee $@
 
 .cnf.fsdata:
 	$(BSAT) -v $(VLEVEL) -i $< -s $*.schedule | tee $@
@@ -39,7 +45,7 @@ clean:
 	rm -f *.lrat *~
 
 superclean: clean
-	rm -f *.ldata *.bdata *.sdata *.fsdata
+	rm -f *.ldata *.bdata *.sdata *.fldata *.fbdata *.fsdata
 
 
 
