@@ -11,8 +11,9 @@ TLIB = $(LDIR)/tbuddy.a
 bsat: clause.cpp clause.h eval.cpp bsat.cpp 
 	$(CXX) $(CFLAGS) $(INC) -o bsat clause.cpp eval.cpp bsat.cpp $(LIB)
 
-bsat-BDD: clause.cpp clause.h eval-BDD.cpp bsat.cpp 
-	$(CXX) $(CFLAGS) $(INC) -o bsat-BDD clause.cpp eval-BDD.cpp bsat.cpp $(LIB)
+tbsat: clause.cpp clause.h teval.cpp bsat.cpp 
+	$(CXX) $(CFLAGS) $(INC) -o tbsat clause.cpp teval.cpp bsat.cpp $(TLIB)
+
 
 bsat-TBDD: clause.cpp clause.h eval-TBDD.cpp bsat.cpp 
 	$(CXX) $(CFLAGS) $(INC) -o bsat-TBDD clause.cpp eval-TBDD.cpp bsat.cpp $(TLIB)
@@ -34,5 +35,5 @@ evalhack.o: evalhack.c evalhack.h
 
 clean:
 	rm -f *.o *~
-	rm -f bsat ctest bsat-BDD bsat-TBDD
+	rm -f bsat ctest tbsat bsat-TBDD
 
