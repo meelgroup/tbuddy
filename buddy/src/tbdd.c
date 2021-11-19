@@ -39,7 +39,7 @@ void tbdd_set_verbose(int level) {
    proof_step = TAUTOLOGY
    root = 1
  */
-TBDD tbdd_tautology() {
+TBDD TBDD_tautology() {
     TBDD rr;
     rr.root = bdd_true();
     rr.clause_id = TAUTOLOGY;
@@ -50,7 +50,7 @@ TBDD tbdd_tautology() {
    proof_step = TAUTOLOGY
    root = 0
  */
-TBDD tbdd_null() {
+TBDD TBDD_null() {
     TBDD rr;
     rr.root = bdd_false();
     rr.clause_id = TAUTOLOGY;

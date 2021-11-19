@@ -33,7 +33,7 @@ typedef struct {
     int clause_id;  /* Id of justifying clause */
 } TBDD;
 
-//#ifndef CPLUSPLUS
+//#ifdef CPLUSPLUS
 typedef TBDD tbdd;
 //#endif
 
@@ -97,14 +97,14 @@ extern void tbdd_delref(TBDD tr);
    proof_step = TAUTOLOGY
    root = 1
  */
-extern TBDD tbdd_tautology();
+extern TBDD TBDD_tautology();
 
 /* 
    proof_step = TAUTOLOGY
    root = 0 (Used as an error return)
  */
 
-extern TBDD tbdd_null();
+extern TBDD TBDD_null();
 
 /*
    Test whether underlying BDD is 0
@@ -128,6 +128,7 @@ extern TBDD      tbdd_and(TBDD, TBDD);
 /* Low-level functions to implement operations on TBDDs */
 extern TBDD      bdd_andj(BDD, BDD);    
 extern TBDD      bdd_imptstj(BDD, BDD);    
+
 /*
   Upgrade ordinary BDD to TBDD by proving
   implication from another TBDD
@@ -168,12 +169,19 @@ extern void assert_clause(ilist clause);
 /*
   Build BDD representation of XOR (phase = 1) or XNOR (phase = 0)
  */
-extern BDD bdd_build_xor(ilist variables, int phase);
+extern BDD BDD_build_xor(ilist variables, int phase);
 
 #ifdef CPLUSPLUS
 }
 #endif
 
+#ifdef CPLUSPLUS
+#define tbdd_tautology TBDD_tautology
+#define tbdd_null TBDD_null
+#else
+#define tbdd_tautology TBDD_tautology
+#define tbdd_null TBDD_null
+#endif
 
 #if 0 /* Save to later */
 /*============================================
