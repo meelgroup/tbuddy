@@ -201,12 +201,16 @@ class tbdd
     tbdd(TBDD tr)                     { bdd_addref(root=tr.root); clause_id=tr.clause_id; }
     tbdd(ilist clause)                { tbdd(tbdd_from_clause(clause)) ; }
     tbdd(int id)                      { tbdd(tbdd_from_clause_id(id)) ; }
+    tbdd(void)                        { root=1; clause_id = TAUTOLOGY; }
 
     ~tbdd(void)                       { bdd_delref(root); }
 
-    tbdd operator=(const tbdd &tr);
+    tbdd operator=(const tbdd &tr)    { if (root != tr.root) { bdd_delref(root); root = tr.root; bdd_addref(root); } clause_id = tr.clause_id; return *this; }
     tbdd operator&(const tbdd &tr) const;
     tbdd operator&=(const tbdd &tr);
+
+    bdd get_root()                     { return bdd(root); }
+    int get_clause_id()                { return clause_id; }
 
  private:
     BDD root;
@@ -221,6 +225,7 @@ class tbdd
     friend bool tbdd_is_false(tbdd &tr);
     friend tbdd tbdd_and(tbdd &tl, tbdd &tr);
     friend tbdd tbdd_validate(bdd r, tbdd &tr);
+    friend tbdd tbdd_validate(bdd r, tbdd tr);
     friend tbdd tbdd_validate_with_and(bdd r, tbdd &tl, tbdd &tr);
     friend tbdd tbdd_trust(bdd r);
     friend int tbdd_validate_clause(ilist clause, tbdd &tr);
@@ -243,6 +248,9 @@ inline tbdd tbdd_and(tbdd &tl, tbdd &tr)
 { TBDD TL, TR; tbdd_xfer(tl, TL); tbdd_xfer(tr, TR); return tbdd(tbdd_and(TL, TR)); }
 
 inline tbdd tbdd_validate(bdd r, tbdd &tr)
+{ TBDD TR; tbdd_xfer(tr, TR); return tbdd(tbdd_validate(r.get_BDD(), TR)); }
+
+inline tbdd tbdd_validate(bdd r, tbdd tr)
 { TBDD TR; tbdd_xfer(tr, TR); return tbdd(tbdd_validate(r.get_BDD(), TR)); }
 
 inline tbdd tbdd_validate_with_and(bdd r, tbdd &tl, tbdd &tr)

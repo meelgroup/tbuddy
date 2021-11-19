@@ -506,11 +506,12 @@ class bdd
    
    // Backdoor to access private value
    inline BDD get_BDD() const { return root; }
+   // Backdoor to create bdd from BDD
+   bdd(BDD r) { bdd_addref(root=r); }
 
 private:
    BDD root;
 
-   bdd(BDD r) { bdd_addref(root=r); }
    bdd operator=(BDD r);
 
    friend int      bdd_init(int, int);

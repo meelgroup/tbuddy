@@ -133,9 +133,9 @@ TBDD tbdd_from_clause_id(int id) {
     ilist_fill1(uclause, XVAR(r));
     bdd_delref(r);
     rr.root = r;
-    print_proof_comment(2, "Validate BDD representation of Clause #%d", id);
     rr.clause_id = generate_clause(uclause, ant);
-    return tbdd_trust(r);
+    print_proof_comment(2, "Validate BDD representation of Clause #%d.  Node = N%d.", id, NNAME(rr.root));
+    return rr;
 }
 
 
@@ -188,8 +188,6 @@ TBDD tbdd_trust(BDD r) {
  */
 TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     TBDD t = bdd_andj(bdd_addref(tr1.root), bdd_addref(tr2.root));
-    bdd_delref(tr1.root);
-    bdd_delref(tr2.root);
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
     int abuf[3+ILIST_OVHD];
@@ -199,6 +197,8 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     ilist_fill3(ant, ABS(tr1.clause_id), ABS(tr2.clause_id), ABS(t.clause_id));
     /* Insert proof of unit clause into t's justification */
     t.clause_id = generate_clause(clause, ant);
+    bdd_delref(tr1.root);
+    bdd_delref(tr2.root);
     return t;
 }
 
