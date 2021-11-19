@@ -12,27 +12,30 @@ static int skip_line(FILE *infile) {
 }
 
 // Put literals in descending order of the variables
-static bool abs_less(int32_t x, int32_t y) {
+static bool abs_less(int x, int y) {
   return abs(x) > abs(y);
 }
 
 
-Clause::Clause() { is_tautology = false;}
+Clause::Clause() { contents = ilist_new(0); is_tautology = false; }
 
-Clause::Clause(int32_t *array, size_t len) {
+Clause::~Clause() { ilist_free(contents); }
+
+Clause::Clause(int *array, size_t len) {
   is_tautology = false;
-  contents.resize(len, 0);
+  contents = ilist_new(len);
   for (int i = 0; i < len; i++)
-    contents[i] = array[i];
+    add(array[i]);
   canonize();
 }
 
 Clause::Clause(FILE *infile) {
-  is_tautology = false;
   int rval;
   int lit;
-    
   int c;
+  is_tautology = false;
+  contents = ilist_new(4);
+
   // Skip blank lines and comments
   while ((c = getc(infile)) != EOF) {
     if (c == 'c')
@@ -54,45 +57,46 @@ Clause::Clause(FILE *infile) {
   canonize();
 }
 
-void Clause::add(int32_t val) {
-  if (!is_tautology)
-    contents.push_back(val);
+void Clause::add(int val) {
+  contents = ilist_push(contents, val);
 }
 
 size_t Clause::length() {
-  return contents.size();
+  if (is_tautology)
+    return 0;
+  return ilist_length(contents);
 }
 
 bool Clause::tautology() {
   return is_tautology;
 }
 
-int32_t Clause::max_variable() {
-  int32_t mvar = 0;
+int Clause::max_variable() {
+  int mvar = 0;
   if (is_tautology)
     return 0;
-  for (std::vector<int32_t>::iterator it = contents.begin(); it != contents.end(); it++) {
-    int32_t var = abs(*it);
+  for (int i = 0; i < length(); i++) {
+    int var = abs(contents[i]);
     mvar = std::max(var, mvar);
   }
   return mvar;
 }
 
 int * Clause::data() {
-  return contents.data();
+  return contents;
 }
 
-int32_t& Clause::operator[](int i) {
+int& Clause::operator[](int i) {
   return contents[i];
 }
 
 void Clause::canonize() {
-  std::sort(contents.begin(), contents.end(), abs_less);
-  int32_t last_lit = 0;
+  std::sort(contents, contents + length(), abs_less);
+  int last_lit = 0;
   size_t read_pos = 0;
   size_t write_pos = 0;
-  while(read_pos < contents.size()) {
-    int32_t lit = contents[read_pos++];
+  while(read_pos < length()) {
+    int lit = contents[read_pos++];
     if (abs(lit) == abs(last_lit)) {
       if (lit != last_lit) {
 	// Opposite literals encountered
@@ -105,26 +109,26 @@ void Clause::canonize() {
     last_lit = lit;
   }
   if (is_tautology) {
-    contents.resize(2, 0);
+    contents = ilist_resize(contents, 2);
     contents[0] = abs(last_lit);
     contents[1] = -abs(last_lit);
   } else
-    contents.resize(write_pos);
+    contents = ilist_resize(contents, write_pos);
 }
 
 void Clause::show() {
   if (is_tautology)
     std::cout << "c Tautology" << std::endl;
-  for (std::vector<int32_t>::iterator it = contents.begin(); it != contents.end(); it++)
-    std::cout << *it << ' ';
+  for (int i = 0; i < length(); i++)
+    std::cout << contents[i] << ' ';
   std::cout << '0' << std::endl;
 }
 
 void Clause::show(std::ofstream &outstream) {
   if (is_tautology)
     outstream << "c Tautology" << std::endl;
-  for (std::vector<int32_t>::iterator it = contents.begin(); it != contents.end(); it++)
-    outstream << *it << ' ';
+  for (int i = 0; i < length(); i++)
+    outstream << contents[i] << ' ';
   outstream << '0' << std::endl;
 }
 
@@ -132,16 +136,16 @@ void Clause::show(std::ofstream &outstream) {
 void Clause::show(FILE *outfile) {
   if (is_tautology)
     fprintf(outfile, "c Tautology\n");
-  for (std::vector<int32_t>::iterator it = contents.begin(); it != contents.end(); it++)
-    fprintf(outfile, "%d ", *it);
+  for (int i = 0; i < length(); i++)
+    fprintf(outfile, "%d ", contents[i]);
   fprintf(outfile, "0\n");
 }
 
 CNF::CNF() { read_failed = false; maxVar = 0; }
 
 CNF::CNF(FILE *infile) { 
-  int32_t expectedMax = 0;
-  int32_t expectedCount = 0;
+  int expectedMax = 0;
+  int expectedCount = 0;
   read_failed = false;
   maxVar = 0;
   int c;
@@ -187,7 +191,7 @@ CNF::CNF(FILE *infile) {
     if (clp->length() == 0)
       break;
     add(clp);
-    int32_t mvar = clp->max_variable();
+    int mvar = clp->max_variable();
     maxVar = std::max(maxVar, mvar);
   }
   if (maxVar > expectedMax) {
@@ -240,7 +244,7 @@ size_t CNF::clause_count() {
   return clauses.size();
 }
 
-int32_t CNF::max_variable() {
+int CNF::max_variable() {
   return maxVar;
 }
 

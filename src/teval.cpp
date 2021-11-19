@@ -173,7 +173,7 @@ public:
     ilist *clauses = new ilist[clause_count];
     for (int i = 0; i < clause_count; i++) {
       Clause *cp = cnf[i];
-      clauses[i] = ilist_copy_list(cp->data(), cp->length());
+      clauses[i] = cp->data();
 #if 0
       printf("Input clause #%d: [", i+1);
       ilist_print(clauses[i], stdout, (char *) " ");
@@ -185,11 +185,6 @@ public:
       fprintf(stderr, "Initialization failed.  Return code = %d\n", rcode);
       exit(1);
     }
-    /* Can free storage allocated for clauses */
-    for (int i = 0; i < clause_count; i++) {
-      ilist_free(clauses[i]);
-    }
-
     // Want to number terms starting at 1
     terms.resize(1, NULL);
     for (int i = 1; i <= clause_count; i++) {

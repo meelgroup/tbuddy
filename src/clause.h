@@ -1,9 +1,9 @@
 #pragma once
 
 #include <vector>
-#include <cstdint>
 #include <stdio.h>
 #include <fstream>
+#include "ilist.h"
 
 // Representations of clauses and sets of clauses
 
@@ -13,23 +13,25 @@
 // and literals ordered in descending order of the variables
 class Clause {
  private:
-    std::vector<int32_t> contents;
+    ilist contents;
     bool is_tautology;
  public:
 
     Clause();
 
-    Clause(int32_t *array, size_t len);
+    Clause(int *array, size_t len);
 
     Clause(FILE *infile);
 
-    void add(int32_t val);
+    ~Clause();
+
+    void add(int val);
 
     size_t length();
 
     bool tautology();
 
-    int32_t max_variable();
+    int max_variable();
 
     void canonize();
 
@@ -41,7 +43,7 @@ class Clause {
 
     int *data();
 
-    int32_t& operator[](int);
+    int& operator[](int);
 
 };
 
@@ -49,7 +51,7 @@ class Clause {
 class CNF {
  private:
     std::vector<Clause *> clauses;
-    int32_t maxVar;
+    int maxVar;
     bool read_failed;
 
  public:
@@ -57,6 +59,7 @@ class CNF {
 
     // Read clauses DIMACS format CNF file
     CNF(FILE *infile);
+
     // Did last read fail?
     bool failed();
 
@@ -71,7 +74,7 @@ class CNF {
     // Return number of clauses
     size_t clause_count();
     // Return ID of maximum variable encountered
-    int32_t max_variable();
+    int max_variable();
 
     Clause * operator[](int);    
 };

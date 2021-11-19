@@ -78,8 +78,6 @@ int main(int argc, char *argv[]) {
       printf("Elapsed seconds: %.2f\n", tod()-start);
     }
   }
-  if (cnf_file != NULL)
-    fclose(cnf_file);
   if (proof_file != NULL)
     fclose(proof_file);
   if (sched_file != NULL)

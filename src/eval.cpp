@@ -417,8 +417,8 @@ public:
     bdd_stats(s);
     std::cout << and_count << " conjunctions, " << quant_count << " quantifications." << std::endl;
     bdd_printstat();
-    std::cout << s.produced << " total nodes generated." << std::endl;
-    std::cout << "Max BDD size = " << max_bdd << std::endl;
+    std::cout << "Total BDD nodes: " << s.produced <<std::endl;
+    std::cout << "Max BDD size: " << max_bdd << std::endl;
   }
 
 };
