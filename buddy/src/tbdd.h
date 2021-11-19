@@ -33,9 +33,9 @@ typedef struct {
     int clause_id;  /* Id of justifying clause */
 } TBDD;
 
-//#ifdef CPLUSPLUS
+#ifndef CPLUSPLUS
 typedef TBDD tbdd;
-//#endif
+#endif
 
 #ifdef CPLUSPLUS
 extern "C" {
@@ -149,6 +149,12 @@ extern TBDD tbdd_trust(BDD r);
 extern TBDD tbdd_and(TBDD tr1, TBDD tr2);
 
 /*
+  Form conjunction of TBDDs tl & tr.  Use to validate
+  BDD r
+ */
+extern TBDD tbdd_validate_with_and(BDD r, TBDD tl, TBDD tr);
+
+/*
   Validate that a clause is implied by a TBDD.
   Use this version when generating LRAT proofs
   Returns clause id.
@@ -175,35 +181,83 @@ extern BDD BDD_build_xor(ilist variables, int phase);
 }
 #endif
 
-#ifdef CPLUSPLUS
-#define tbdd_tautology TBDD_tautology
-#define tbdd_null TBDD_null
-#else
+#ifndef CPLUSPLUS
 #define tbdd_tautology TBDD_tautology
 #define tbdd_null TBDD_null
 #endif
 
-#if 0 /* Save to later */
+#ifdef CPLUSPLUS
 /*============================================
  C++ interface
 ============================================*/
-#ifdef CPLUSPLUS
 
 class tbdd
 {
  public:
 
-    tbdd(void)          { root=1; clause_id=TAUTOLOGY; }
-    tbdd(const tbdd &t) { bdd_addref(root=t.root); clause_id=t.clause_id; }
-    ~tbdd(void)         { bdd_delref(root); }
+    //    tbdd(const BDD &r, const int &id) { bdd_addref(root=r); clause_id=id; }
+    tbdd(const bdd &r, const int &id) { bdd_addref(root=r.get_BDD()); clause_id=id; }
+    tbdd(const tbdd &t)               { bdd_addref(root=t.root); clause_id=t.clause_id; }
+    tbdd(TBDD tr)                     { bdd_addref(root=tr.root); clause_id=tr.clause_id; }
+    tbdd(ilist clause)                { tbdd(tbdd_from_clause(clause)) ; }
+    tbdd(int id)                      { tbdd(tbdd_from_clause_id(id)) ; }
+
+    ~tbdd(void)                       { bdd_delref(root); }
+
+    tbdd operator=(const tbdd &tr);
+    tbdd operator&(const tbdd &tr) const;
+    tbdd operator&=(const tbdd &tr);
 
  private:
     BDD root;
     int clause_id;  /* Id of justifying clause */
 
+    //    friend int tbdd_init_drat(FILE *pfile, int variable_count, int clause_count);
+    //    friend int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses);
+    //    friend void tbdd_done();
+    //    friend void tbdd_set_verbose(int level);
+    friend tbdd tbdd_tautology(void);
+    friend tbdd tbdd_null(void);
+    friend bool tbdd_is_false(tbdd &tr);
+    friend tbdd tbdd_and(tbdd &tl, tbdd &tr);
+    friend tbdd tbdd_validate(bdd r, tbdd &tr);
+    friend tbdd tbdd_validate_with_and(bdd r, tbdd &tl, tbdd &tr);
+    friend tbdd tbdd_trust(bdd r);
+    friend int tbdd_validate_clause(ilist clause, tbdd &tr);
+
+    // Convert to low-level form
+    friend void tbdd_xfer(tbdd &tr, TBDD &res);
 };
+
+inline tbdd tbdd_tautology(void)
+{ return tbdd(TBDD_tautology()); }
+
+inline tbdd tbdd_null(void)
+{ return tbdd(TBDD_null()); }
+
+
+inline bool tbdd_is_false(tbdd &tr)
+{ return tr.root == bdd_false().get_BDD(); }
+
+inline tbdd tbdd_and(tbdd &tl, tbdd &tr)
+{ TBDD TL, TR; tbdd_xfer(tl, TL); tbdd_xfer(tr, TR); return tbdd(tbdd_and(TL, TR)); }
+
+inline tbdd tbdd_validate(bdd r, tbdd &tr)
+{ TBDD TR; tbdd_xfer(tr, TR); return tbdd(tbdd_validate(r.get_BDD(), TR)); }
+
+inline tbdd tbdd_validate_with_and(bdd r, tbdd &tl, tbdd &tr)
+{ TBDD TL, TR; tbdd_xfer(tl, TL); tbdd_xfer(tr, TR); return tbdd(tbdd_validate_with_and(r.get_BDD(), TL, TR)); }
+
+inline tbdd tbdd_trust(bdd r)
+{ return tbdd(tbdd_trust(r.get_BDD())); }
+
+inline void tbdd_xfer(tbdd &tr, TBDD &res)
+{ res.root = tr.root; res.clause_id = tr.clause_id; }
+
+inline int tbdd_validate_clause(ilist clause, tbdd &tr)
+{ TBDD TR; tbdd_xfer(tr, TR); return tbdd_validate_clause(clause, TR); }
+
 #endif /* CPLUSPLUS */
-#endif /* DISABLED */
 
 #endif /* _TBDD_H */
 /* EOF */

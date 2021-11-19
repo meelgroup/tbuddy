@@ -203,6 +203,19 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
 }
 
 /*
+  Form conjunction of TBDDs tl & tr.  Use to validate
+  BDD r
+ */
+TBDD tbdd_validate_with_and(BDD r, TBDD tl, TBDD tr) {
+    TBDD ta = tbdd_and(tl, tr);
+    bdd_addref(ta.root);
+    TBDD tres = tbdd_validate(r, ta);
+    bdd_delref(ta.root);
+    return tres;
+}
+
+
+/*
   Validate that a clause is implied by a TBDD.
   Use this version when generating LRAT proofs
   Returns clause id.
