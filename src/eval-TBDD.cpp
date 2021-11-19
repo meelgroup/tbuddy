@@ -198,7 +198,7 @@ public:
     // Want to number terms starting at 1
     terms.resize(1, NULL);
     for (int i = 1; i <= clause_count; i++) {
-      tbdd tc = tbdd_from_clause_id(i);
+      TBDD tc = tbdd_from_clause_id(i);
       add(new Term(tc));
     }
     min_active = 1;
@@ -283,7 +283,7 @@ public:
 	min_active++;
       if (min_active >= terms.size())
 	// Didn't find any terms.  Formula is tautology
-	return tbdd_tautology();
+	return TBDD_tautology();
       tp1 = terms[min_active++];
       while (min_active < terms.size() && !terms[min_active]->active())
 	min_active++;
@@ -372,7 +372,7 @@ public:
       }
     }
     // If get here, formula must be satisfiable
-    return tbdd_tautology();
+    return TBDD_tautology();
   }
 
   TBDD schedule_reduce(FILE *schedfile) {
@@ -541,7 +541,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int 
       std::cout << "Read " << cset.clause_count() << " clauses.  " 
 		<< cset.max_variable() << " variables" << std::endl;
   TermSet tset = TermSet(cset, proof_file, verblevel);
-  tbdd tr;
+  TBDD tr;
   if (sched_file != NULL)
     tr = tset.schedule_reduce(sched_file);
   else if (bucket)
