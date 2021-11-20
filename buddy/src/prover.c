@@ -230,7 +230,7 @@ void delete_clauses(ilist clause_ids) {
 	int i;
 	for (i = 0; i < ilist_length(clause_ids); i++) {
 	    int cid = clause_ids[i];
-	    ilist clause = all_clauses[cid];
+	    ilist clause = all_clauses[cid-1];
 	    if (clause == TAUTOLOGY_CLAUSE)
 		continue;
 	    rval = fprintf(proof_file, "d ");
@@ -243,7 +243,7 @@ void delete_clauses(ilist clause_ids) {
 	    if (rval < 0) 
 		bdd_error(BDD_FILE);
 	    ilist_free(clause);
-	    all_clauses[cid] = TAUTOLOGY_CLAUSE;
+	    all_clauses[cid-1] = TAUTOLOGY_CLAUSE;
 	}
     }
     live_clause_count -= ilist_length(clause_ids);
