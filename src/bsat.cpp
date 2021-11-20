@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <string.h>
 #include "clause.h"
 
-extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel);
+extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, bool lrat);
 
 // BDD-based SAT solver
 
@@ -28,15 +29,26 @@ double tod() {
     return 0.0;
 }
 
+char *get_extension(char *name) {
+  /* Look for '.' */
+  for (int i = strlen(name)-1; i > 0; i--) {
+    if (name[i] == '.')
+      return name+i+1;
+  }
+  return NULL;
+}
+
 int main(int argc, char *argv[]) {
   FILE *cnf_file = stdin;
   FILE *sched_file = NULL;
   FILE *proof_file = stdout;
   bool bucket = false;
+  bool lrat = true;
   int c;
   int verb = 1;
   while ((c = getopt(argc, argv, "hbv:i:o:s:")) != -1) {
     char buf[2] = { c, 0 };
+    char *extension;
     switch (c) {
     case 'h':
       usage(argv[0]);
@@ -66,6 +78,9 @@ int main(int argc, char *argv[]) {
 	std::cerr << "Couldn't open file " << optarg << std::endl;
 	exit(1);
       }
+      extension = get_extension(optarg);
+      if (extension && strcmp(extension, "drat") == 0)
+	lrat = false;
       break;
     default:
       std::cerr << "Unknown option '" << buf << "'" << std::endl;
@@ -73,7 +88,7 @@ int main(int argc, char *argv[]) {
     }
   }
   double start = tod();
-  if (solve(cnf_file, proof_file, sched_file, bucket, verb)) {
+  if (solve(cnf_file, proof_file, sched_file, bucket, verb, lrat)) {
     if (verb >= 1) {
       printf("Elapsed seconds: %.2f\n", tod()-start);
     }

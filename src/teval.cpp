@@ -163,7 +163,7 @@ private:
 
 public:
 
-  TermSet(CNF &cnf, FILE *proof_file, int verb) {
+  TermSet(CNF &cnf, FILE *proof_file, int verb, bool lrat) {
     verblevel = verb;
     tbdd_set_verbose(verb);
     total_count = dead_count = 0;
@@ -174,14 +174,9 @@ public:
     for (int i = 0; i < clause_count; i++) {
       Clause *cp = cnf[i];
       clauses[i] = cp->data();
-#if 0
-      printf("Input clause #%d: [", i+1);
-      ilist_print(clauses[i], stdout, (char *) " ");
-      printf("]\n");
-#endif
     }
     int rcode;
-    if ((rcode = tbdd_init_lrat(proof_file, max_variable, clause_count, clauses)) != 0) {
+    if ((rcode = tbdd_init(proof_file, max_variable, clause_count, clauses, lrat)) != 0) {
       fprintf(stderr, "Initialization failed.  Return code = %d\n", rcode);
       exit(1);
     }
@@ -520,7 +515,7 @@ public:
 
 };
 
-bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel) {
+bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, bool lrat) {
   CNF cset = CNF(cnf_file);
   fclose(cnf_file);
   if (cset.failed()) {
@@ -532,7 +527,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int 
     if (verblevel >= 1)
       std::cout << "Read " << cset.clause_count() << " clauses.  " 
 		<< cset.max_variable() << " variables" << std::endl;
-  TermSet tset = TermSet(cset, proof_file, verblevel);
+  TermSet tset = TermSet(cset, proof_file, verblevel, lrat);
   tbdd tr = tbdd_tautology();
   if (sched_file != NULL)
     tr = tset.schedule_reduce(sched_file);
