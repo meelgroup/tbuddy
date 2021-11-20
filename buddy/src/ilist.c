@@ -196,17 +196,21 @@ void ilist_reverse(int *ils) {
 /*
   Print elements of an ilist separated by sep
  */
-void ilist_print(ilist ils, FILE *out, const char *sep) {
+int ilist_print(ilist ils, FILE *out, const char *sep) {
     int i;
+    int rval;
     const char *space = "";
     if (ils == TAUTOLOGY_CLAUSE) {
-	fprintf(out, "TAUT");
-	return;
+	rval = fprintf(out, "TAUT");
+	return rval;
     }
     for (i = 0; i < ilist_length(ils); i++) {
-	fprintf(out, "%s%d", space, ils[i]);
+	rval = fprintf(out, "%s%d", space, ils[i]);
+	if (rval < 0)
+	    return rval;
 	space = sep;
     }
+    return rval;
 }
 
 /*

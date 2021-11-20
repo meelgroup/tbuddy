@@ -48,6 +48,12 @@ extern ilist defining_clause(ilist ils, dclause_t dtype, int nid, int vid, int h
 extern void print_clause(FILE *out, ilist clause);
 
 /*
+  Determine whether information can be printed to proof file.
+  Do so only when printing LRAT format and verbosity level is sufficiently high
+ */
+extern bool print_ok(int vlevel);
+
+/*
   Print comment in proof. Don't need to include "c" in string.
   Only will print when verbosity level at least that specified
   Newline printed at end

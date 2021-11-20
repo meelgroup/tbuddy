@@ -17,18 +17,16 @@
   - Number of clauses in CNF
   - The list of clauses, where clause i is at clauses[i-1]
   
+  When generating DRAT proofs, can provide NULL for argument input_clauses.
+
   These functions also initialize BuDDy, using parameters tuned according
   to the predicted complexity of the operations.
 
   Returns 0 if OK, otherwise error code
 */
 
-int tbdd_init_drat(FILE *pfile, int variable_count, int clause_count) {
-    return prover_init(pfile, variable_count, clause_count, NULL, false);
-}
-
-int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses) {
-    return prover_init(pfile, variable_count, clause_count, input_clauses, true);
+int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat) {
+    return prover_init(pfile, variable_count, clause_count, input_clauses, lrat);
 }
 
 void tbdd_set_verbose(int level) {

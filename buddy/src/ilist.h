@@ -91,9 +91,9 @@ extern ilist ilist_copy_list(int *ls, int length);
 extern void ilist_reverse(int *ls);
 
 /*
-  Print elements of an ilist separated by sep
+  Print elements of an ilist separated by sep.  Return value < 0 if error
  */
-extern void ilist_print(ilist ils, FILE *out, const char *sep);
+extern int ilist_print(ilist ils, FILE *out, const char *sep);
 
 /*
   Format string of elements of an ilist separated by sep

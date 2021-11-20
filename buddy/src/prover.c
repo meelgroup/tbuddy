@@ -25,6 +25,8 @@ static int input_clause_count = 0;
 static int alloc_clause_count = 0;
 static int live_clause_count = 0;
 
+static bool empty_clause_detected = false;
+
 // Parameters
 // Cutoff betweeen large and small allocations (in terms of clauses)
 #define BUDDY_THRESHOLD 1000
@@ -45,6 +47,7 @@ static int live_clause_count = 0;
 /* API functions */
 
 int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat) {
+    empty_clause_detected = false;
     do_lrat = lrat;
     proof_file = pfile;
     print_proof_comment(0, "Proof of CNF file with %d variables and %d clauses", variable_count, clause_count);    
@@ -53,17 +56,24 @@ int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_
     last_clause_id = input_clause_count = total_clause_count = clause_count;
     live_clause_count = max_live_clause_count = clause_count;
     alloc_clause_count = clause_count + INITIAL_CLAUSE_COUNT;
-    all_clauses = calloc(alloc_clause_count, sizeof(ilist *));
+    all_clauses = calloc(alloc_clause_count, sizeof(ilist));
     if (all_clauses == NULL) {
 	return bdd_error(BDD_MEMORY);
     }
     int cid;
-    for (cid = 0; cid < clause_count; cid++) {
-	all_clauses[cid] = ilist_copy(input_clauses[cid]);
-	print_proof_comment(2, "Input Clause #%d.  %d literals", cid+1, ilist_length(all_clauses[cid]));
+    if (input_clauses) {
+	for (cid = 0; cid < clause_count; cid++) {
+	    all_clauses[cid] = ilist_copy(input_clauses[cid]);
+	    if (print_ok(2)) {
+		fprintf(proof_file, "c Input Clause #%d: ", cid+1);
+		ilist_print(all_clauses[cid], proof_file, " ");
+		fprintf(proof_file, " 0\n");
+	    }
+	}
+    } else {
+	for (cid = 0; cid < clause_count; cid++)
+	    all_clauses[cid] = TAUTOLOGY_CLAUSE;
     }
-    
-
     int bnodes = clause_count < BUDDY_THRESHOLD ? BUDDY_NODES_SMALL : BUDDY_NODES_LARGE;
     int bcache = bnodes/BUDDY_CACHE_RATIO;
     int bincrease = bnodes/BUDDY_INCREASE_RATIO;
@@ -82,12 +92,12 @@ void prover_done() {
 
 /* Print clause */
 void print_clause(FILE *out, ilist clause) {
+    int i;
     if (clause == TAUTOLOGY_CLAUSE) {
 	fprintf(out, "TAUT");
 	return;
     }
     char *bstring = "[";
-    int i;
     for (i = 0; i < ilist_length(clause); i++) {
 	int lit = clause[i];
 	if (lit == TAUTOLOGY) 
@@ -115,11 +125,6 @@ int literal_compare(const void *l1p, const void *l2p) {
 }
 
 static ilist clean_clause(ilist clause) {
-#if 0
-    printf("Cleaning clause : [");
-    ilist_print(clause, stdout, " ");
-    printf("]\n");
-#endif
     if (clause == TAUTOLOGY_CLAUSE)
 	return clause;
     int len = ilist_length(clause);
@@ -144,11 +149,6 @@ static ilist clean_clause(ilist clause) {
 	plit = lit;
     }
     clause = ilist_resize(clause, puti);
-#if 0
-    printf("Result clause : [");
-    ilist_print(clause, stdout, " ");
-    printf("]\n");
-#endif
     return clause;
 }
 
@@ -167,21 +167,33 @@ static ilist clean_hints(ilist hints) {
 
 
 /* Return clause ID */
-/* For DRAT proof, antecedents can be NULL */
+/* For DRAT proof, hints can be NULL */
 int generate_clause(ilist literals, ilist hints) {
     ilist clause = clean_clause(literals);
     int cid = ++last_clause_id;
+    int rval = 0;
     hints = clean_hints(hints);
     if (clause == TAUTOLOGY_CLAUSE)
 	return TAUTOLOGY;
-    if (do_lrat)
-	fprintf(proof_file, "%d ", cid);
-    ilist_print(clause, proof_file, " ");
-    if (do_lrat) {
-	fprintf(proof_file, " 0 ");
-	ilist_print(hints, proof_file, " ");
+    if (!empty_clause_detected) {
+	if (do_lrat) {
+	    rval = fprintf(proof_file, "%d ", cid);
+	    if (rval < 0)
+		bdd_error(BDD_FILE);
+	}
+	ilist_print(clause, proof_file, " ");
+	if (do_lrat) {
+	    rval = fprintf(proof_file, " 0 ");
+	    if (rval < 0) 
+		bdd_error(BDD_FILE);
+	    rval = ilist_print(hints, proof_file, " ");
+	    if (rval < 0) 
+		bdd_error(BDD_FILE);
+	}
+	rval = fprintf(proof_file, " 0\n");
+	if (rval < 0) 
+	    bdd_error(BDD_FILE);
     }
-    fprintf(proof_file, " 0\n");
     total_clause_count++;
     live_clause_count++;
     max_live_clause_count = MAX(max_live_clause_count, live_clause_count);
@@ -191,29 +203,47 @@ int generate_clause(ilist literals, ilist hints) {
 	if (alloc_clause_count <= cid) {
 	    /* must expand */
 	    alloc_clause_count *= 2;
-	    all_clauses = realloc(all_clauses, alloc_clause_count * sizeof(int));
+	    all_clauses = realloc(all_clauses, alloc_clause_count * sizeof(ilist));
 	    if (all_clauses == NULL)
-		return bdd_error(BDD_MEMORY);
+		bdd_error(BDD_MEMORY);
 	}
 	all_clauses[cid-1] = ilist_copy(clause);
     }
+    empty_clause_detected = ilist_length(clause) == 0;
     return cid;
 }
 
 
 void delete_clauses(ilist clause_ids) {
+    int rval;
+    if (empty_clause_detected)
+	return;
     if (do_lrat) {
-	fprintf(proof_file, "%d d ", last_clause_id);
+	rval = fprintf(proof_file, "%d d ", last_clause_id);
+	if (rval < 0)
+	    bdd_error(BDD_FILE);
 	ilist_print(clause_ids, proof_file, " ");
-	fprintf(proof_file, " 0\n");
+	rval = fprintf(proof_file, " 0\n");
+	if (rval < 0) 
+	    bdd_error(BDD_FILE);
     } else {
-	int cid;
-	for (cid = 0; cid < ilist_length(clause_ids); cid++) {
-	    fprintf(proof_file, "d ");
-	    ilist_print(all_clauses[cid], proof_file, " ");
-	    fprintf(proof_file, " 0\n");
-	    ilist_free(all_clauses[cid]);
-	    all_clauses[cid] = NULL;
+	int i;
+	for (i = 0; i < ilist_length(clause_ids); i++) {
+	    int cid = clause_ids[i];
+	    ilist clause = all_clauses[cid];
+	    if (clause == TAUTOLOGY_CLAUSE)
+		continue;
+	    rval = fprintf(proof_file, "d ");
+	    if (rval < 0) 
+		bdd_error(BDD_FILE);
+	    rval = ilist_print(clause, proof_file, " ");
+	    if (rval < 0) 
+		bdd_error(BDD_FILE);
+	    rval = fprintf(proof_file, " 0\n");
+	    if (rval < 0) 
+		bdd_error(BDD_FILE);
+	    ilist_free(clause);
+	    all_clauses[cid] = TAUTOLOGY_CLAUSE;
 	}
     }
     live_clause_count -= ilist_length(clause_ids);
@@ -226,19 +256,25 @@ ilist get_input_clause(int id) {
     return all_clauses[id-1];
 }
 
+bool print_ok(int vlevel) {
+    return do_lrat && !empty_clause_detected && verbosity_level >= vlevel;
+}
 
 void print_proof_comment(int vlevel, char *fmt, ...) {
-    if (proof_file == NULL) {
-	fprintf(stderr, "When printing comment.  Invalid proof file.  Switching to stdout\n");
-	proof_file = stdout;
-    }
-    if (verbosity_level >= vlevel) {
+    int rval;
+    if (print_ok(vlevel)) {
 	va_list vlist;
-	fprintf(proof_file, "c ");
+	rval = fprintf(proof_file, "c ");
+	if (rval < 0) 
+	    bdd_error(BDD_FILE);
 	va_start(vlist, fmt);
-	vfprintf(proof_file, fmt, vlist);
+	rval = vfprintf(proof_file, fmt, vlist);
+	if (rval < 0) 
+	    bdd_error(BDD_FILE);
 	va_end(vlist);
-	fprintf(proof_file, "\n");
+	rval = fprintf(proof_file, "\n");
+	if (rval < 0) 
+	    bdd_error(BDD_FILE);
     }
 }
 
@@ -361,7 +397,7 @@ static bool rup_check(ilist target_clause, jtype_t *horder, int hcount) {
     int oi, hi, li, ui;
     for (ui = 0; ui < ilist_length(target_clause); ui++)
 	ilist_push(ulist, -target_clause[ui]);
-    if (verbosity_level >= 4) {
+    if (print_ok(4)) {
 	fprintf(proof_file, "c RUP start.  Target = [");
 	ilist_print(target_clause, proof_file, " ");
 	fprintf(proof_file, "]\n");
@@ -376,7 +412,7 @@ static bool rup_check(ilist target_clause, jtype_t *horder, int hcount) {
 	    ilist_resize(cclause, 0);
 	    for (li = 0; li < ilist_length(clause); li++)
 		ilist_push(cclause, clause[li]);
-	    if (verbosity_level >= 4) {
+	    if (print_ok(4)) {
 		fprintf(proof_file, "c   RUP step.  Units = [");
 		ilist_print(ulist, proof_file, " ");
 		fprintf(proof_file, "] Clause = %s\n", hint_name[hi]);
@@ -384,7 +420,7 @@ static bool rup_check(ilist target_clause, jtype_t *horder, int hcount) {
 	    li = 0;
 	    while (li < ilist_length(cclause)) {
 		int lit = cclause[li];
-		if (verbosity_level >= 5) {
+		if (print_ok(5)) {
 		    fprintf(proof_file, "c     cclause = [");
 		    ilist_print(cclause, proof_file, " ");
 		    fprintf(proof_file, "]  ");
@@ -396,13 +432,13 @@ static bool rup_check(ilist target_clause, jtype_t *horder, int hcount) {
 			break;
 		    }
 		    if (lit == ulist[ui]) {
-			if (verbosity_level >= 5)
+			if (print_ok(5))
 			    fprintf(proof_file, "Unit %d Found.  Creates tautology\n", -lit);
 			return false;
 		    }
 		}
 		if (found) { 
-		    if (verbosity_level >= 5)
+		    if (print_ok(5))
 			fprintf(proof_file, "Unit %d found.  Deleting %d\n", -lit, lit);
 		    if (ilist_length(cclause) == 1) {
 			print_proof_comment(4, "   Conflict detected");
@@ -416,7 +452,7 @@ static bool rup_check(ilist target_clause, jtype_t *horder, int hcount) {
 			ilist_resize(cclause, nlength);
 		    }
 		} else {
-		    if (verbosity_level >= 5)
+		    if (print_ok(5))
 			fprintf(proof_file, "Unit %d NOT found.  Keeping %d\n", -lit, lit);
 		    li++;
 		}
@@ -459,7 +495,7 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	print_proof_comment(2, "Tautology");
 	return TAUTOLOGY;
     }
-    if (verbosity_level >= 3) {
+    if (print_ok(3)) {
 	fprintf(proof_file, "Target clause = [");
 	ilist_print(targ, proof_file, " ");
 	fprintf(proof_file, "]\n");
@@ -512,7 +548,7 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
     }
 
     complete_hints();
-    if (verbosity_level >= 3) {
+    if (print_ok(3)) {
 	print_proof_comment(3, "Hints:");
 	show_hints();
     }

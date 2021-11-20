@@ -61,8 +61,7 @@ extern "C" {
   Returns 0 if OK, otherwise error code
 */
 
-extern int tbdd_init_drat(FILE *pfile, int variable_count, int clause_count);
-extern int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses);
+extern int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat);
 
 /*
   Deallocate all resources used by TBDD
