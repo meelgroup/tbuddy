@@ -1,6 +1,7 @@
 #!/bin/sh
 
-make superclean
+make clean
+rm -f *.ldata *.sdata *.bdata
 
 make 01-unsat2.ldata
 make 01-unsat2.bdata
