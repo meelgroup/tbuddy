@@ -10,9 +10,8 @@
 // GC Parameters
 
 // Minimum number of dead nodes to trigger GC
-#define COLLECT_MIN 200000
-// Maximum number of nodes to keep around without GC
-#define COLLECT_MAX 2000000
+#define COLLECT_MIN_LRAT 200000
+#define COLLECT_MIN_DRAT  20000
 // Minimum fraction of dead:total nodes to trigger GC
 #define COLLECT_FRACTION 0.20
 
@@ -139,6 +138,7 @@ private:
   int clause_count;
   int32_t max_variable;
   int verblevel;
+  bool do_lrat;
   // Estimated total number of nodes
   int total_count;
   // Estimated number of unreachable nodes
@@ -150,8 +150,8 @@ private:
   int max_bdd;
 
   void check_gc() {
-    if (dead_count >= COLLECT_MAX 
-	|| (dead_count >= COLLECT_MIN && (double) dead_count / total_count >= COLLECT_FRACTION)) {
+    int collect_min = do_lrat ? COLLECT_MIN_LRAT : COLLECT_MIN_DRAT;
+    if (dead_count >= collect_min && (double) dead_count / total_count >= COLLECT_FRACTION) {
       if (verbosity_level >= 2) {
 	std::cout << "Initiating GC.  Estimated total nodes = " << total_count << ".  Estimated dead nodes = " << dead_count << std::endl;
       }
@@ -165,6 +165,7 @@ public:
 
   TermSet(CNF &cnf, FILE *proof_file, int verb, bool lrat) {
     verblevel = verb;
+    do_lrat = lrat;
     tbdd_set_verbose(verb);
     total_count = dead_count = 0;
     clause_count = cnf.clause_count();
