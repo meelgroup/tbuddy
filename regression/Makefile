@@ -1,10 +1,11 @@
 BSAT = ../src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
+DRAT = ~/repos/drat-trim/drat-trim
 
 VLEVEL=1
 RM=rm -f
 
-.SUFFIXES: .cnf .ldata .bdata .sdata
+.SUFFIXES: .cnf .ldata .bdata .sdata .lddata .bddata .sddata
 
 .cnf.ldata:
 	$(BSAT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
@@ -21,8 +22,24 @@ RM=rm -f
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
 
+.cnf.lddata:
+	$(BSAT) -v $(VLEVEL) -i $< -o $*.drat | tee $@
+	$(DRAT) $< $*.drat | tee -a $@
+	$(RM) $*.drat
+
+.cnf.bddata:
+	$(BSAT) -v $(VLEVEL) -b -i $< -o $*.drat | tee $@
+	$(DRAT) $< $*.drat | tee -a $@
+	$(RM) $*.drat
+
+.cnf.sddata:
+	$(BSAT) -v $(VLEVEL) -i $< -s $*.schedule -o $*.drat | tee $@
+	$(DRAT) $< $*.drat | tee -a $@
+	$(RM) $*.drat
+
+
 clean:
-	rm -f *.lrat *~
+	rm -f *.lrat *.drat *~
 
 superclean: clean
-	rm -f *.ldata *.bdata *.sdata
+	rm -f *.ldata *.bdata *.sdata *.lddata *.bddata *.sddata
