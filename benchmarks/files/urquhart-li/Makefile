@@ -7,6 +7,7 @@ BSAT = ../../../src/bsat
 TBSAT = ../../../src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
 VLEVEL=1
+RM=rm
 
 urquhart-li-$(M): $(GENERATOR)
 	$(GENERATOR) -m$(M) -p$(PCT) -furquhart-li-$(M).cnf
@@ -17,13 +18,13 @@ urquhart-li-$(M): $(GENERATOR)
 	$(TBSAT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
-	rm $*.lrat
+	$(RM) $*.lrat
 
 .cnf.bdata:
 	$(TBSAT) -v $(VLEVEL) -b -i $< -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
-	rm $*.lrat
+	$(RM) $*.lrat
 
 .cnf.fldata:
 	$(BSAT) -v $(VLEVEL) -i $< | tee $@

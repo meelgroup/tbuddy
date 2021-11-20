@@ -6,7 +6,7 @@ BSAT = ../../../src/bsat
 TBSAT = ../../../src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
 VLEVEL=1
-
+RM = rm
 
 chess-$(N): $(GENERATOR)
 	$(INTERP) $(GENERATOR) -n $(N) -r chess-$(N)
@@ -17,19 +17,19 @@ chess-$(N): $(GENERATOR)
 	$(TBSAT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
-	rm $*.lrat
+	$(RM) $*.lrat
 
 .cnf.bdata:
 	$(TBSAT) -v $(VLEVEL) -b -i $< -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
-	rm $*.lrat
+	$(RM) $*.lrat
 
 .cnf.sdata:
 	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
-	rm $*.lrat
+	$(RM) $*.lrat
 
 .cnf.fldata:
 	$(BSAT) -v $(VLEVEL) -i $< | tee $@

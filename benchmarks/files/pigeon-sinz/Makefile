@@ -6,6 +6,7 @@ BSAT = ../../../src/bsat
 TBSAT = ../../../src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
 VLEVEL=1
+RM = rm
 
 pigeon-sinz-$(N): $(GENERATOR)
 	$(INTERP) $(GENERATOR) -n $(N) -r pigeon-sinz-$(N)
@@ -16,19 +17,19 @@ pigeon-sinz-$(N): $(GENERATOR)
 	$(TBSAT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
-	rm $*.lrat
+	$(RM) $*.lrat
 
 .cnf.bdata:
 	$(TBSAT) -v $(VLEVEL) -b -i $< -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
-	rm $*.lrat
+	$(RM) $*.lrat
 
 .cnf.sdata:
 	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
-	rm $*.lrat
+	$(RM) $*.lrat
 
 .cnf.fldata:
 	$(BSAT) -v $(VLEVEL) -i $< | tee $@
