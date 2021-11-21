@@ -58,9 +58,11 @@
 #if ENABLE_TBDD
 /*=== ERROR CHECKING =========*/
 
+#if DO_TRACE
 /* Track activity of specified clause */
 #define TRACE_CLAUSE  27454851
-#endif
+#endif /* DO_TRACE */
+#endif /* TBDD */
 
 /*=== SANITY CHECKS ====================================================*/
 

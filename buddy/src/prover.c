@@ -163,9 +163,11 @@ static ilist clean_hints(ilist hints) {
 	int lit = hints[geti++];
 	if (lit != TAUTOLOGY)
 	    hints[puti++] = lit;
+#if DO_TRACE
 	if (ABS(lit) == TRACE_CLAUSE) {
 	    printf("TRACE: Found clause #%d in list of hints\n", lit);
 	}
+#endif /* DO_TRACE */
     }
     hints = ilist_resize(hints, puti);
     return hints;
