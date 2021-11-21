@@ -24,6 +24,7 @@ static ilist *all_clauses = NULL;
 static int input_clause_count = 0;
 static int alloc_clause_count = 0;
 static int live_clause_count = 0;
+static ilist deferred_deletion_list = NULL;
 
 static bool empty_clause_detected = false;
 
@@ -57,6 +58,8 @@ int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_
     live_clause_count = max_live_clause_count = clause_count;
     alloc_clause_count = clause_count + INITIAL_CLAUSE_COUNT;
     all_clauses = calloc(alloc_clause_count, sizeof(ilist));
+    deferred_deletion_list = ilist_new(100);
+
     if (all_clauses == NULL) {
 	return bdd_error(BDD_MEMORY);
     }
@@ -160,6 +163,9 @@ static ilist clean_hints(ilist hints) {
 	int lit = hints[geti++];
 	if (lit != TAUTOLOGY)
 	    hints[puti++] = lit;
+	if (ABS(lit) == TRACE_CLAUSE) {
+	    printf("TRACE: Found clause #%d in list of hints\n", lit);
+	}
     }
     hints = ilist_resize(hints, puti);
     return hints;
@@ -248,6 +254,20 @@ void delete_clauses(ilist clause_ids) {
     }
     live_clause_count -= ilist_length(clause_ids);
 }
+
+/* Some deletions must be deferred until top-level apply completes */
+void defer_delete_clause(int clause_id) {
+    deferred_deletion_list = ilist_push(deferred_deletion_list, clause_id);
+}
+
+void process_deferred_deletions() {
+    if (ilist_length(deferred_deletion_list) > 0) {
+	print_proof_comment(2, "Performing deferred deletions of %d clauses", ilist_length(deferred_deletion_list));
+	delete_clauses(deferred_deletion_list);
+	ilist_resize(deferred_deletion_list, 0);
+    }
+}
+
 
 /* Retrieve input clause.  NULL if invalid */
 ilist get_input_clause(int id) {

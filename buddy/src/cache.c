@@ -98,24 +98,23 @@ void BddCache_clear_clauses(BddCache *cache)
 {
    int dbuf[2+ILIST_OVHD];
    ilist dlist;
-   int id;
+   int id, aid;
 
    register int n;
    for (n=0 ; n<cache->tablesize ; n++) {
        if (cache->table[n].a != -1 &&
 	   (cache->table[n].c == bddop_andj || cache->table[n].c == bddop_imptstj)) {
 	   id = cache->table[n].r.jclause;
-	   if (ABS(id) == TAUTOLOGY)
+	   aid = ABS(id);
+	   if (aid == TAUTOLOGY)
 	       continue;
 	   dlist = ilist_make(dbuf, 2);
-	   if (id < 0)
-	       ilist_fill2(dlist, -id-1, -id);
+	   if (id < 0) {
+	       defer_delete_clause(aid-1);
+	       defer_delete_clause(aid);
+	   }
 	   else
-	       ilist_fill1(dlist, id);
-	   int l = cache->table[n].a;
-	   int r = cache->table[n].b;
-	   print_proof_comment(2, "Delete clause from cached entry with arguments N%d and N%d", XVAR(l), XVAR(r));
-	   delete_clauses(dlist);
+	       defer_delete_clause(aid);
        }
    }
 }

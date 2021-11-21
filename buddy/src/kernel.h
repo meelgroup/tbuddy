@@ -55,6 +55,13 @@
 #include "bdd.h"
 #endif
 
+#if ENABLE_TBDD
+/*=== ERROR CHECKING =========*/
+
+/* Track activity of specified clause */
+#define TRACE_CLAUSE  27454851
+#endif
+
 /*=== SANITY CHECKS ====================================================*/
 
    /* Make sure we use at least 32 bit integers */

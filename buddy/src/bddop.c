@@ -786,7 +786,7 @@ static TBDD bdd_applyj(BDD l, BDD r, int op)
    }
    
    checkresize();
-   //   printf("tbdd_apply l=%d (N%d), r=%d (N%d) returning %d (N%d), %d\n", (int) l, NNAME(l), (int) r, NNAME(r), (int) res.root, NNAME(res.root), res.clause_id);
+   process_deferred_deletions();
    return res;
 }
 
@@ -839,6 +839,10 @@ static TBDD applyj_rec(BDD l, BDD r)
 #endif
 	 tres.root = entry->r.res;
 	 tres.clause_id = ABS(entry->r.jclause);
+	 if (tres.clause_id == TRACE_CLAUSE) {
+	     printf("TRACE: Retrieving clause #%d from cache in apply_rec.  Operands = N%d, N%d\n", TRACE_CLAUSE, NNAME(l), NNAME(r));
+	 }
+
 	 return tres;
       }
 #ifdef CACHESTATS
@@ -880,6 +884,14 @@ static TBDD applyj_rec(BDD l, BDD r)
 	  tres.root = bdd_makenode(splitVar, READREF(2), READREF(1));
       tres.clause_id = justify_apply(applyop, l, r, splitVar, tresl, tresh, tres.root);
 
+      if (ABS(tresh.clause_id) == TRACE_CLAUSE) {
+	  printf("TRACE: Got clause #%d from apply_rec as high result.  Operands = N%d, N%d\n", TRACE_CLAUSE, NNAME(l), NNAME(r));
+      }
+      if (ABS(tresl.clause_id) == TRACE_CLAUSE) {
+	  printf("TRACE: Got clause #%d from apply_rec as low result.  Operands = N%d, N%d\n", TRACE_CLAUSE, NNAME(l), NNAME(r));
+      }
+
+
       POPREF(2);
 
       entry->a = l;
@@ -887,6 +899,9 @@ static TBDD applyj_rec(BDD l, BDD r)
       entry->c = applyop;
       entry->r.res = tres.root;
       entry->r.jclause = tres.clause_id;
+      if (ABS(tres.clause_id) == TRACE_CLAUSE) {
+	  printf("TRACE: Adding clause #%d to cache.  Operands = N%d, N%d\n", TRACE_CLAUSE, NNAME(l), NNAME(r));
+      }
    }
 
    return tres;

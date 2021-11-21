@@ -32,8 +32,16 @@ extern void prover_done();
 /* Return clause ID */
 /* For DRAT proof, antecedents can be NULL */
 extern int generate_clause(ilist literals, ilist antecedent);
+
+
 extern void delete_clauses(ilist clause_ids);
 
+/* Some deletions must be deferred until top-level apply completes */
+extern void defer_delete_clause(int clause_id);
+extern void process_deferred_deletions();
+
+
+    
 /* Retrieve input clause.  NULL if invalid */
 extern ilist get_input_clause(int id);
 
