@@ -62,8 +62,24 @@ bool tbdd_is_false(TBDD tr) {
 /*
   Increment/decrement reference count for BDD
  */
-TBDD tbdd_addref(TBDD tr) { bdd_addref(tr.root); return tr; }
-void tbdd_delref(TBDD tr) { bdd_delref(tr.root); }
+TBDD tbdd_addref(TBDD tr) {
+    bdd_addref(tr.root); return tr;
+}
+
+void tbdd_delref(TBDD tr) {
+    if (!bddnodes)
+	return;
+    bdd_delref(tr.root);
+
+    if (!HASREF(tr.root) && tr.clause_id != TAUTOLOGY) {
+	int dbuf[1+ILIST_OVHD];
+	ilist dlist = ilist_make(dbuf, 1);
+	ilist_fill1(dlist, tr.clause_id);
+	print_proof_comment(2, "Deleting unit clause for node N%d", NNAME(tr.root));
+	delete_clauses(dlist);
+    }
+    tr.clause_id = TAUTOLOGY;
+}
 
 /*
   Generate BDD representation of specified input clause.

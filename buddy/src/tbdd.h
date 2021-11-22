@@ -202,9 +202,9 @@ class tbdd
     tbdd(int id)                      { tbdd(tbdd_from_clause_id(id)) ; }
     tbdd(void)                        { root=1; clause_id = TAUTOLOGY; }
 
-    ~tbdd(void)                       { bdd_delref(root); }
+    ~tbdd(void)                       { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delref(dr); }
 
-    tbdd operator=(const tbdd &tr)    { if (root != tr.root) { bdd_delref(root); root = tr.root; bdd_addref(root); } clause_id = tr.clause_id; return *this; }
+    tbdd operator=(const tbdd &tr)    { if (root != tr.root) { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delref(dr); root = tr.root; bdd_addref(root); } clause_id = tr.clause_id; return *this; }
     tbdd operator&(const tbdd &tr) const;
     tbdd operator&=(const tbdd &tr);
 
