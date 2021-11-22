@@ -94,28 +94,32 @@ void BddCache_reset(BddCache *cache)
 }
 
 #if ENABLE_TBDD
+void BddCache_clause_evict(BddCacheData *entry) {
+    int dbuf[2+ILIST_OVHD];
+    ilist dlist;
+    int id, aid;
+    if (entry->a != -1 &&
+	(entry->c == bddop_andj || entry->c == bddop_imptstj)) {
+	id = entry->r.jclause;
+	aid = ABS(id);
+	if (aid == TAUTOLOGY)
+	    return;
+	dlist = ilist_make(dbuf, 2);	
+	if (id < 0) {
+	    defer_delete_clause(aid-1);
+	    defer_delete_clause(aid);
+	}
+	else
+	    defer_delete_clause(aid);
+    }
+}
+
 void BddCache_clear_clauses(BddCache *cache)
 {
-   int dbuf[2+ILIST_OVHD];
-   ilist dlist;
-   int id, aid;
-
    register int n;
    for (n=0 ; n<cache->tablesize ; n++) {
-       if (cache->table[n].a != -1 &&
-	   (cache->table[n].c == bddop_andj || cache->table[n].c == bddop_imptstj)) {
-	   id = cache->table[n].r.jclause;
-	   aid = ABS(id);
-	   if (aid == TAUTOLOGY)
-	       continue;
-	   dlist = ilist_make(dbuf, 2);
-	   if (id < 0) {
-	       defer_delete_clause(aid-1);
-	       defer_delete_clause(aid);
-	   }
-	   else
-	       defer_delete_clause(aid);
-       }
+       BddCacheData *entry = &cache->table[n];
+       BddCache_clause_evict(entry);
    }
 }
 #endif

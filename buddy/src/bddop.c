@@ -831,7 +831,6 @@ static TBDD applyj_rec(BDD l, BDD r)
 
    {
       entry = BddCache_lookup(&applycache, APPLYHASH(l,r,applyop));
-      
       if (entry->a == l  &&  entry->b == r  &&  entry->c == applyop)
       {
 #ifdef CACHESTATS
@@ -898,6 +897,7 @@ static TBDD applyj_rec(BDD l, BDD r)
 
       POPREF(2);
 
+      BddCache_clause_evict(entry);
       entry->a = l;
       entry->b = r;
       entry->c = applyop;

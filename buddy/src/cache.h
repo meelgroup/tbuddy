@@ -73,6 +73,7 @@ extern int  BddCache_resize(BddCache *, int);
 extern void BddCache_reset(BddCache *);
 
 #if ENABLE_TBDD
+extern void BddCache_clause_evict(BddCacheData *entry);
 extern void BddCache_clear_clauses(BddCache *);
 #endif
 
