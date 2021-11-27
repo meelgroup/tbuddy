@@ -2,7 +2,9 @@ CC=gcc
 CXX=g++
 TFLAGS =  -DENABLE_TBDD
 DFLAGS =  -DCACHESTATS 
-CFLAGS=-g -O2 -Wno-nullability-completeness $(DFLAGS)
+#OPT = -O2
+OPT = -O0
+CFLAGS=-g $(OPT) -Wno-nullability-completeness $(DFLAGS)
 INC = -I..
 LDIR = ../lib
 IDIR = ../include
@@ -10,7 +12,8 @@ IDIR = ../include
 FILES = bddio.o bddop.o bvec.o cache.o fdd.o ilist.o imatrix.o kernel.o pairs.o prime.o reorder.o tree.o cppext.o
 
 TFILES = tbdd.to prover.to \
-	bddio.to bddop.to bvec.to cache.to fdd.to ilist.to imatrix.to kernel.to pairs.to prime.to reorder.to tree.to cppext.to
+	bddio.to bddop.to bvec.to cache.to fdd.to ilist.to imatrix.to kernel.to pairs.to prime.to reorder.to tree.to cppext.to \
+	pseudoboolean.to
 
 all: buddy.a tbuddy.a
 	rm -rf $(LDIR)
@@ -23,6 +26,7 @@ all: buddy.a tbuddy.a
 	cp -p tbdd.h $(IDIR)
 	cp -p ilist.h $(IDIR)
 	cp -p prover.h $(IDIR)
+	cp -p pseudoboolean.h $(IDIR)
 
 buddy.a: $(FILES)
 	ar cr buddy.a $(FILES)

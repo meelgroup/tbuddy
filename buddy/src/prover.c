@@ -155,6 +155,25 @@ static ilist clean_clause(ilist clause) {
     return clause;
 }
 
+#if DO_TRACE
+/* Look for specified ID  among clause or hints */
+static void trace_list(ilist list, int step_id, char *msg) {
+    int i;
+    if (list == TAUTOLOGY_CLAUSE)
+	return;
+    int len = ilist_length(list);
+    for (i = 0; i < len; i++) {
+	int id = ABS(list[i]);
+	if (id == TRACE_CLAUSE) {
+	    printf("TRACE.  Found %d on step #%d: %s [", TRACE_CLAUSE, step_id, msg);
+	    ilist_print(list, stdout, " ");
+	    printf("]\n");
+	}
+    }
+}
+#endif /* DO_TRACE */
+
+
 static ilist clean_hints(ilist hints) {
     int len = ilist_length(hints);
     int geti = 0;
@@ -163,11 +182,6 @@ static ilist clean_hints(ilist hints) {
 	int lit = hints[geti++];
 	if (lit != TAUTOLOGY)
 	    hints[puti++] = lit;
-#if DO_TRACE
-	if (ABS(lit) == TRACE_CLAUSE) {
-	    printf("TRACE: Found clause #%d in list of hints\n", lit);
-	}
-#endif /* DO_TRACE */
     }
     hints = ilist_resize(hints, puti);
     return hints;
@@ -181,6 +195,11 @@ int generate_clause(ilist literals, ilist hints) {
     int cid = ++last_clause_id;
     int rval = 0;
     hints = clean_hints(hints);
+#if DO_TRACE
+    trace_list(clause, cid, "Generated clause");
+    trace_list(hints, cid, "Supplied hints");
+#endif
+
     if (clause == TAUTOLOGY_CLAUSE)
 	return TAUTOLOGY;
     if (!empty_clause_detected) {
@@ -226,6 +245,12 @@ void delete_clauses(ilist clause_ids) {
     int rval;
     if (empty_clause_detected)
 	return;
+    clause_ids = clean_hints(clause_ids);
+
+#if DO_TRACE
+    trace_list(clause_ids, last_clause_id, "Deleted clauses");
+#endif
+
     if (do_lrat) {
 	rval = fprintf(proof_file, "%d d ", last_clause_id);
 	if (rval < 0)

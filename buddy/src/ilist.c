@@ -43,6 +43,8 @@ ilist ilist_make(int *p, int max_length) {
 
 /* Allocate a new ilist. */
 ilist ilist_new(int max_length) {
+    if (max_length == 0)
+	max_length++;
     int *p = calloc(max_length + ILIST_OVHD, sizeof(int));
      ilist result = p+ILIST_OVHD;
     ILIST_LENGTH(result) = 0;
@@ -52,6 +54,8 @@ ilist ilist_new(int max_length) {
 
 /* Free allocated ilist.  Will only free ones allocated via ilist_new */
 void ilist_free(ilist ils) {
+    if (!ils)
+	return;
     if (ILIST_MAXLENGTHFIELD(ils) < 0) {
 	int *p = ILIST_BASE(ils);
 	free(p);
@@ -60,6 +64,8 @@ void ilist_free(ilist ils) {
 
 /* Return number of elements in ilist */
 int ilist_length(ilist ils) {
+    if (ils == TAUTOLOGY_CLAUSE)
+	return 0;
     return ILIST_LENGTH(ils);
 }
 
@@ -174,7 +180,8 @@ ilist ilist_copy_list(int *ls, int length) {
   Dynamically allocate ilist and copy from existing one.
  */
 ilist ilist_copy(ilist ils) {
-    return ilist_copy_list(ils, ilist_length(ils));
+    ilist rils = ilist_copy_list(ils, ilist_length(ils));
+    return rils;
 }
 
 /*
@@ -202,6 +209,10 @@ int ilist_print(ilist ils, FILE *out, const char *sep) {
     const char *space = "";
     if (ils == TAUTOLOGY_CLAUSE) {
 	rval = fprintf(out, "TAUT");
+	return rval;
+    }
+    if (ils == NULL) {
+	rval = fprintf(out, "NULL");
 	return rval;
     }
     for (i = 0; i < ilist_length(ils); i++) {

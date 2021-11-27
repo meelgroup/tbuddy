@@ -167,14 +167,6 @@ extern int tbdd_validate_clause(ilist clause, TBDD tr);
  */
 extern void assert_clause(ilist clause);
 
-/*============================================
- Useful operations on BDDs
-============================================*/
-
-/*
-  Build BDD representation of XOR (phase = 1) or XNOR (phase = 0)
- */
-extern BDD BDD_build_xor(ilist variables, int phase);
 
 #ifdef CPLUSPLUS
 }
@@ -215,16 +207,11 @@ class tbdd
     BDD root;
     int clause_id;  /* Id of justifying clause */
 
-    //    friend int tbdd_init_drat(FILE *pfile, int variable_count, int clause_count);
-    //    friend int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses);
-    //    friend void tbdd_done();
-    //    friend void tbdd_set_verbose(int level);
     friend tbdd tbdd_tautology(void);
     friend tbdd tbdd_null(void);
     friend bool tbdd_is_false(tbdd &tr);
     friend tbdd tbdd_and(tbdd &tl, tbdd &tr);
     friend tbdd tbdd_validate(bdd r, tbdd &tr);
-    friend tbdd tbdd_validate(bdd r, tbdd tr);
     friend tbdd tbdd_validate_with_and(bdd r, tbdd &tl, tbdd &tr);
     friend tbdd tbdd_trust(bdd r);
     friend int tbdd_validate_clause(ilist clause, tbdd &tr);
@@ -247,9 +234,6 @@ inline tbdd tbdd_and(tbdd &tl, tbdd &tr)
 { TBDD TL, TR; tbdd_xfer(tl, TL); tbdd_xfer(tr, TR); return tbdd(tbdd_and(TL, TR)); }
 
 inline tbdd tbdd_validate(bdd r, tbdd &tr)
-{ TBDD TR; tbdd_xfer(tr, TR); return tbdd(tbdd_validate(r.get_BDD(), TR)); }
-
-inline tbdd tbdd_validate(bdd r, tbdd tr)
 { TBDD TR; tbdd_xfer(tr, TR); return tbdd(tbdd_validate(r.get_BDD(), TR)); }
 
 inline tbdd tbdd_validate_with_and(bdd r, tbdd &tl, tbdd &tr)

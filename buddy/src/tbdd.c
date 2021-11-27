@@ -234,12 +234,72 @@ TBDD tbdd_validate_with_and(BDD r, TBDD tl, TBDD tr) {
   Use this version when generating LRAT proofs
   Returns clause id.
  */
-int tbdd_validate_clause(ilist clause, TBDD tr) {
+
+/* See if can validate clause directly from path in BDD */
+static bool test_validation_path(ilist clause, TBDD tr) {
+    int len = ilist_length(clause);
+    int i;
+    BDD r = tr.root;
+    for (i = len-1; i >= 0; i--) {
+	int lit = clause[i];
+	int var = ABS(lit);
+	if (LEVEL(r) > var)
+	    // Function does not depend on this variable
+	    continue;
+	if (LEVEL(r) < var)
+	    // Cannot validate clause directly
+	    return false;
+	if (lit < 0)
+	    r = LOW(r);
+	else
+	    r = HIGH(r);
+    }
+    return ISZERO(r);
+}
+
+static int tbdd_validate_clause_path(ilist clause, TBDD tr) {
     int abuf[1+ILIST_OVHD];
-    ilist ant = ilist_make(abuf, 1);
+    int len = ilist_length(clause);
+    int i;
+    BDD r = tr.root;
+    ilist ant = ilist_make(abuf, 1+len);
     ilist_fill1(ant, ABS(tr.clause_id));
-    print_proof_comment(2, "Fake Validation of clause from N%d", NNAME(tr.root));
+    for (i = len-1; i >= 0; i--) {
+	int lit = clause[i];
+	int var = ABS(lit);
+	int id;
+	if (LEVEL(r) > var)
+	    // Function does not depend on this variable
+	    continue;
+	if (LEVEL(r) < var)
+	    // Cannot validate clause directly
+	    return -1;
+	if (lit < 0) {
+	    id = bdd_dclause(r, DEF_LD);
+	    r = LOW(r);
+	} else {
+	    id = bdd_dclause(r, DEF_HD);
+	    r = HIGH(r);
+	}
+	if (id != TAUTOLOGY)
+	    ilist_push(ant, id);
+    }
+    print_proof_comment(2, "Validation of clause from N%d", NNAME(tr.root));
     return generate_clause(clause, ant);
+}
+
+
+
+int tbdd_validate_clause(ilist clause, TBDD tr) {
+    if (test_validation_path(clause, tr))
+	return tbdd_validate_clause_path(clause, tr);
+    else {
+	BDD cr = bdd_addref(bdd_from_clause(clause));
+	TBDD tcr = tbdd_addref(tbdd_validate(cr, tr));
+	int id = tbdd_validate_clause_path(clause, tcr);
+	tbdd_delref(tcr);
+	return id;
+    }
 }
 
 /*
@@ -254,23 +314,3 @@ void assert_clause(ilist clause) {
     generate_clause(clause, ant);
 }
 
-/*============================================
- Useful operations on BDDs
-============================================*/
-
-/*
-  Build BDD representation of XOR (phase = 1) or XNOR (phase = 0)
- */
-BDD bdd_build_xor(ilist variables, int phase) {
-    BDD r = phase ? bdd_true() : bdd_false();
-    int i;
-    for (i = 0; i < ilist_length(variables); i++) {
-	BDD lit = BDD_ithvar(variables[i]);
-	BDD nr = bdd_xor(r, lit);
-	bdd_addref(nr);
-	bdd_delref(r);
-	r = nr;
-    }
-    bdd_delref(r);
-    return r;
-}
