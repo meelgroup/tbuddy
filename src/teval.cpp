@@ -5,12 +5,13 @@
 #include "tbdd.h"
 #include "prover.h"
 #include "clause.h"
+#include "pseudoboolean.h"
 
 
 // GC Parameters
 
 // Minimum number of dead nodes to trigger GC
-#define COLLECT_MIN_LRAT 200000
+#define COLLECT_MIN_LRAT 150000
 #define COLLECT_MIN_DRAT  20000
 // Minimum fraction of dead:total nodes to trigger GC
 #define COLLECT_FRACTION 0.20
@@ -43,7 +44,7 @@ static int skip_space(FILE *infile) {
 
 // Read rest of line, trimming off leading spaces and trailing newline.
 // Return line length
-static int getline(FILE *infile, char *buf, int maxlen) {
+static int get_line(FILE *infile, char *buf, int maxlen) {
   int c = skip_space(infile);
   int pos = 0;
   if (c == EOF || c == '\n') {
@@ -66,6 +67,7 @@ static int getline(FILE *infile, char *buf, int maxlen) {
   return pos;
 }
 
+
 // Read line and parse as set of numbers.  Return either \n or EOF
 static int get_numbers(FILE *infile, std::vector<int> &numbers) {
   int c;
@@ -85,6 +87,37 @@ static int get_numbers(FILE *infile, std::vector<int> &numbers) {
   return c;
 }
 
+// Read line and parse as set of numbers.  Return either \n or EOF
+static int get_number_pairs(FILE *infile, std::vector<int> &numbers1, std::vector<int> &numbers2, char sep) {
+  int c;
+  int val;
+  numbers1.resize(0,0);
+  numbers2.resize(0,0);
+  while ((c = getc(infile)) != EOF) {
+    if (c == '\n')
+      break;
+    if (isspace(c))
+      continue;
+    ungetc(c, infile);
+    if (fscanf(infile, "%d", &val) != 1) {
+      break;
+    }
+    numbers1.push_back(val);
+    c = getc(infile);
+    if (c != sep) {
+      /** ERROR **/
+      c = 0;
+      break;
+    }
+    if (fscanf(infile, "%d", &val) != 1) {
+      c = 0;
+      break;
+    }
+    numbers2.push_back(val);
+  }
+  return c;
+}
+
 static int next_term_id = 1;
 
 class Term {
@@ -92,6 +125,7 @@ private:
   int term_id;
   bool is_active;
   tbdd tfun;
+  xor_constraint *xor_equation;
   int node_count;
 
 public:
@@ -100,6 +134,7 @@ public:
     is_active = true; 
     tfun = t;
     node_count = bdd_nodecount(t.get_root());
+    xor_equation = NULL;
   }
 
   // Returns number of dead nodes generated
@@ -108,6 +143,8 @@ public:
     is_active = false;
     int rval = node_count;
     node_count = 0;
+    if (xor_equation != NULL)
+      delete xor_equation;
     return rval;
   }
 
@@ -115,11 +152,15 @@ public:
     return is_active;
   }
 
-  tbdd get_fun() { return tfun; }
+  tbdd &get_fun() { return tfun; }
 
   bdd get_root() { return tfun.get_root(); }
 
   int get_clause_id() { return tfun.get_clause_id(); }
+
+  xor_constraint *get_equation() { return xor_equation; }
+
+  void set_equation(xor_constraint *eq) { xor_equation = eq; }
 
   void set_term_id(int val) { term_id = val; }
 
@@ -147,6 +188,8 @@ private:
   // Statistics
   int and_count;
   int quant_count;
+  int equation_count;
+  int sum_count;
   int max_bdd;
 
   void check_gc() {
@@ -190,6 +233,8 @@ public:
     min_active = 1;
     and_count = 0;
     quant_count = 0;
+    equation_count = 0;
+    sum_count = 0;
     max_bdd = 0;
   }
   
@@ -243,16 +288,16 @@ public:
     return terms.back();
   }
 
-  void flush() {
-    while (min_active < terms.size()) {
-      Term *tp = terms[min_active];
-      if (tp->active()) {
-	if (verblevel >= 3) 
-	  std::cout << "Flushing term #" << tp->get_term_id() << std::endl;
-	tp->deactivate();
-      }
-      min_active++;
-    }
+  Term *xor_constrain(Term *tp, std::vector<int> &vars, int constant) {
+    ilist variables = ilist_copy_list(vars.data(), vars.size());
+    xor_constraint *xor_equation = new xor_constraint(variables, constant, tp->get_fun());
+    Term *tpn = new Term(xor_equation->get_validation());
+    tpn->set_equation(xor_equation);
+    add(tpn);
+    dead_count += tp->deactivate();
+    check_gc();
+    equation_count++;
+    return terms.back();
   }
 
   // Form conjunction of terms until reduce to <= 1 term
@@ -366,8 +411,12 @@ public:
 
   tbdd schedule_reduce(FILE *schedfile) {
     int line = 1;
+    int modulus = INT_MAX;
+    int constant;
+    int i;
     std::vector<Term *> term_stack;
     std::vector<int> numbers;
+    std::vector<int> numbers2;
     while (true) {
       int c;
       if ((c = skip_space(schedfile)) == EOF)
@@ -383,7 +432,7 @@ public:
       case 'i': 
 	if (term_stack.size() > 0 && verblevel > 0) {
 	  char buf[1024];
-	  int len = getline(schedfile, buf, 1024);
+	  int len = get_line(schedfile, buf, 1024);
 	  Term *tp = term_stack.back();
 	  int term_id = tp->get_term_id();
 	  bdd root = tp->get_root();
@@ -454,10 +503,10 @@ public:
 	    }
 	  }
 	  term_stack.push_back(product);
-	}
-	if (verblevel >= 3) {
-	  std::cout << "Schedule line #" << line << ".  Performed " << numbers[0]
-		    << " conjunctions.  Stack size = " << term_stack.size() << std::endl;
+	  if (verblevel >= 3) {
+	    std::cout << "Schedule line #" << line << ".  Performed " << numbers[0]
+		      << " conjunctions to get term #" << product->get_term_id() << ".  Stack size = " << term_stack.size() << std::endl;
+	  }
 	}
 	line ++;
 	break;
@@ -482,12 +531,117 @@ public:
 	  term_stack.pop_back();
 	  Term *tpn = equantify(tp, numbers);
 	  term_stack.push_back(tpn);
-	}
-	if (verblevel >= 3) {
-	  std::cout << "Schedule line #" << line << ".  Quantified " << numbers.size()
-		    << " variables.  Stack size = " << term_stack.size() << std::endl;
+	  if (verblevel >= 3) {
+	    std::cout << "Schedule line #" << line << ".  Quantified " << numbers.size()
+		      << " variables to get Term #" << tpn->get_term_id() << ".  Stack size = " << term_stack.size() << std::endl;
+	  }
 	}
 	line ++;
+	break;
+      case '=':
+	// See if there's a modulus 
+	c = getc(schedfile);
+	if (isdigit(c)) {
+	  ungetc(c, schedfile);
+	  if (fscanf(schedfile, "%d", &modulus) != 1) {
+	    fprintf(stderr, "Schedule line #%d.  Invalid modulus\n", line);
+	    exit(1);
+	  } else if (modulus != 2) {
+	    fprintf(stderr, "Schedule line #%d.  Only support modulus 2\n", line);
+	    exit(1);
+	  }
+	} else {
+	    fprintf(stderr, "Schedule line #%d.  Modulus required\n", line);
+	    exit(1);
+	}
+	if (fscanf(schedfile, "%d", &constant) != 1) {
+	  fprintf(stderr, "Schedule line #%d.  Constant term required\n", line);
+	  exit(1);
+	}
+	if (constant < 0 || constant >= modulus) {
+	  fprintf(stderr, "Schedule line #%d.  Constant term %d invalid.  Must be between 0 and %d\n", line, constant, modulus-1);
+	  exit(1);
+	}
+	c = get_number_pairs(schedfile, numbers2, numbers, '.');
+	if (c != '\n' && c != EOF) {
+	  fprintf(stderr, "Schedule line #%d.  Could not parse equation terms\n", line);
+	  exit(1);
+	}
+	for (i = 0; i < numbers2.size(); i++) {
+	  int coeff = numbers2[i];
+	  if (coeff != 1) {
+	    fprintf(stderr, "Schedule line #%d.  Invalid coefficient %d\n", line, coeff);
+	    exit(1);
+	  }
+	}
+	if (term_stack.size() < 1) {
+	  fprintf(stderr, "Schedule line #%d.  Cannot extract equation.  Stack is empty\n", line);
+	  exit(1);
+	} else {
+	  Term *tp = term_stack.back();
+	  term_stack.pop_back();
+	  Term *tpn = xor_constrain(tp, numbers, constant);
+	  term_stack.push_back(tpn);
+	  if (verblevel >= 3) {
+	    std::cout << "Schedule line #" << line << ".  Xor constraint with " << numbers.size()
+		      << " variables to get Term #" << tpn->get_term_id() <<  ".  Stack size = " << term_stack.size() << std::endl;
+	  }
+	}
+	line ++;
+	break;
+      case '+':
+	c = get_numbers(schedfile, numbers);
+	if (c != '\n' && c != EOF) {
+	  fprintf(stderr, "Schedule line #%d.  Sum command. Non-numeric argument '%c'\n", line, c);
+	  exit(1);
+	}
+	if (numbers.size() != 1) {
+	  fprintf(stderr, "Schedule line #%d.  Should specify number of equations to sum\n", line);
+	  exit(1);
+	} else {
+	  int scount = numbers[0];
+	  if (scount < 1 || scount > term_stack.size()-1) {
+	    fprintf(stderr, 
+		    "Schedule line #%d.  Cannot perform %d sums.  Stack size = %d\n",
+		    line, scount, (int) term_stack.size());
+	    exit(1);
+	  } else {
+	    xor_constraint** xlist = new xor_constraint*[scount+1];
+	    for (i = 0; i < scount+1; i++) {
+	      int si = term_stack.size() - i - 1;
+	      Term *tp = term_stack[si];
+	      if (tp->get_equation() == NULL) {
+		fprintf(stderr, "Schedule line #%d.  Term %d does not have an associated equation\n", line, tp->get_term_id());
+		exit(1);
+	      }
+	      xlist[i] = tp->get_equation();
+	    }
+	    xor_constraint *sum = sum_list(xlist, scount+1);
+	    sum_count += scount;
+	    equation_count++;
+	    if (!sum->is_feasible()) {
+	      if (verblevel >= 2) {
+		std::cout << "Schedule line #" << line << ".  Generated infeasible constraint" << std::endl;
+	      }
+	      tbdd result = sum->get_validation();
+	      return result;
+	    }
+	    for (i = 0; i < scount+1; i++) {
+	      Term *tp = term_stack.back();
+	      term_stack.pop_back();
+	      dead_count += tp->deactivate();
+	    }
+	    Term *tpn = new Term(sum->get_validation());
+	    tpn->set_equation(sum);
+	    add(tpn);
+	    check_gc();
+	    if (verblevel >= 3) {
+	      std::cout << "Schedule line #" << line << ".  Summed " << scount+1 << 
+		" equations to get Term #" << tpn->get_term_id() << ".  Stack size = " << term_stack.size() << std::endl;
+	    }
+	  }
+	}
+	line++;
 	break;
       default:
 	fprintf(stderr, "Schedule line #%d.  Unknown command '%c'\n", line, c);
@@ -506,6 +660,7 @@ public:
     bddStat s;
     bdd_stats(s);
     std::cout << and_count << " conjunctions, " << quant_count << " quantifications." << std::endl;
+    std::cout << equation_count << " equations, " << sum_count << " sums." << std::endl;
     bdd_printstat();
     std::cout << "Total BDD nodes: " << s.produced <<std::endl;
     std::cout << "Max BDD size: " << max_bdd << std::endl;
