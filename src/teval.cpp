@@ -616,7 +616,8 @@ public:
 	      }
 	      xlist[i] = tp->get_equation();
 	    }
-	    xor_constraint *sum = sum_list(xlist, scount+1);
+	    xor_constraint *sum = xor_sum_list(xlist, scount+1);
+	    delete[] xlist;
 	    sum_count += scount;
 	    equation_count++;
 	    if (!sum->is_feasible()) {

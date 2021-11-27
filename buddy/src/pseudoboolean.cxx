@@ -90,60 +90,67 @@ int xor_constraint::validate_clause(ilist clause) {
   return tbdd_validate_clause(clause, validation);
 }
 
-#if 0
-xor_constraint xor_constraint::plus(xor_constraint &other) {
-  ilist nvariables = xor_sum(variables, other.variables);
-  int nphase = phase ^ other.phase;
-  tbdd nvalidation = tbdd_and(validation, other.validation);
-
-  printf("XOR sum: ");
-  show_xor(stdout, variables, phase);
-  printf("  +  ");
-  show_xor(stdout, other.variables, other.phase);
-  printf("   -->  ");
-  show_xor(stdout, nvariables, nphase);
-  printf("\n");
-  return xor_constraint(nvariables, nphase, nvalidation);
-}
-#endif
-
-void xor_constraint::accum(xor_constraint &other) {
-  ilist nvariables = xor_sum(variables, other.variables);
-  int nphase = phase ^ other.phase;
-  tbdd nvalidation = tbdd_and(validation, other.validation);
-
-#if 0
-  printf("XOR sum: ");
-  show_xor(stdout, variables, phase);
-  printf("  +  ");
-  show_xor(stdout, other.variables, other.phase);
-  printf("   -->  ");
-  show_xor(stdout, nvariables, nphase);
-  printf("\n");
-#endif
-  ilist_free(variables);
-  variables = nvariables;
-  phase = nphase;
-  validation = nvalidation;
-}
-
-
 void xor_constraint::show(FILE *out) {
   fprintf(out, "Xor Constraint: Node N%d validates ", bdd_nameid(validation.get_root().get_BDD()));
   show_xor(out, variables, phase);
   fprintf(out, "\n");
 }
 
-xor_constraint *sum_list(xor_constraint **xlist, int len) {
-  if (len == 0)
-    return new xor_constraint();
-  xor_constraint s;
+xor_constraint *xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
+  ilist nvariables = xor_sum(arg1->variables, arg2->variables);
+  int nphase = arg1->phase ^ arg2->phase;
+  tbdd nvalidation = tbdd_and(arg1->validation, arg2->validation);
+
+#if 0
+  printf("XOR sum: ");
+  show_xor(stdout, arg1->variables, arg2->phase);
+  printf("  +  ");
+  show_xor(stdout, arg1->variables, arg2->phase);
+  printf("   -->  ");
+  show_xor(stdout, nvariables, nphase);
+  printf("\n");
+#endif
+  return new xor_constraint(nvariables, nphase, nvalidation);
+}
+
+xor_constraint *xor_sum_list_linear(xor_constraint **xlist, int len) {
+  xor_constraint *sum = new xor_constraint();
   for (int i = 0; i < len; i++) {
-    xor_constraint a = *xlist[i];
-    s.accum(a);
-    if (!s.is_feasible())
+    xor_constraint *a = xlist[i];
+    xor_constraint *nsum = xor_plus(sum, a);
+    delete sum;
+    sum = nsum;
+    if (!sum->is_feasible())
       break;
   }
-  return new xor_constraint(s);
+  return sum;
+}
+
+xor_constraint *xor_sum_list(xor_constraint **xlist, int len) {
+  if (len == 0)
+    return new xor_constraint();
+  // Use breadth-first addition
+  xor_constraint **buf = new xor_constraint*[len];
+  // Do first level of additions on xlist
+  for (int i = 0; i < len-1; i+=2) {
+    buf[i/2] = xor_plus(xlist[i], xlist[i+1]);
+  }
+  if (len %2 == 1)
+    buf[(len-1)/2] = xlist[len-1];
+  // Left and right-most positions that have been used in the buffer 
+  int left = 0;
+  int right = (len-1)/2;
+  while (left < right) {
+    xor_constraint *arg1 = buf[left++];
+    xor_constraint *arg2 = buf[left++];
+    buf[++right] = xor_plus(arg1, arg2);
+    delete arg1;
+    delete arg2;
+    if (!buf[right]->is_feasible())
+      break;
+  }
+  xor_constraint *sum = buf[right];
+  delete[] buf;
+  return sum;
 }
 

@@ -18,21 +18,18 @@ class xor_constraint {
     xor_constraint(xor_constraint &x) { variables = ilist_copy(x.variables); phase = x.phase; validation = x.validation; }
     xor_constraint(ilist variables, int phase);
     
-    ~xor_constraint(void) { ilist_free(variables); variables = NULL; }
+    ~xor_constraint(void) { ilist_free(variables); variables = NULL; validation = tbdd_null();  }
 
     bool is_feasible(void) { return ilist_length(variables) > 0 || phase == 0; }
 
     int validate_clause(ilist clause);
 
-    void accum(xor_constraint &other);
-
-    xor_constraint plus(xor_constraint &other);
-
     tbdd get_validation() { return validation; }
 
     void show(FILE *out);
 
-    friend xor_constraint *sum_list(xor_constraint **xlist, int len);
+    friend xor_constraint *xor_plus(xor_constraint *arg1, xor_constraint *arg2);
+    friend xor_constraint *xor_sum_list(xor_constraint **xlist, int len);
 };
 
 
