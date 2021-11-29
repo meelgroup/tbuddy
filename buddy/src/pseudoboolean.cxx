@@ -1,4 +1,8 @@
 #include "pseudoboolean.h"
+#include "prover.h"
+#include <queue>
+
+#define BUFLEN 1024
 
 /*
   Sort integers in ascending order
@@ -13,6 +17,23 @@ int int_compare(const void *i1p, const void *i2p) {
   return 0;
 }
 
+/*
+  Construct priority key for constraint
+ */
+static int64_t priority_key1(ilist vars) {
+  int64_t weight = ilist_length(vars) == 0 ? 0 : ((int64_t) vars[0] << 32) | ((int64_t) ilist_length(vars) << 0);
+  return -weight;
+}
+
+static int64_t priority_key2(ilist vars) {
+  int64_t weight = ilist_length(vars) == 0 ? 0 : ((int64_t) vars[0] << 0) | ((int64_t) ilist_length(vars) << 32) ;
+  return -weight;
+}
+
+static int64_t priority_key(ilist vars) {
+  return priority_key2(vars);
+}
+
 static void show_xor(FILE *outf, ilist variables, int phase) {
   if (variables == NULL)
     fprintf(outf, "NULL");
@@ -21,6 +42,18 @@ static void show_xor(FILE *outf, ilist variables, int phase) {
   else {
     fprintf(outf, "=2 %d 1.", phase);
     ilist_print(variables, outf, " 1.");
+  }
+}
+
+static int show_xor_buf(char *buf, ilist variables, int phase, int maxlen) {
+  if (variables == NULL)
+    return snprintf(buf, maxlen, "NULL");
+  if (ilist_length(variables) == 0)
+    return snprintf(buf, maxlen, "=2 %d", phase);
+  else {
+    int len = snprintf(buf, maxlen, "=2 %d 1.", phase);
+    int xlen = ilist_format(variables, buf+len, " 1.", maxlen-len);
+    return len + xlen;
   }
 }
 
@@ -73,18 +106,23 @@ static ilist xor_sum(ilist list1, ilist list2) {
 
 
 xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
+  char buf[BUFLEN];
   variables = vars;
   phase = p;
   bdd xfun = bdd_build_xor(variables, phase);
+  show_xor_buf(buf, vars, p, BUFLEN);
+  print_proof_comment(2, "Validate BDD node N%d representing Xor constraint %s", bdd_nameid(xfun.get_BDD()), buf);
   validation = tbdd_validate(xfun, vfun);
+  key = priority_key(vars);
 }
 
-#if 0
-xor_constraint::xor_constraint(ilist variables, int phase) {
+xor_constraint::xor_constraint(ilist vars, int p) {
+  variables = vars;
+  phase = p;
   bdd xfun = bdd_build_xor(variables, phase);
   validation = tbdd_trust(xfun);
+  key = priority_key(vars);
 }
-#endif
 
 int xor_constraint::validate_clause(ilist clause) {
   return tbdd_validate_clause(clause, validation);
@@ -113,11 +151,12 @@ xor_constraint *xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
   return new xor_constraint(nvariables, nphase, nvalidation);
 }
 
-xor_constraint *xor_sum_list_linear(xor_constraint **xlist, int len) {
+static xor_constraint *xor_sum_list_linear(xor_constraint **xlist, int len) {
   xor_constraint *sum = new xor_constraint();
   for (int i = 0; i < len; i++) {
     xor_constraint *a = xlist[i];
     xor_constraint *nsum = xor_plus(sum, a);
+    delete a;
     delete sum;
     sum = nsum;
     if (!sum->is_feasible())
@@ -126,7 +165,7 @@ xor_constraint *xor_sum_list_linear(xor_constraint **xlist, int len) {
   return sum;
 }
 
-xor_constraint *xor_sum_list(xor_constraint **xlist, int len) {
+static xor_constraint *xor_sum_list_bf(xor_constraint **xlist, int len) {
   if (len == 0)
     return new xor_constraint();
   // Use breadth-first addition
@@ -134,6 +173,8 @@ xor_constraint *xor_sum_list(xor_constraint **xlist, int len) {
   // Do first level of additions on xlist
   for (int i = 0; i < len-1; i+=2) {
     buf[i/2] = xor_plus(xlist[i], xlist[i+1]);
+    delete xlist[i];
+    delete xlist[i+1];
   }
   if (len %2 == 1)
     buf[(len-1)/2] = xlist[len-1];
@@ -154,3 +195,54 @@ xor_constraint *xor_sum_list(xor_constraint **xlist, int len) {
   return sum;
 }
 
+class xcomp {
+public:
+  bool operator() (xor_constraint *arg1, xor_constraint *arg2) {
+    return xor_less(arg1, arg2);
+  }
+
+};
+
+static xor_constraint *xor_sum_list_pq(xor_constraint **xlist, int len) {
+  if (len == 0)
+    return new xor_constraint();
+  std::priority_queue<xor_constraint*, std::vector<xor_constraint*>, xcomp> pq;
+
+  for (int i = 0; i < len; i++)
+    pq.push(xlist[i]);
+
+  while (pq.size() > 1) {
+    xor_constraint *arg1 = pq.top();
+    pq.pop();
+    xor_constraint *arg2 = pq.top();
+    pq.pop();
+    xor_constraint *sum = xor_plus(arg1, arg2);
+    delete arg1;
+    delete arg2;
+    if (!sum->is_feasible())
+      return sum;
+    pq.push(sum);
+  }
+  return pq.top();
+}
+
+xor_constraint *xor_sum_list(xor_constraint **xlist, int len) {
+  if (len <= 4)
+    return xor_sum_list_linear(xlist, len);
+  else
+    return xor_sum_list_bf(xlist, len);
+}
+
+xor_set::~xor_set() {
+  //  for (int i = 0; i < xlist.size(); i++)
+  //    delete xlist[i];
+}
+
+void xor_set::add(xor_constraint *con) {
+  xlist.push_back(con);
+}
+
+xor_constraint *xor_set::sum() {
+  return xor_sum_list(xlist.data(), xlist.size());
+  xlist.resize(0,0);
+}

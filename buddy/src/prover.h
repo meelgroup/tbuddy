@@ -29,10 +29,12 @@ extern int max_live_clause_count;
 extern int prover_init(FILE *pfile, int input_variable_count, int input_clause_count, ilist *clauses, bool lrat);
 extern void prover_done();
 
+/* Put literals in clause in canonical order */
+extern ilist clean_clause(ilist clause);
+
 /* Return clause ID */
 /* For DRAT proof, antecedents can be NULL */
 extern int generate_clause(ilist literals, ilist antecedent);
-
 
 extern void delete_clauses(ilist clause_ids);
 
@@ -67,7 +69,7 @@ extern bool print_ok(int vlevel);
   Newline printed at end
  */
 
-extern void print_proof_comment(int vlevel, char *fmt, ...);
+extern void print_proof_comment(int vlevel, const char *fmt, ...);
 
 /*
   Support for generating apply operation proofs.

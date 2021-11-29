@@ -225,19 +225,20 @@ int ilist_print(ilist ils, FILE *out, const char *sep) {
 }
 
 /*
-  Print elements of an ilist separated by sep
+  Print elements of an ilist separated by sep.  Return number of characters written
  */
-void ilist_format(ilist ils, char *out, const char *sep, int maxlen) {
+int ilist_format(ilist ils, char *out, const char *sep, int maxlen) {
     int i;
     const char *space = "";
     if (ils == TAUTOLOGY_CLAUSE) {
-	snprintf(out, maxlen, "TAUT");
-	return;
+	return snprintf(out, maxlen, "TAUT");
     }
     int len = 0;
     for (i = 0; i < ilist_length(ils); i++) {
-	snprintf(out+len, maxlen-len, "%s%d", space, ils[i]);
-	len += strlen(out+len);
+	int xlen = snprintf(out+len, maxlen-len, "%s%d", space, ils[i]);
+	len += xlen;
 	space = sep;
     }
+    out[len] = 0;
+    return len;
 }

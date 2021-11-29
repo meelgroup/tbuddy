@@ -96,9 +96,9 @@ extern void ilist_reverse(int *ls);
 extern int ilist_print(ilist ils, FILE *out, const char *sep);
 
 /*
-  Format string of elements of an ilist separated by sep
+  Format string of elements of an ilist separated by sep.  Return number of characters written
  */
-extern void ilist_format(ilist ils, char *out, const char *sep, int maxlen);
+extern int ilist_format(ilist ils, char *out, const char *sep, int maxlen);
     
 
 #ifdef CPLUSPLUS

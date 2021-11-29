@@ -127,7 +127,7 @@ int literal_compare(const void *l1p, const void *l2p) {
      return 0;
 }
 
-static ilist clean_clause(ilist clause) {
+ilist clean_clause(ilist clause) {
     if (clause == TAUTOLOGY_CLAUSE)
 	return clause;
     int len = ilist_length(clause);
@@ -264,7 +264,7 @@ void delete_clauses(ilist clause_ids) {
 	for (i = 0; i < ilist_length(clause_ids); i++) {
 	    int cid = clause_ids[i];
 	    ilist clause = all_clauses[cid-1];
-	    if (clause == TAUTOLOGY_CLAUSE)
+	    if (clause == TAUTOLOGY_CLAUSE || ilist_length(clause) < 2)
 		continue;
 	    rval = fprintf(proof_file, "d ");
 	    if (rval < 0) 
@@ -304,10 +304,12 @@ ilist get_input_clause(int id) {
 }
 
 bool print_ok(int vlevel) {
-    return do_lrat && !empty_clause_detected && verbosity_level >= vlevel;
+    bool ok = !empty_clause_detected && verbosity_level >= vlevel;
+    return ok;
+    //    return do_lrat && ok;
 }
 
-void print_proof_comment(int vlevel, char *fmt, ...) {
+void print_proof_comment(int vlevel, const char *fmt, ...) {
     int rval;
     if (print_ok(vlevel)) {
 	va_list vlist;

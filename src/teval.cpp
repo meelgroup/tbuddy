@@ -606,7 +606,7 @@ public:
 		    line, scount, (int) term_stack.size());
 	    exit(1);
 	  } else {
-	    xor_constraint** xlist = new xor_constraint*[scount+1];
+	    xor_set xset;
 	    for (i = 0; i < scount+1; i++) {
 	      int si = term_stack.size() - i - 1;
 	      Term *tp = term_stack[si];
@@ -614,10 +614,9 @@ public:
 		fprintf(stderr, "Schedule line #%d.  Term %d does not have an associated equation\n", line, tp->get_term_id());
 		exit(1);
 	      }
-	      xlist[i] = tp->get_equation();
+	      xset.add(tp->get_equation());
 	    }
-	    xor_constraint *sum = xor_sum_list(xlist, scount+1);
-	    delete[] xlist;
+	    xor_constraint *sum = xset.sum();
 	    sum_count += scount;
 	    equation_count++;
 	    if (!sum->is_feasible()) {

@@ -4,6 +4,8 @@
 #include "tbdd.h"
 #include "kernel.h"
 
+#define BUFLEN 1024
+
 /*============================================
   Package setup.
 ============================================*/
@@ -31,6 +33,18 @@ int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_cl
 
 void tbdd_set_verbose(int level) {
     verbosity_level = level;
+}
+
+void tbdd_done() {
+    if (verbosity_level >= 1) {
+	bddStat s;
+	bdd_stats(&s);
+	bdd_printstat();
+	printf("Total BDD nodes: %ld\n", s.produced);
+	printf("Total clauses: %d\n", s.clausenum);
+	printf("Max live clauses: %d\n", s.maxclausenum);
+	printf("Total variables: %d\n", s.variablenum);
+    }
 }
 
 /* 
@@ -236,6 +250,7 @@ TBDD tbdd_validate_with_and(BDD r, TBDD tl, TBDD tr) {
  */
 
 /* See if can validate clause directly from path in BDD */
+
 static bool test_validation_path(ilist clause, TBDD tr) {
     int len = ilist_length(clause);
     int i;
@@ -250,16 +265,16 @@ static bool test_validation_path(ilist clause, TBDD tr) {
 	    // Cannot validate clause directly
 	    return false;
 	if (lit < 0)
-	    r = LOW(r);
-	else
 	    r = HIGH(r);
+	else
+	    r = LOW(r);
     }
     return ISZERO(r);
 }
 
 static int tbdd_validate_clause_path(ilist clause, TBDD tr) {
-    int abuf[1+ILIST_OVHD];
     int len = ilist_length(clause);
+    int abuf[1+len+ILIST_OVHD];
     int i;
     BDD r = tr.root;
     ilist ant = ilist_make(abuf, 1+len);
@@ -275,29 +290,44 @@ static int tbdd_validate_clause_path(ilist clause, TBDD tr) {
 	    // Cannot validate clause directly
 	    return -1;
 	if (lit < 0) {
-	    id = bdd_dclause(r, DEF_LD);
-	    r = LOW(r);
-	} else {
 	    id = bdd_dclause(r, DEF_HD);
 	    r = HIGH(r);
+	} else {
+	    id = bdd_dclause(r, DEF_LD);
+	    r = LOW(r);
 	}
 	if (id != TAUTOLOGY)
 	    ilist_push(ant, id);
     }
-    print_proof_comment(2, "Validation of clause from N%d", NNAME(tr.root));
-    return generate_clause(clause, ant);
+    if (verbosity_level >= 2) {
+	char buf[BUFLEN];
+	ilist_format(clause, buf, " ", BUFLEN);
+	print_proof_comment(2, "Validation of clause [%s] from N%d", buf, NNAME(tr.root));
+    }
+    int id =  generate_clause(clause, ant);
+    return id;
 }
 
 
 
 int tbdd_validate_clause(ilist clause, TBDD tr) {
-    if (test_validation_path(clause, tr))
+    clause = clean_clause(clause);
+    if (test_validation_path(clause, tr)) {
 	return tbdd_validate_clause_path(clause, tr);
-    else {
+    } else {
+	if (verbosity_level >= 2) {
+	    char buf[BUFLEN];
+	    ilist_format(clause, buf, " ", BUFLEN);
+	    print_proof_comment(2, "Validation of clause [%s] from N%d requires generating intermediate BDD", buf, NNAME(tr.root));
+	}
 	BDD cr = bdd_addref(bdd_from_clause(clause));
 	TBDD tcr = tbdd_addref(tbdd_validate(cr, tr));
 	int id = tbdd_validate_clause_path(clause, tcr);
-	tbdd_delref(tcr);
+	if (id < 0) {
+	    char buf[BUFLEN];
+	    ilist_format(clause, buf, " ", BUFLEN);
+	    print_proof_comment(2, "Oops.  Couldn't validate clause [%s] from N%d", buf, NNAME(tr.root));
+	}
 	return id;
     }
 }
@@ -310,7 +340,11 @@ int tbdd_validate_clause(ilist clause, TBDD tr) {
 void assert_clause(ilist clause) {
     int abuf[1+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 1);
-    print_proof_comment(2, "Assertion of clause");
+    if (verbosity_level >= 2) {
+	char buf[BUFLEN];
+	ilist_format(clause, buf, " ", BUFLEN);
+	print_proof_comment(2, "Assertion of clause [%s]", buf);
+    }
     generate_clause(clause, ant);
 }
 
