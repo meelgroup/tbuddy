@@ -1,9 +1,13 @@
 // Scalable benchmark that involves both xor and clausal reasoning.
 
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/time.h>
 #include <vector>
+
 #include "pseudoboolean.h"
-#include "string.h"
+
 
 // Global data
 
@@ -73,6 +77,12 @@ static void gen_binaries(int k) {
   int lits[2];
   int i;
   int n = 6*k+1;
+  lits[0] = -1; lits[1] = n;
+  gen_clause(lits, 2);
+  lits[0] = 1; lits[1] = -n;
+  gen_clause(lits, 2);
+  return;
+
   for (int v = 1; v < n-1; v+= 2) {
     lits[0] = -v; lits[1] = v+2;
     gen_clause(lits, 2);
@@ -89,9 +99,9 @@ static void gen_binaries(int k) {
 
 // Write CNF File
 static void gen_cnf(char *froot, int k) {
+  char fname[strlen(froot) + 5];
+  sprintf(fname, "%s.cnf", froot);
   int n = 6*k+1;
-  char fname[strlen(froot) + 100];
-  sprintf(fname, "%s-%.3d.cnf", froot, k);
   FILE *cnf_file = fopen(fname, "w");
   if (!cnf_file) {
     fprintf(stderr, "Couldn't open file '%s'\n", fname);
@@ -104,12 +114,13 @@ static void gen_cnf(char *froot, int k) {
     fprintf(cnf_file, " 0\n");
   }
   fclose(cnf_file);
+  printf("File %s: %d variables, %d clauses\n", fname, n, (int) clauses.size());
 }
 
 // Generate DRAT proof
 static void gen_drat_proof(char *froot, int k) {
-  char fname[strlen(froot) + 100];
-  sprintf(fname, "%s-%.3d.drat", froot, k);
+  char fname[strlen(froot) + 6];
+  sprintf(fname, "%s.drat", froot);
   FILE *proof_file = fopen(fname, "w");
   if (!proof_file) {
     fprintf(stderr, "Couldn't open file '%s'\n", fname);
@@ -138,28 +149,43 @@ static void gen_drat_proof(char *froot, int k) {
   ilist_fill2(cneg, -1, -n);
   tbdd_validate_clause(cpos, validation);
   tbdd_validate_clause(cneg, validation);
-  // Assert unit clause [x_1].
-  // drat-trim requires one unit clause to be asserted
+  // Assert unit clauses [x_1] and [-x_1]
   ilist upos = ilist_new(1);
   ilist_fill1(upos, 1);
   assert_clause(upos);
+  ilist uneg = ilist_new(1);
+  ilist_fill1(uneg, -1);
+  assert_clause(uneg);
   // Assert empty clause
   ilist empty = ilist_new(0);
   assert_clause(empty);
   tbdd_done();
   fclose(proof_file);
+  printf("File %s written\n\n", fname);
+}
+
+double tod() {
+  struct timeval tv;
+  if (gettimeofday(&tv, NULL) == 0)
+    return (double) tv.tv_sec + 1e-6 * tv.tv_usec;
+  else
+    return 0.0;
 }
 
 int main(int argc, char *argv[]) {
-  if (argc < 2 || argc == 2 && strcmp(argv[1], "-h") == 0 || argc > 3) {
-    printf("Usage: %s k [ROOT]\n", argv[0]);
+  if (argc != 2 || argc == 2 && strcmp(argv[1], "-h") == 0) {
+    printf("Usage: %s k\n", argv[0]);
     exit(0);
   }
+  char froot[strlen(argv[1] + 10)];
+  sprintf(froot, "xstrip-%s", argv[1]);
   int k = atoi(argv[1]);
-  char *root = argc == 3 ? argv[2] : (char *) "xstrip";
+
+  double start = tod();
   gen_xors(k);
   gen_binaries(k);
-  gen_cnf(root, k);
-  gen_drat_proof(root, k);
+  gen_cnf(froot, k);
+  gen_drat_proof(froot, k);
+  printf("Elapsed seconds: %.2f\n", tod()-start);
   return 0;
 }
