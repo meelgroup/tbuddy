@@ -31,6 +31,14 @@ int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_cl
     return prover_init(pfile, variable_count, clause_count, input_clauses, lrat);
 }
 
+int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses) {
+    return tbdd_init(pfile, variable_count, clause_count, input_clauses, true);
+}
+
+int tbdd_init_drat(FILE *pfile, int variable_count) {
+    return tbdd_init(pfile, variable_count, 0, NULL, false);
+}
+
 void tbdd_set_verbose(int level) {
     verbosity_level = level;
 }

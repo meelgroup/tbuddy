@@ -58,13 +58,21 @@ extern "C" {
   These functions also initialize BuDDy, using parameters tuned according
   to the predicted complexity of the operations.
 
-  Returns 0 if OK, otherwise error code
+  Return 0 if OK, otherwise error code
 */
 
 extern int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat);
 
+/* 
+   Initializers specific for the two proof formats
+ */
+extern int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses);
+extern int tbdd_init_drat(FILE *pfile, int variable_count);
+
+
 /*
-  Deallocate all resources used by TBDD
+  Deallocate all resources used by TBDD.
+  If verbosity >= 1, print summary information
  */
 extern void tbdd_done();
 
