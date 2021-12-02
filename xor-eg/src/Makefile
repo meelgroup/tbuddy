@@ -11,8 +11,12 @@ all: xstrip
 xstrip: xstrip.cpp
 	$(CXX) $(CFLAGS) $(INC) -o xstrip xstrip.cpp $(TLIB)
 
+xtree: xtree.cpp
+	$(CXX) $(CFLAGS) $(INC) -o xtree xtree.cpp $(TLIB)
+
+
 clean:
 	rm -f *.o *~
 	rm -f *.cnf *.drat
-	rm -f xor-eg xstrip 
+	rm -f xor-eg xstrip xtree
 
