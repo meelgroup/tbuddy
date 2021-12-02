@@ -16,21 +16,24 @@
 
 #include "pseudoboolean.h"
 
-/* Shorthand names for the 4 top-level nodes */
+// $begin xtree-abbrev 
+// Shorthand names for the 4 top-level nodes
 #define R1(n) (2*(n)-1)
 #define R2(n) (3*(n)-2)
 #define Y1(n) (3*(n)-1)
 #define Y2(n) (3*(n))
-
-
-// Global data
+// $end xtree-abbrev
 
 // All clauses
 std::vector<ilist> clauses;
 
-// The parameters of all Xors
+// $begin xtree-global
+////// Global data //////
+// The parameters for the parity constraints
 std::vector<ilist> xor_variables;
 std::vector<int> xor_phases;
+// $end xtree-global
+
 
 static void gen_clause(int *lits, int len) {
     ilist clause = ilist_copy_list(lits, len);
@@ -143,6 +146,7 @@ static void gen_cnf(char *fname, int n) {
     printf("File %s: %d variables, %d clauses\n", fname, vcount, (int) clauses.size());
 }
 
+// $begin xtree-drat
 // Generate DRAT proof
 static void gen_drat_proof(char *fname, int n) {
     FILE *proof_file = fopen(fname, "w");
@@ -152,31 +156,28 @@ static void gen_drat_proof(char *fname, int n) {
     }
     int vcount = 3*n;
     // TBDD initializer for DRAT proof generation
-    tbdd_init_drat(proof_file, vcount);
-    // Can set to include comments in proof
-    // tbdd_set_verbose(1); 
+    tbdd_init_drat(proof_file, vcount);  ///line:initialize
 
     // Use Xor reasoning to infer constraint x_1 ^ x_n = 1
-    xor_set xset;
+    xor_set xset; ///line:xset:start
     for (int x = 0; x < xor_variables.size(); x++) {
 	xor_constraint *xc = new xor_constraint(xor_variables[x], xor_phases[x]);
 	xset.add(xc);
-    }
-    xor_constraint *sum = xset.sum();
+    } ///line:xset:end
+    xor_constraint *sum = xset.sum(); ///line:xset:sum
 
     // Add clauses to proof
     ilist lits = ilist_new(2);
 
-    // Assert inequivalence, extracted from XOR sum
-    assert_clause(ilist_fill2(lits, R1(n), R2(n)));
-    assert_clause(ilist_fill2(lits, -R1(n), -R2(n)));
+    // Assert inequivalence of R1 and R2, extracted from XOR sum
+    assert_clause(ilist_fill2(lits, R1(n), R2(n)));  ///line:xor:start
+    assert_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:xor:end
 
-    // Assert contradictory unit clauses
-    assert_clause(ilist_fill1(lits, R1(n)));
-    assert_clause(ilist_fill1(lits, -R1(n)));
+    // Assert unit clauses for R1
+    assert_clause(ilist_fill1(lits, R1(n))); ///line:unit
 
     // Assert empty clause
-    assert_clause(ilist_resize(lits, 0));
+    assert_clause(ilist_resize(lits, 0)); ///line:empty
 
     // Finish up
     tbdd_done();
@@ -184,6 +185,7 @@ static void gen_drat_proof(char *fname, int n) {
     ilist_free(lits);
     printf("File %s written\n\n", fname);
 }
+// $end xtree-drat
 
 double tod() {
     struct timeval tv;

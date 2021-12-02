@@ -94,11 +94,36 @@ make xtree-100.xdata
 make xtree-100.fcdata
 
 make N=150
+make xtree-150.xdata
 make xtree-150.fcdata
 
 make N=200
+make xtree-200.xdata
 make xtree-200.fcdata
 
 make N=250
 make xtree-250.fcdata
 
+make N=300
+make xtree-300.fcdata
+
+make N=400
+make xtree-400.fcdata
+
+make N=500
+make xtree-500.fcdata
+
+make N=600
+make xtree-600.fcdata
+
+make N=700
+make xtree-700.fcdata
+
+make N=800
+make xtree-800.fcdata
+
+make N=900
+make xtree-900.fcdata
+
+make N=999
+make xtree-999.fcdata

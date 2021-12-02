@@ -17,6 +17,9 @@ CDIR = ~/repos/cryptominisat/
 CMS = $(CDIR)/cryptominisat5
 CFLAGS = --maxconfl $(CONFLICTS)
 
+INTERP=python3
+GRAB = $(INTERP) ./grab_data.py
+
 $(ROOT)-$(N).cnf:
 	$(GEN) $(N) $(SEED) | tee $(ROOT)-$(N).data
 
@@ -42,9 +45,19 @@ $(ROOT)-$(N).cnf:
 .cnf.fcdata:
 	$(CMS) $(CFLAGS)  $< | tee $@
 
+data:
+	$(GRAB) "Total clauses" *.data > tbuddy-clauses.csv
+	$(GRAB) "Elapsed" *.data > tbuddy-generation-seconds.csv
+	$(GRAB) "verification time" *.xdata > tbuddy-drat-seconds.csv
+	$(GRAB) "Elapsed time" *.kdata > kissat-generation-seconds.csv
+	$(GRAB) "proof_added" *.kdata > kissat-clauses.csv
+	$(GRAB) "Total time" *.cdata > cms-generation-seconds.csv
+	$(GRAB) "Total time" *.fcdata > cms-noproof-seconds.csv
+
 clean:
 	rm -f *~
 	rm -f *.cnf *.drat
 
 superclean: clean
-	rm -f *.xdata *.kdata *.cdata
+	rm -f *.data *.xdata *.kdata *.cdata
+
