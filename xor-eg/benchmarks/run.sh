@@ -43,13 +43,13 @@ make xtree-040.fcdata
 
 make N=045
 make xtree-040.xdata
-make xtree-045.kdata
+#make xtree-045.kdata
 make xtree-045.cdata
 make xtree-045.fcdata
 
 make N=050
 make xtree-050.xdata
-make xtree-050.cdata
+#make xtree-050.cdata
 make xtree-050.fcdata
 
 make N=055
