@@ -117,9 +117,15 @@ extern bool tbdd_is_false(TBDD tr);
 
   clause_id should be number between 1 and the number of input clauses
  */
-extern TBDD tbdd_from_clause(ilist clause);
-extern TBDD tbdd_from_clause_id(int id);
 
+extern TBDD tbdd_from_clause(ilist clause);  // For DRAT
+extern TBDD tbdd_from_clause_id(int id);     // For LRAT
+
+/*
+  Generate BDD representation of XOR.
+  For DRAT
+ */
+extern TBDD TBDD_from_xor(ilist variables, int phase);
 
 /* Operations on TBDDs */
 extern TBDD      tbdd_and(TBDD, TBDD);
@@ -174,6 +180,7 @@ extern void assert_clause(ilist clause);
 
 #ifndef CPLUSPLUS
 #define tbdd_tautology TBDD_tautology
+#define tbdd_from_xor TBDD_from_xor
 #define tbdd_null TBDD_null
 #endif
 
@@ -215,6 +222,7 @@ class tbdd
     friend tbdd tbdd_validate_with_and(bdd r, tbdd &tl, tbdd &tr);
     friend tbdd tbdd_trust(bdd r);
     friend int tbdd_validate_clause(ilist clause, tbdd &tr);
+    friend tbdd tbdd_from_xor(ilist variables, int phase);
 
     // Convert to low-level form
     friend void tbdd_xfer(tbdd &tr, TBDD &res);
@@ -247,6 +255,9 @@ inline void tbdd_xfer(tbdd &tr, TBDD &res)
 
 inline int tbdd_validate_clause(ilist clause, tbdd &tr)
 { TBDD TR; tbdd_xfer(tr, TR); return tbdd_validate_clause(clause, TR); }
+
+inline tbdd tbdd_from_xor(ilist variables, int phase)
+{ return TBDD_from_xor(variables, phase); }
 
 #endif /* CPLUSPLUS */
 

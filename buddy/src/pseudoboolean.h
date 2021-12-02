@@ -50,6 +50,9 @@ class xor_constraint {
     // Print a representation of the constraint to the file
     void show(FILE *out);
 
+    // Get the key
+    int64_t get_key() { return key; }
+
     // Generate an Xor constraint as the sum of two constraints
     friend xor_constraint *xor_plus(xor_constraint *arg1, xor_constraint *arg2);
     // Compute the sum of a list of Xors.  Used by the xor_set class

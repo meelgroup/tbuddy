@@ -122,9 +122,11 @@ static BDD bdd_from_clause(ilist clause) {
 }
 
 TBDD tbdd_from_clause(ilist clause) {
+    print_proof_comment(2, "BDD representation of a clause");
     BDD r = bdd_from_clause(clause);
     return tbdd_trust(r);
 }
+
 
 TBDD tbdd_from_clause_id(int id) {
     TBDD rr;
@@ -166,6 +168,57 @@ TBDD tbdd_from_clause_id(int id) {
     return rr;
 }
 
+/*
+  For generating xor's: does word have odd or even parity?
+*/
+static int parity(int w) {
+  int odd = 0;
+  while (w > 0) {
+    odd ^= w & 0x1;
+    w >>= 1;
+  }
+  return odd;
+}
+
+/*
+  Sort integers in ascending order
+ */
+int int_compare_tbdd(const void *i1p, const void *i2p) {
+  int i1 = *(int *) i1p;
+  int i2 = *(int *) i2p;
+  if (i1 < i2)
+    return -1;
+  if (i1 > i2)
+    return 1;
+  return 0;
+}
+
+/*
+  Generate BDD for arbitrary-input xor, using
+  clauses to ensure that DRAT can validate result
+*/
+
+TBDD TBDD_from_xor(ilist vars, int phase) {
+    qsort((void *) vars, ilist_length(vars), sizeof(int), int_compare_tbdd);
+    int len = ilist_length(vars);
+    int bits;
+    int elen = 1 << len;
+    int lbuf[ILIST_OVHD+len];
+    ilist lits = ilist_make(lbuf, len);
+    ilist_resize(lits, len);
+    TBDD result = TBDD_tautology();
+    for (bits = 0; bits < elen; bits++) {
+	int i;
+	if (parity(bits) != phase)
+	    continue;
+	for (i = 0; i < len; i++)
+	    lits[i] = (bits >> i) & 0x1 ? vars[i] : -vars[i];
+	TBDD tc = tbdd_from_clause(lits);
+	result = tbdd_and(result, tc);
+    }
+    return result;
+}
+
 
 /*
   Upgrade ordinary BDD to TBDD by proving
@@ -199,10 +252,10 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
  */
 TBDD tbdd_trust(BDD r) {
     TBDD rr;
-    int cbuf[2+ILIST_OVHD];
-    ilist clause = ilist_make(cbuf, 2);
-    int abuf[2+ILIST_OVHD];
-    ilist ant = ilist_make(abuf, 2);
+    int cbuf[1+ILIST_OVHD];
+    ilist clause = ilist_make(cbuf, 1);
+    int abuf[0+ILIST_OVHD];
+    ilist ant = ilist_make(abuf, 0);
     print_proof_comment(2, "Assertion of N%d",NNAME(r));
     ilist_fill1(clause, XVAR(r));
     rr.clause_id = generate_clause(clause, ant);

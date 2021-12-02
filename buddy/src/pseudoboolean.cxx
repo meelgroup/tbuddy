@@ -2,7 +2,10 @@
 #include "prover.h"
 #include <queue>
 
-#define BUFLEN 1024
+#define BUFLEN 256
+
+// For formatting information
+char buf[BUFLEN];
 
 /*
   Sort integers in ascending order
@@ -30,8 +33,14 @@ static int64_t priority_key2(ilist vars) {
   return -weight;
 }
 
+void show_key(int64_t weight) {
+  int upper = -weight >> 32;
+  int lower = -weight & 0xFFFFFFFF;
+  printf("Key = %d/%d", upper, lower);
+}
+
 static int64_t priority_key(ilist vars) {
-  return priority_key2(vars);
+  return priority_key1(vars);
 }
 
 static void show_xor(FILE *outf, ilist variables, int phase) {
@@ -57,21 +66,8 @@ static int show_xor_buf(char *buf, ilist variables, int phase, int maxlen) {
   }
 }
 
-/*
-  Build BDD representation of XOR (phase = 1) or XNOR (phase = 0)
- */
-static bdd bdd_build_xor(ilist variables, int phase) {
-  qsort((void *) variables, ilist_length(variables), sizeof(int), int_compare);
-  bdd r = phase ? bdd_false() : bdd_true();
-  int i;
-  for (i = 0; i < ilist_length(variables); i++) {
-    bdd lit = bdd_ithvar(variables[i]);
-    r = bdd_xor(r, lit);
-  }
-  return r;
-}
-
 /* Form xor sum of coefficients */
+/* Assumes both sets of variables are in ascending order  */
 static ilist xor_sum(ilist list1, ilist list2) {
   int i1 = 0;
   int i2 = 0;
@@ -105,22 +101,40 @@ static ilist xor_sum(ilist list1, ilist list2) {
 }
 
 
+/*
+  Build BDD representation of XOR (phase = 1) or XNOR (phase = 0)
+ */
+static bdd bdd_build_xor(ilist variables, int phase) {
+  qsort((void *) variables, ilist_length(variables), sizeof(int), int_compare);
+
+  bdd r = phase ? bdd_false() : bdd_true();
+  int i;
+  for (i = 0; i < ilist_length(variables); i++) {
+    bdd lit = bdd_ithvar(variables[i]);
+    r = bdd_xor(r, lit);
+  }
+  return r;
+}
+
+
 xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
-  char buf[BUFLEN];
   variables = vars;
   phase = p;
   bdd xfun = bdd_build_xor(variables, phase);
-  show_xor_buf(buf, vars, p, BUFLEN);
-  print_proof_comment(2, "Validate BDD node N%d representing Xor constraint %s", bdd_nameid(xfun.get_BDD()), buf);
+  if (verbosity_level >= 2) {
+    show_xor_buf(buf, vars, p, BUFLEN);
+    print_proof_comment(2, "Validate BDD node N%d representing Xor constraint %s", bdd_nameid(xfun.get_BDD()), buf);
+  }
   validation = tbdd_validate(xfun, vfun);
   key = priority_key(vars);
 }
 
+// When generating DRAT proof, need to construct XOR from
+// clauses so that checker will accept the result
 xor_constraint::xor_constraint(ilist vars, int p) {
   variables = vars;
   phase = p;
-  bdd xfun = bdd_build_xor(variables, phase);
-  validation = tbdd_trust(xfun);
+  validation = tbdd_from_xor(variables, phase);
   key = priority_key(vars);
 }
 
@@ -152,8 +166,10 @@ xor_constraint *xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
 }
 
 static xor_constraint *xor_sum_list_linear(xor_constraint **xlist, int len) {
-  xor_constraint *sum = new xor_constraint();
-  for (int i = 0; i < len; i++) {
+  if (len == 0)
+    return new xor_constraint();
+  xor_constraint *sum = xlist[0];
+  for (int i = 1; i < len; i++) {
     xor_constraint *a = xlist[i];
     xor_constraint *nsum = xor_plus(sum, a);
     delete a;
@@ -217,11 +233,11 @@ static xor_constraint *xor_sum_list_pq(xor_constraint **xlist, int len) {
     xor_constraint *arg2 = pq.top();
     pq.pop();
     xor_constraint *sum = xor_plus(arg1, arg2);
+    pq.push(sum);
     delete arg1;
     delete arg2;
     if (!sum->is_feasible())
       return sum;
-    pq.push(sum);
   }
   return pq.top();
 }
@@ -230,7 +246,7 @@ xor_constraint *xor_sum_list(xor_constraint **xlist, int len) {
   if (len <= 4)
     return xor_sum_list_linear(xlist, len);
   else
-    return xor_sum_list_bf(xlist, len);
+    return xor_sum_list_pq(xlist, len);
 }
 
 xor_set::~xor_set() {
