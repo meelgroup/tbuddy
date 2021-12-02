@@ -1,46 +1,104 @@
 
 make N=010
-make tree-010.kdata
-make tree-010.cdata
-make tree-010.fcdata
+make xtree-010.xdata
+make xtree-010.kdata
+make xtree-010.cdata
+make xtree-010.fcdata
 
 make N=015
-make tree-015.kdata
-make tree-015.cdata
-make tree-015.fcdata
+make xtree-015.xdata
+make xtree-015.kdata
+make xtree-015.cdata
+make xtree-015.fcdata
 
 make N=020
-make tree-020.kdata
-make tree-020.cdata
-make tree-020.fcdata
+make xtree-020.xdata
+make xtree-020.kdata
+make xtree-020.cdata
+make xtree-020.fcdata
 
 make N=025
-make tree-025.kdata
-make tree-025.cdata
-make tree-025.fcdata
+make xtree-025.xdata
+make xtree-025.kdata
+make xtree-025.cdata
+make xtree-025.fcdata
 
 make N=030
-make tree-030.kdata
-make tree-030.cdata
-make tree-030.fcdata
+make xtree-030.xdata
+make xtree-030.kdata
+make xtree-030.cdata
+make xtree-030.fcdata
 
 make N=035
-make tree-035.kdata
-make tree-035.cdata
-make tree-035.fcdata
+make xtree-035.xdata
+make xtree-035.kdata
+make xtree-035.cdata
+make xtree-035.fcdata
 
 make N=040
-make tree-040.kdata
-make tree-040.cdata
-make tree-040.fcdata
+make xtree-040.xdata
+make xtree-040.kdata
+make xtree-040.cdata
+make xtree-040.fcdata
 
 make N=045
-make tree-045.kdata
-make tree-045.cdata
-make tree-045.fcdata
+make xtree-040.xdata
+make xtree-045.kdata
+make xtree-045.cdata
+make xtree-045.fcdata
 
 make N=050
-make tree-050.kdata
-make tree-050.cdata
-make tree-050.fcdata
+make xtree-050.xdata
+make xtree-050.cdata
+make xtree-050.fcdata
+
+make N=055
+make xtree-055.xdata
+make xtree-055.fcdata
+
+
+make N=060
+make xtree-060.xdata
+make xtree-060.fcdata
+
+make N=065
+make xtree-065.xdata
+make xtree-065.fcdata
+
+make N=070
+make xtree-070.xdata
+make xtree-070.fcdata
+
+make N=075
+make xtree-075.xdata
+make xtree-075.fcdata
+
+make N=080
+make xtree-080.xdata
+make xtree-080.fcdata
+
+make N=085
+make xtree-085.xdata
+make xtree-085.fcdata
+
+make N=090
+make xtree-090.xdata
+make xtree-090.fcdata
+
+make N=095
+make xtree-095.xdata
+make xtree-095.fcdata
+
+make N=100
+make xtree-100.xdata
+make xtree-100.fcdata
+
+make N=150
+make xtree-150.fcdata
+
+make N=200
+make xtree-200.fcdata
+
+make N=250
+make xtree-250.fcdata
 

@@ -2,7 +2,9 @@ GEN = ../src/xtree
 ROOT=xtree
 N=010
 SEED=123456
-CONFLICTS=1000000
+CONFLICTS=100000000
+
+RM = rm -f
 
 DDIR = ~/repos/drat-trim
 DRAT = $(DDIR)/drat-trim
@@ -16,18 +18,26 @@ CMS = $(CDIR)/cryptominisat5
 CFLAGS = --maxconfl $(CONFLICTS)
 
 $(ROOT)-$(N).cnf:
-	$(GEN) $(N) $(SEED) | tee $(ROOT)-$(N).xdata
-	$(DRAT) $(ROOT)-$(N).cnf $(ROOT)-$(N).drat | tee -a $(ROOT)-$(N).xdata
+	$(GEN) $(N) $(SEED) | tee $(ROOT)-$(N).data
 
 .SUFFIXES: .cnf .xdata .kdata .cdata .fcdata
+
+.cnf.xdata:
+	$(DRAT) $< $*.drat | tee $@
+	ls -l $*.drat | tee -a $@
+	$(RM) $*.drat
 
 .cnf.kdata:
 	$(KISSAT) $(KFLAGS) $< $*-kissat.drat | tee $@
 	$(DRAT) $< $*-kissat.drat | tee -a $@
+	ls -l $*-kissat.drat
+	$(RM) $*-kissat.drat
 
 .cnf.cdata:
 	$(CMS) $(CFLAGS)  $< $*-cms.drat | tee $@
 	$(DRAT) $< $*-cms.drat | tee -a $@
+	ls -l $*-cms.drat
+	$(RM) $*-cms.drat
 
 .cnf.fcdata:
 	$(CMS) $(CFLAGS)  $< | tee $@
