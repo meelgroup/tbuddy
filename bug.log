@@ -1,0 +1,23 @@
+2021-12-02:
+
+Program: xtree
+
+Something is corrupting bddfreepos, when run with N=137.  Gets value
+875442464, even though node array only 200003.  Fairly robust to
+benchmark parameters.  Also happens when use node array of size
+100003.
+
+Bug occurs in bdd_makenode, as retrieve node from free list.  Call
+with level = 385, high = 5448, low = 0.
+
+Global values:
+       bddfreenum 925905966 ??
+       bddproduced 80023
+       bddresized 0  (Means that no resizing has taken place)
+
+Also find that it has problems in proof generation for N>=121.  (Bug manifests itself different for different values of N.)
+
+Suspect that something is corrupting the global state.
+
+
+       		 
