@@ -15,9 +15,15 @@ Global values:
        bddproduced 80023
        bddresized 0  (Means that no resizing has taken place)
 
-Also find that it has problems in proof generation for N>=121.  (Bug manifests itself different for different values of N.)
+
+Also find that it has problems in proof generation for N>=121.  (Bug
+manifests itself different for different values of N.)
+[This problem seems to have gone away.]
 
 Suspect that something is corrupting the global state.
 
-
+Later: N=137
+       bddfreenum 959460397 Variable at 0x000000010002c7d4
+       
        		 
+RESOLUTION: Was getting buffer overflow formatting comments that include equation
