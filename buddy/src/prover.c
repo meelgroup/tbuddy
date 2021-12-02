@@ -32,9 +32,9 @@ static bool empty_clause_detected = false;
 // Cutoff betweeen large and small allocations (in terms of clauses)
 #define BUDDY_THRESHOLD 1000
 //#define BUDDY_THRESHOLD 10
-#define BUDDY_NODES_LARGE (1*1000*1000)
+#define BUDDY_NODES_LARGE (2*1000*1000)
 //#define BUDDY_NODES_LARGE (1000)
-#define BUDDY_NODES_SMALL (    200*1000)
+#define BUDDY_NODES_SMALL (2* 100*1000)
 #define BUDDY_CACHE_RATIO 8
 #define BUDDY_INCREASE_RATIO 20
 
@@ -85,6 +85,7 @@ int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_
     bdd_setcacheratio(BUDDY_CACHE_RATIO);
     bdd_setmaxincrease(bincrease);
     bdd_setvarnum(variable_count+1);
+    bdd_disable_reorder();
 
     return rval;
 }

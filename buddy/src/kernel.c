@@ -95,8 +95,11 @@ int          bddnodesize;           /* Number of allocated nodes */
 int          bddmaxnodesize;        /* Maximum allowed number of nodes */
 int          bddmaxnodeincrease;    /* Max. # of nodes used to inc. table */
 BddNode*     bddnodes;          /* All of the bdd nodes */
+//int tfill[256]; /* Limit corruption */
 int          bddfreepos;        /* First free node */
+//int mfill[256]; /* Limit corruption */
 int          bddfreenum;        /* Number of free nodes */
+//int bfill[256]; /* Limit corruption */
 long int     bddproduced;       /* Number of new nodes ever produced */
 int          bddvarnum;         /* Number of defined BDD variables */
 int*         bddrefstack;       /* Internal node reference stack */
@@ -144,6 +147,30 @@ static char *errorstrings[BDD_ERRNUM] =
 /*=== OTHER INTERNAL DEFINITIONS =======================================*/
 
 #define NODEHASH(lvl,l,h) (TRIPLE(lvl,l,h) % bddnodesize)
+
+// Debugging macros.  Currently disabled
+
+#define CHECKNODE(n) (n)
+//#define CHECKNODE(n) checknode(n)
+
+static BDD checknode(BDD n) {
+    if (n < 0 || n >= bddnodesize) { 
+	fprintf(stderr, "Invalid node %d detected.  Raising error\n", n);
+	bdd_error(BDD_ILLBDD);
+    }
+    return n;
+}
+
+#define CHECKRANGE(v) (v)
+//#define CHECKRANGE(v) checkrange(v)
+
+static int checkrange(int v) {
+    if (v < 0 || v >= bddnodesize) { 
+	fprintf(stderr, "Invalid value %d detected.  Raising error\n", v);
+	bdd_error(BDD_ILLBDD);
+    }
+    return v;
+}
 
 
 /*************************************************************************
@@ -214,7 +241,7 @@ int bdd_init(int initnodesize, int cs)
    }
 
    bddfreepos = 2;
-   bddfreenum = bddnodesize-2;
+   bddfreenum = CHECKRANGE(bddnodesize-2);
    bddrunning = 1;
    bddvarnum = 0;
    gbcollectnum = 0;
@@ -631,7 +658,7 @@ ALSO    {* bdd\_getallocnum, bdd\_setmaxnodenum *}
 */
 int bdd_getnodenum(void)
 {
-   return bddnodesize - bddfreenum;
+    return bddnodesize - CHECKRANGE(bddfreenum);
 }
 
 
@@ -1115,9 +1142,9 @@ static void bdd_gbc_rehash(void)
       }
       else
       {
-	 node->next = bddfreepos;
-	 bddfreepos = n;
-	 bddfreenum++;
+	 node->next = CHECKNODE(bddfreepos);
+	 bddfreepos = CHECKNODE(n);
+	 CHECKRANGE(bddfreenum++);
       }
    }
 }
@@ -1211,9 +1238,9 @@ void bdd_gbc(void)
 	     freed++;
 #endif
 	 LOWp(node) = -1;
-	 node->next = bddfreepos;
-	 bddfreepos = n;
-	 bddfreenum++;
+	 node->next = CHECKNODE(bddfreepos);
+	 bddfreepos = CHECKNODE(n);
+	 CHECKRANGE(bddfreenum++);
       }
    }
 
@@ -1421,7 +1448,7 @@ int bdd_makenode(unsigned int level, int low, int high)
 	 return res;
       }
 
-      res = bddnodes[res].next;
+      res = CHECKNODE(bddnodes[res].next);
 #ifdef CACHESTATS
       bddcachestats.uniqueChain++;
 #endif
@@ -1441,8 +1468,8 @@ int bdd_makenode(unsigned int level, int low, int high)
          /* Try to allocate more nodes */
       bdd_gbc();
 
-      if ((bddnodesize-bddfreenum) >= usednodes_nextreorder  &&
-	   bdd_reorder_ready())
+      if (CHECKRANGE(bddnodesize-bddfreenum) >= usednodes_nextreorder  &&
+	  bdd_reorder_ready())
       {
 	 longjmp(bddexception,1);
       }
@@ -1463,9 +1490,9 @@ int bdd_makenode(unsigned int level, int low, int high)
    }
 
       /* Build new node */
-   res = bddfreepos;
-   bddfreepos = bddnodes[bddfreepos].next;
-   bddfreenum--;
+   res = CHECKNODE(bddfreepos);
+   bddfreepos = CHECKNODE(bddnodes[bddfreepos].next);
+   CHECKRANGE(bddfreenum--);
    bddproduced++;
    
    node = &bddnodes[res];
@@ -1545,9 +1572,9 @@ int bdd_noderesize(int doRehash)
       LOW(n) = -1;
       bddnodes[n].next = n+1;
    }
-   bddnodes[bddnodesize-1].next = bddfreepos;
-   bddfreepos = oldsize;
-   bddfreenum += bddnodesize - oldsize;
+   bddnodes[bddnodesize-1].next = CHECKNODE(bddfreepos);
+   bddfreepos = CHECKNODE(oldsize);
+   bddfreenum += CHECKRANGE(bddnodesize - oldsize);
 
    if (doRehash)
       bdd_gbc_rehash();
