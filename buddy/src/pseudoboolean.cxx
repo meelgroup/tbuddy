@@ -246,7 +246,7 @@ xor_constraint *xor_sum_list(xor_constraint **xlist, int len) {
     if (len <= 4)
 	return xor_sum_list_linear(xlist, len);
     else
-	return xor_sum_list_pq(xlist, len);
+	return xor_sum_list_bf(xlist, len);
 }
 
 xor_set::~xor_set() {
