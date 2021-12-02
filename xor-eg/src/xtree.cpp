@@ -126,9 +126,7 @@ static void gen_binaries(int n) {
 }
 
 // Write CNF File
-static void gen_cnf(char *froot, int n) {
-    char fname[strlen(froot) + 5];
-    sprintf(fname, "%s.cnf", froot);
+static void gen_cnf(char *fname, int n) {
     int vcount = 3*n;
     FILE *cnf_file = fopen(fname, "w");
     if (!cnf_file) {
@@ -146,19 +144,17 @@ static void gen_cnf(char *froot, int n) {
 }
 
 // Generate DRAT proof
-static void gen_drat_proof(char *froot, int n) {
-    char fname[strlen(froot) + 6];
-    sprintf(fname, "%s.drat", froot);
+static void gen_drat_proof(char *fname, int n) {
     FILE *proof_file = fopen(fname, "w");
     if (!proof_file) {
 	fprintf(stderr, "Couldn't open file '%s'\n", fname);
 	exit(1);
     }
     int vcount = 3*n;
-    // When generating DRAT proofs, don't need to supply the input clauses
-    // or how many there are.
-    tbdd_init(proof_file, vcount, 0, NULL, false);
-    tbdd_set_verbose(2); // So that comments are included in proof
+    // TBDD initializer for DRAT proof generation
+    tbdd_init_drat(proof_file, vcount);
+    // Can set to include comments in proof
+    // tbdd_set_verbose(1); 
 
     // Use Xor reasoning to infer constraint x_1 ^ x_n = 1
     xor_set xset;
@@ -167,15 +163,22 @@ static void gen_drat_proof(char *froot, int n) {
 	xset.add(xc);
     }
     xor_constraint *sum = xset.sum();
+
+    // Add clauses to proof
     ilist lits = ilist_new(2);
+
     // Assert inequivalence, extracted from XOR sum
     assert_clause(ilist_fill2(lits, R1(n), R2(n)));
     assert_clause(ilist_fill2(lits, -R1(n), -R2(n)));
+
     // Assert contradictory unit clauses
     assert_clause(ilist_fill1(lits, R1(n)));
     assert_clause(ilist_fill1(lits, -R1(n)));
+
     // Assert empty clause
     assert_clause(ilist_resize(lits, 0));
+
+    // Finish up
     tbdd_done();
     fclose(proof_file);
     ilist_free(lits);
@@ -195,9 +198,10 @@ int main(int argc, char *argv[]) {
 	printf("Usage: %s N [SEED]\n", argv[0]);
 	exit(0);
     }
-    char froot[strlen(argv[1] + 10)];
-    sprintf(froot, "xtree-%s", argv[1]);
-    int n = atoi(argv[1]);
+    char *anum = argv[1];
+    char fname[strlen(anum) + 10];
+    int n = atoi(anum);
+
     if (argc == 3) {
 	int seed = atoi(argv[2]);
 	srandom(seed);
@@ -206,8 +210,10 @@ int main(int argc, char *argv[]) {
     double start = tod();
     gen_xors(n);
     gen_binaries(n);
-    gen_cnf(froot, n);
-    gen_drat_proof(froot, n);
+    sprintf(fname, "xtree-%s.cnf", anum);
+    gen_cnf(fname, n);
+    sprintf(fname, "xtree-%s.drat", anum);
+    gen_drat_proof(fname, n);
     printf("Elapsed seconds: %.2f\n", tod()-start);
     return 0;
 }

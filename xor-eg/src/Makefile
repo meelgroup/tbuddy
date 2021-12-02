@@ -6,7 +6,7 @@ INC=-I../../buddy/include
 LDIR = ../..//buddy/lib
 TLIB = $(LDIR)/tbuddy.a
 
-all: xstrip
+all: xtree
 
 xstrip: xstrip.cpp
 	$(CXX) $(CFLAGS) $(INC) -o xstrip xstrip.cpp $(TLIB)
