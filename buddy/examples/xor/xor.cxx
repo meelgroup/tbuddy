@@ -107,7 +107,7 @@ void test_2()
     ilist_resize(out, 1);
     out[0] = -4;
     assert_clause(out);
-    fprintf(drat_out, "4 0\n");
+    fprintf(drat_out, "0\n");
 }
 
 void test_3()
