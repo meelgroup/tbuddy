@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <iostream>
+#include <string.h>
 
 
 using namespace CMSat;
@@ -21,13 +22,11 @@ uint32_t hamm_w(const uint64_t x) {
     return w;
 }
 
-void add_xor_to_cnf(ilist vs, bool out, FILE* fout)
+void add_xor_to_cnf(ilist vs, bool phase, FILE* fout)
 {
-    cout << "sz: " << vs[-1] << endl;
     for(uint64_t i = 0; i < 1ULL<<vs[-1]; i++) {
         const uint32_t hamm = hamm_w(i);
-        cout << "Hamm w: " << hamm << endl;
-        if ((hamm % 2) == out) {
+        if ((hamm % 2) == phase) {
             for(uint32_t i2 = 0; i2 < vs[-1]; i2++) {
                 if (((i>>i2)&1) == 0) {
                     fprintf(fout, "%d ", vs[i2]);
@@ -62,13 +61,13 @@ void test_1()
     l3[0] = 3;
     l3[1] = 4;
 
-    auto x1 = xor_constraint(l1, (int)1);
+    auto x1 = xor_constraint(l1, 1);
     add_xor_to_cnf(l1, 1, cnf_out);
 
-    auto x2 = xor_constraint(l2, (int)1);
+    auto x2 = xor_constraint(l2, 1);
     add_xor_to_cnf(l2, 1, cnf_out);
 
-    auto x3 = xor_constraint(l3, (int)0);
+    auto x3 = xor_constraint(l3, 0);
     add_xor_to_cnf(l3, 0, cnf_out);
 
     auto xs = xor_plus(&x1, &x2);
@@ -99,10 +98,10 @@ void test_2()
     l3[1] = 2;
     l3[2] = 3;
 
-    auto x2 = xor_constraint(l2, (int)0);
+    auto x2 = xor_constraint(l2, 1);
     add_xor_to_cnf(l2, 1, cnf_out);
 
-    auto x3 = xor_constraint(l3, (int)0);
+    auto x3 = xor_constraint(l3, 1);
     add_xor_to_cnf(l3, 1, cnf_out);
 
     auto xs = xor_plus(&x2, &x3);
@@ -113,13 +112,55 @@ void test_2()
     fprintf(drat_out, "4 0\n");
 }
 
-int main()
+void test_3()
+{
+    ilist l2 = ilist_new(4);
+    ilist_resize(l2, 4);
+    l2[0] = 1;
+    l2[1] = 2;
+    l2[2] = 3;
+    l2[3] = 4;
+    auto x2 = xor_constraint(l2, 1);
+    add_xor_to_cnf(l2, 1, cnf_out);
+
+    ilist l3 = ilist_new(4);
+    ilist_resize(l3, 4);
+    l3[0] = 1;
+    l3[1] = 2;
+    l3[2] = 3;
+    l3[2] = 5;
+    auto x3 = xor_constraint(l3, 1);
+    add_xor_to_cnf(l3, 1, cnf_out);
+
+    auto xs = xor_plus(&x2, &x3);
+    ilist out = ilist_new(2);
+    ilist_resize(out, 2);
+    out[0] = -4;
+    out[1] = 5;
+    assert_clause(out);
+    fprintf(drat_out, "4 0\n");
+}
+
+int main(int agc, char** argv)
 {
     cnf_out = fopen("input.cnf", "w");
     drat_out = fopen("out.drat", "w");
-    prover_init(drat_out, 4, 8, NULL, 0);
+    prover_init(drat_out, 5, 0, NULL, 0);
 
-    test_2();
+    if (agc != 2) {
+        cout << "ERROR: You must give exactly one parameter, the test number" << endl;
+        exit(-1);
+    }
+    if (strcmp(argv[1], "1") == 0) {
+        test_1();
+    } else if (strcmp(argv[1], "2") == 0) {
+        test_2();
+    } else if (strcmp(argv[1], "3") == 0) {
+        test_3();
+    } else {
+        cout << "ERROR: unknown test!" << endl;
+        exit(-1);
+    }
 
     fclose(drat_out);
     fclose(cnf_out);
