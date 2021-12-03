@@ -91,16 +91,14 @@ void test_2()
     l2[1] = 2;
     l2[2] = 3;
     l2[3] = 4;
+    auto x2 = xor_constraint(l2, 1);
+    add_xor_to_cnf(l2, 1, cnf_out);
 
     ilist l3 = ilist_new(3);
     ilist_resize(l3, 3);
     l3[0] = 1;
     l3[1] = 2;
     l3[2] = 3;
-
-    auto x2 = xor_constraint(l2, 1);
-    add_xor_to_cnf(l2, 1, cnf_out);
-
     auto x3 = xor_constraint(l3, 1);
     add_xor_to_cnf(l3, 1, cnf_out);
 
