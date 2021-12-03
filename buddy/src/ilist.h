@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <limits.h>
 
+
 /*============================================
    Integer lists
 ============================================*/
@@ -105,7 +106,9 @@ extern int ilist_format(ilist ils, char *out, const char *sep, int maxlen);
 }
 #endif
 
+#if 0 /* DISABLE */
 #ifdef CPLUSPLUS
+/* This API has not been tested, and it isn't compatible with the C++ API for TBDD */
 class Ilist {
 
 public:
@@ -128,7 +131,8 @@ private:
 
 
 };
-#endif
+#endif /* C++ */
+#endif /* DISABLE */
 
 #endif /* _ILIST_H */
 /* EOF */
