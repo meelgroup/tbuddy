@@ -10,7 +10,7 @@ PROG = xor
 all: $(PROG)
 
 $(PROG): $(PROG).cxx $(LIB)
-	$(CXX) $(CFLAGS) $(INC) -static -o $(PROG) $(PROG).cxx $(LIB)
+	$(CXX) $(CFLAGS) $(INC) -o $(PROG) $(PROG).cxx $(LIB)
 
 clean:
 	rm -f $(PROG) *.o *~
