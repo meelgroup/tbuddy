@@ -86,13 +86,17 @@ def usage(name):
 
 def run(name, args):
     global triggerPhrase
+    vals = {}
     if len(args) <= 1:
         usage(name)
     triggerPhrase = args[0]
     for fname in args[1:]:
         pair = extract(fname)
         if pair is not None:
-            print("%s,%s" % pair)
+            vals[pair[0]] = pair
+    for k in sorted(vals.keys()):
+        print("%s,%s" % vals[k])
+
 
 if __name__ == "__main__":
     run(sys.argv[0], sys.argv[1:])

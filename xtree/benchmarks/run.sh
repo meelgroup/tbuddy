@@ -102,15 +102,22 @@ make xtree-200.xdata
 make xtree-200.fcdata
 
 make N=250
+make xtree-250.xdata
 make xtree-250.fcdata
 
 make N=300
+make xtree-300.xdata
 make xtree-300.fcdata
 
 make N=400
+make xtree-400.xdata
 make xtree-400.fcdata
 
+make N=450
+make xtree-450.xdata
+
 make N=500
+make xtree-500.xdata
 make xtree-500.fcdata
 
 make N=600
@@ -125,5 +132,69 @@ make xtree-800.fcdata
 make N=900
 make xtree-900.fcdata
 
-make N=999
-make xtree-999.fcdata
+make N=1000
+make xtree-1000.fcdata
+
+make N=2000
+make xtree-2000.fcdata
+
+make N=3000
+make xtree-3000.fcdata
+
+make N=4000
+make xtree-4000.fcdata
+
+make N=5000
+make xtree-5000.fcdata
+
+make N=6000
+make xtree-6000.fcdata
+
+make N=7000
+make xtree-7000.fcdata
+
+make N=8000
+make xtree-8000.fcdata
+
+make N=9000
+make xtree-9000.fcdata
+
+make xtree-010.tdata
+make xtree-015.tdata
+make xtree-020.tdata
+make xtree-025.tdata
+make xtree-030.tdata
+make xtree-035.tdata
+make xtree-040.tdata
+make xtree-045.tdata
+make xtree-050.tdata
+make xtree-055.tdata
+make xtree-060.tdata
+make xtree-065.tdata
+make xtree-070.tdata
+make xtree-075.tdata
+make xtree-080.tdata
+make xtree-085.tdata
+make xtree-090.tdata
+make xtree-095.tdata
+make xtree-100.tdata
+make xtree-150.tdata
+make xtree-200.tdata
+make xtree-250.tdata
+make xtree-300.tdata
+make xtree-400.tdata
+make xtree-500.tdata
+make xtree-600.tdata
+make xtree-700.tdata
+make xtree-800.tdata
+make xtree-900.tdata
+make xtree-1000.tdata
+make xtree-2000.tdata
+make xtree-3000.tdata
+make xtree-4000.tdata
+make xtree-5000.tdata
+make xtree-6000.tdata
+make xtree-7000.tdata
+make xtree-8000.tdata
+make xtree-9000.tdata
+make xtree-10000.tdata
