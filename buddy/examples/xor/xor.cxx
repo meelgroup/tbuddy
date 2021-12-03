@@ -105,7 +105,7 @@ void test_2()
     auto xs = xor_plus(&x2, &x3);
     ilist out = ilist_new(1);
     ilist_resize(out, 1);
-    out[0] = 4;
+    out[0] = -4;
     assert_clause(out);
     fprintf(drat_out, "4 0\n");
 }
