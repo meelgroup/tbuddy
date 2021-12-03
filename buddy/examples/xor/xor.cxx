@@ -61,11 +61,11 @@ void test_1()
     l3[0] = 3;
     l3[1] = 4;
 
-    auto x1 = xor_constraint(l1, 1);
-    add_xor_to_cnf(l1, 1, cnf_out);
+    auto x1 = xor_constraint(l1, 0);
+    add_xor_to_cnf(l1, 0, cnf_out);
 
-    auto x2 = xor_constraint(l2, 1);
-    add_xor_to_cnf(l2, 1, cnf_out);
+    auto x2 = xor_constraint(l2, 0);
+    add_xor_to_cnf(l2, 0, cnf_out);
 
     auto x3 = xor_constraint(l3, 0);
     add_xor_to_cnf(l3, 0, cnf_out);
