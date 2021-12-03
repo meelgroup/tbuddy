@@ -160,8 +160,10 @@ int main(int agc, char** argv)
         exit(-1);
     }
 
+    prover_done();
     fclose(drat_out);
     fclose(cnf_out);
+
 
     return 0;
 }
