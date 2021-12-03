@@ -136,7 +136,6 @@ void test_3()
     out[0] = -4;
     out[1] = 5;
     assert_clause(out);
-    fprintf(drat_out, "4 0\n");
 }
 
 int main(int agc, char** argv)
