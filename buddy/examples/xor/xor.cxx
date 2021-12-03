@@ -40,13 +40,11 @@ void add_xor_to_cnf(ilist vs, bool out, FILE* fout)
     }
 }
 
-int main()
+FILE* cnf_out;
+FILE* drat_out;
+
+void test_1()
 {
-    FILE* cnf_out = fopen("input.cnf", "w");
-    FILE* drat_out = fopen("out.drat", "w");
-    prover_init(drat_out, 4, 8, NULL, 0);
-
-
     ilist l1 = ilist_new(3);
     ilist_resize(l1, 3);
     l1[0] = 1;
@@ -73,11 +71,55 @@ int main()
     auto x3 = xor_constraint(l3, (int)0);
     add_xor_to_cnf(l3, 0, cnf_out);
 
-    xor_constraint *xs = xor_plus(&x1, &x2);
-    xor_constraint *xs2 = xor_plus(xs, &x3);
+    auto xs = xor_plus(&x1, &x2);
+    auto xs2 = xor_plus(xs, &x3);
 
     ilist out = ilist_new(0);
+    ilist_resize(out, 0);
     assert_clause(out);
+}
+
+void test_2()
+{
+    ilist l1 = ilist_new(1);
+    ilist_resize(l1, 1);
+    l1[0] = 4;
+    add_xor_to_cnf(l1, 0, cnf_out);
+
+    ilist l2 = ilist_new(4);
+    ilist_resize(l2, 4);
+    l2[0] = 1;
+    l2[1] = 2;
+    l2[2] = 3;
+    l2[3] = 4;
+
+    ilist l3 = ilist_new(3);
+    ilist_resize(l3, 3);
+    l3[0] = 1;
+    l3[1] = 2;
+    l3[2] = 3;
+
+    auto x2 = xor_constraint(l2, (int)0);
+    add_xor_to_cnf(l2, 1, cnf_out);
+
+    auto x3 = xor_constraint(l3, (int)0);
+    add_xor_to_cnf(l3, 1, cnf_out);
+
+    auto xs = xor_plus(&x2, &x3);
+    ilist out = ilist_new(1);
+    ilist_resize(out, 1);
+    out[0] = 4;
+    assert_clause(out);
+    fprintf(drat_out, "4 0\n");
+}
+
+int main()
+{
+    cnf_out = fopen("input.cnf", "w");
+    drat_out = fopen("out.drat", "w");
+    prover_init(drat_out, 4, 8, NULL, 0);
+
+    test_2();
 
     fclose(drat_out);
     fclose(cnf_out);
