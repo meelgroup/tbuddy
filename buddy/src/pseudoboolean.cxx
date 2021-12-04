@@ -3,9 +3,8 @@
 #include <queue>
 
 #define BUFLEN 2048
-
 // For formatting information
-char ibuf[BUFLEN];
+static char ibuf[BUFLEN];
 
 /*
   Sort integers in ascending order
@@ -61,6 +60,8 @@ static int show_xor_buf(char *buf, ilist variables, int phase, int maxlen) {
 	return snprintf(buf, maxlen, "=2 %d", phase);
     else {
 	int len = snprintf(buf, maxlen, "=2 %d 1.", phase);
+	if (len >= maxlen)
+	    return 0;
 	int xlen = ilist_format(variables, buf+len, " 1.", maxlen-len);
 	return len + xlen;
     }
@@ -122,8 +123,8 @@ xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
     phase = p;
     bdd xfun = bdd_build_xor(variables, phase);
     if (verbosity_level >= 2) {
-	//	show_xor_buf(ibuf, vars, p, BUFLEN);
-	print_proof_comment(2, "Validate BDD node N%d representing Xor constraint", bdd_nameid(xfun.get_BDD()));
+	show_xor_buf(ibuf, vars, p, BUFLEN);
+	print_proof_comment(2, "Validate BDD node N%d representing Xor constraint %s", bdd_nameid(xfun.get_BDD()), ibuf);
     }
     validation = tbdd_validate(xfun, vfun);
     key = priority_key(vars);
