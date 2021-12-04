@@ -4,7 +4,10 @@
 #include "tbdd.h"
 #include "kernel.h"
 
-#define BUFLEN 1024
+#define BUFLEN 2048
+// For formatting information
+static char ibuf[BUFLEN];
+
 
 /*============================================
   Package setup.
@@ -130,7 +133,10 @@ static BDD bdd_from_clause(ilist clause) {
 }
 
 TBDD tbdd_from_clause(ilist clause) {
-    print_proof_comment(2, "BDD representation of a clause");
+    if (verbosity_level >= 2) {
+	ilist_format(clause, ibuf, " ", BUFLEN);
+	print_proof_comment(2, "BDD representation of clause [%s]", ibuf);
+    }
     BDD r = bdd_from_clause(clause);
     return tbdd_trust(r);
 }
@@ -217,12 +223,17 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
     TBDD result = TBDD_tautology();
     for (bits = 0; bits < elen; bits++) {
 	int i;
-	if (parity(bits) != phase)
+	if (parity(bits) == phase)
 	    continue;
 	for (i = 0; i < len; i++)
-	    lits[i] = (bits >> i) & 0x1 ? vars[i] : -vars[i];
+	    lits[i] = (bits >> i) & 0x1 ? -vars[i] : vars[i];
 	TBDD tc = tbdd_from_clause(lits);
 	result = tbdd_and(result, tc);
+    }
+    if (verbosity_level >= 2) {
+	ilist_format(vars, ibuf, " ^ ", BUFLEN);
+	print_proof_comment(2, "N%d is BDD representation of %s = %d",
+			    bdd_nameid(result.root), ibuf, phase);
     }
     return result;
 }
