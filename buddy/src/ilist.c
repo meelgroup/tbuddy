@@ -235,10 +235,11 @@ int ilist_format(ilist ils, char *out, const char *sep, int maxlen) {
     }
     int len = 0;
     for (i = 0; i < ilist_length(ils); i++) {
+	if (len >= maxlen)
+	    break;
 	int xlen = snprintf(out+len, maxlen-len, "%s%d", space, ils[i]);
 	len += xlen;
 	space = sep;
     }
-    out[len] = 0;
     return len;
 }
