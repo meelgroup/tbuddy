@@ -6,10 +6,20 @@ BSAT = ../../../src/bsat
 TBSAT = ../../../src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
 VLEVEL=1
-RM = rm
+RM = rm -f
 
 chess-$(N): $(GENERATOR)
 	$(INTERP) $(GENERATOR) -n $(N) -r chess-$(N)
+
+128:
+	make N=128
+	make chess-128.sdata RM=ls
+
+
+512:
+	make N=512
+	make chess-512.sdata RM=ls
+
 
 .SUFFIXES: .cnf .ldata .bdata .sdata .fldata .fbdata .fsdata
 
