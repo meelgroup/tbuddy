@@ -173,7 +173,7 @@ static void gen_drat_proof(char *fname, int n) {
     assert_clause(ilist_fill2(lits, R1(n), R2(n)));  ///line:xor:start
     assert_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:xor:end
 
-    // Assert unit clauses for R1
+    // Assert unit clause for R1
     assert_clause(ilist_fill1(lits, R1(n))); ///line:unit
 
     // Assert empty clause
