@@ -163,6 +163,8 @@ static void gen_drat_proof(char *fname, int n) {
     for (int x = 0; x < xor_variables.size(); x++) {
 	xor_constraint *xc = new xor_constraint(xor_variables[x], xor_phases[x]);
 	xset.add(xc);
+	// Don't need this constraint anymore 
+	delete xc;  ///line:xset:delete
     } ///line:xset:end
     xor_constraint *sum = xset.sum(); ///line:xset:sum
 
