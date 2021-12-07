@@ -256,7 +256,8 @@ xor_set::~xor_set() {
 }
 
 void xor_set::add(xor_constraint *con) {
-    xlist.push_back(con);
+    xor_constraint *ncon = new xor_constraint(*con);
+    xlist.push_back(ncon);
 }
 
 xor_constraint *xor_set::sum() {
