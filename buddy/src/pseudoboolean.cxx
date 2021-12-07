@@ -255,8 +255,9 @@ xor_set::~xor_set() {
     //    delete xlist[i];
 }
 
-void xor_set::add(xor_constraint *con) {
-    xor_constraint *ncon = new xor_constraint(*con);
+void xor_set::add(xor_constraint &con) {
+    // Make local copy of the constraint
+    xor_constraint *ncon = new xor_constraint(con);
     xlist.push_back(ncon);
 }
 

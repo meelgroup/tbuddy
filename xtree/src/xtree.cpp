@@ -161,10 +161,8 @@ static void gen_drat_proof(char *fname, int n) {
     // Use parity reasoning to infer constraint x_1 ^ x_n = 1
     xor_set xset; ///line:xset:start
     for (int x = 0; x < xor_variables.size(); x++) {
-	xor_constraint *xc = new xor_constraint(xor_variables[x], xor_phases[x]);
+	xor_constraint xc(xor_variables[x], xor_phases[x]);
 	xset.add(xc);
-	// Don't need this constraint anymore 
-	delete xc;  ///line:xset:delete
     } ///line:xset:end
     xor_constraint *sum = xset.sum(); ///line:xset:sum
 

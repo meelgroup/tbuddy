@@ -71,7 +71,7 @@ class xor_set {
     // Add an xor constraint to the set.
     // The code makes a copy of the constraint, and so
     // it is up to the caller to delete the original one.
-    void add(xor_constraint *con);
+    void add(xor_constraint &con);
 
     // Extract the validated sum of the Xors.
     // All constraints in the set are deleted

@@ -614,7 +614,7 @@ public:
 		fprintf(stderr, "Schedule line #%d.  Term %d does not have an associated equation\n", line, tp->get_term_id());
 		exit(1);
 	      }
-	      xset.add(tp->get_equation());
+	      xset.add(*tp->get_equation());
 	    }
 	    xor_constraint *sum = xset.sum();
 	    sum_count += scount;
