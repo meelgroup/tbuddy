@@ -95,11 +95,8 @@ int          bddnodesize;           /* Number of allocated nodes */
 int          bddmaxnodesize;        /* Maximum allowed number of nodes */
 int          bddmaxnodeincrease;    /* Max. # of nodes used to inc. table */
 BddNode*     bddnodes;          /* All of the bdd nodes */
-//int tfill[256]; /* Limit corruption */
 int          bddfreepos;        /* First free node */
-//int mfill[256]; /* Limit corruption */
 int          bddfreenum;        /* Number of free nodes */
-//int bfill[256]; /* Limit corruption */
 long int     bddproduced;       /* Number of new nodes ever produced */
 int          bddvarnum;         /* Number of defined BDD variables */
 int*         bddrefstack;       /* Internal node reference stack */
@@ -1175,23 +1172,13 @@ void bdd_gbc(void)
       gbc_handler(1, &s);
    }
    
-#if 0
-   printf("Marking:\n");
-#endif
-
    for (r=bddrefstack ; r<bddrefstacktop ; r++) {
-#if 0 && ENABLE_TBDD
-       printf("Node N%d on stack\n", NNAME(*r));
-#endif
        bdd_mark(*r);
    }
 
    for (n=0 ; n<bddnodesize ; n++)
    {
        if (bddnodes[n].refcou > 0) {
-#if 0 && ENABLE_TBDD
-	   printf("Node N%d has reference count %d\n", NNAME(n), bddnodes[n].refcou);
-#endif
 	   bdd_mark(n);
        }
       bddnodes[n].hash = 0;
