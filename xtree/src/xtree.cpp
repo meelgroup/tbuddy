@@ -158,7 +158,7 @@ static void gen_drat_proof(char *fname, int n) {
     // TBDD initializer for DRAT proof generation
     tbdd_init_drat(proof_file, vcount);  ///line:initialize
 
-    // Use parity reasoning to infer constraint x_1 ^ x_n = 1
+    // Use parity reasoning to infer constraint R1 ^ R2 = 1
     xor_set xset; ///line:xset:start
     for (int x = 0; x < xor_variables.size(); x++) {
 	xor_constraint xc(xor_variables[x], xor_phases[x]);
