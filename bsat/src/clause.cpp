@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include "clause.h"
 #include <algorithm>
-#include <string.h>
+#include <cstring>
 
 static int skip_line(FILE *infile) {
   int c;
