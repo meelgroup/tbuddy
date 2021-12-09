@@ -3,8 +3,8 @@ CXX=g++
 TFLAGS =  -DENABLE_TBDD
 DFLAGS =  -DCACHESTATS 
 #OPT = -O2
-OPT = -O0
-CFLAGS=-g $(OPT) -Wno-nullability-completeness $(DFLAGS)
+OPT = -O0 -fPIC
+CFLAGS=-g $(OPT) -Wall -Wno-nullability-completeness $(DFLAGS)
 INC = -I..
 LDIR = ../lib
 IDIR = ../include
@@ -15,7 +15,7 @@ TFILES = tbdd.to prover.to \
 	bddio.to bddop.to bvec.to cache.to fdd.to ilist.to imatrix.to kernel.to pairs.to prime.to reorder.to tree.to cppext.to \
 	pseudoboolean.to
 
-all: buddy.a tbuddy.a
+all: buddy.a tbuddy.a libtbuddy.so
 	rm -rf $(LDIR)
 	mkdir $(LDIR)
 	rm -rf $(IDIR)
@@ -27,9 +27,13 @@ all: buddy.a tbuddy.a
 	cp -p ilist.h $(IDIR)
 	cp -p prover.h $(IDIR)
 	cp -p pseudoboolean.h $(IDIR)
+	cp -p libtbuddy.so $(LDIR)
 
 buddy.a: $(FILES)
 	ar cr buddy.a $(FILES)
+
+libtbuddy.so: $(TFILES)
+	$(CXX) -shared -o libtbuddy.so $(TFILES)
 
 tbuddy.a: $(TFILES)
 	ar cr tbuddy.a $(TFILES)
