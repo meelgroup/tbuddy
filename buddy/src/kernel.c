@@ -123,13 +123,19 @@ static bdd2inthandler resize_handler;  /* Node-table-resize handler */
 
    /* Strings for all error mesages */
 static char *errorstrings[BDD_ERRNUM] =
-{ "Out of memory", "Unknown variable", "Value out of range",
-  "Unknown BDD root dereferenced", "bdd_init() called twice",
-  "File operation failed", "Incorrect file format",
-  "Variables not in ascending order", "User called break",
+{ "Out of memory",
+  "Unknown variable",
+  "Value out of range",
+  "Unknown BDD root dereferenced",
+  "bdd_init() called twice",
+  "File operation failed",
+  "Incorrect file format",
+  "Variables not in ascending order",
+  "User called break",
   "Mismatch in size of variable sets",
   "Cannot allocate fewer nodes than already in use",
-  "Unknown operator", "Illegal variable set",
+  "Unknown operator",
+  "Illegal variable set",
   "Bad variable block operation",
   "Trying to decrease the number of variables",
   "Trying to replace with variables already in the bdd",
@@ -138,7 +144,13 @@ static char *errorstrings[BDD_ERRNUM] =
   "Bad size argument",
   "Mismatch in bitvector size",
   "Illegal shift-left/right parameter",
-  "Division by zero" };
+  "Division by zero" 
+#if INCLUDE_TBDD
+  ;
+  "Cannot (re)allocate ilist",
+  "Cannot generate proof"
+#endif
+};
 
 
 /*=== OTHER INTERNAL DEFINITIONS =======================================*/

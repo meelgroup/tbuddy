@@ -449,7 +449,15 @@ extern const BDD bddtrue;
 #define BVEC_SHIFT (-21)   /* Illegal shift-left/right parameter */
 #define BVEC_DIVZERO (-22) /* Division by zero */
 
+#if ENABLE_TBDD
+#define ILIST_ALLOC (-23)  /* Invalid allocation for ilist */
+#define TBDD_PROOF (-24)   /* Couldn't complete proof of justification */
+#define BDD_ERRNUM 26
+#else
 #define BDD_ERRNUM 24
+#endif /* ENABLE_TBDD */
+
+
 
 /*************************************************************************
  The following hack gives functions the names expected from the C interface 

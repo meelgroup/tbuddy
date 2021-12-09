@@ -636,8 +636,8 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	if (!rup_check(itarg, hint_h_order, HINT_COUNT/2)) {
 	    fprintf(proof_file, "c  Uh-Oh.  RUP check failed in first half of proof.  Target = [");
 	    ilist_print(itarg, proof_file, " ");
-	    fprintf(proof_file, "].  SKIPPING\n");
-	    // exit(1);
+	    fprintf(proof_file, "].\n");
+	    bdd_error(TBDD_PROOF);
 	}
 	for (oi = 0; oi < HINT_COUNT/2; oi++) {
 	    hi = hint_h_order[oi];
@@ -650,8 +650,8 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	if (!rup_check(targ, hint_l_order, HINT_COUNT/2+1)) {
 	    fprintf(proof_file, "c  Uh-Oh.  RUP check failed in second half of proof.  Target = [");
 	    ilist_print(itarg, proof_file, " ");
-	    fprintf(proof_file, "].  SKIPPING\n");
-	    //	    exit(1);
+	    fprintf(proof_file, "].\n");
+	    bdd_error(TBDD_PROOF);
 
 	}
 	ilist_resize(ant, 0);

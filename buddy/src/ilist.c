@@ -5,7 +5,7 @@
 
 #ifdef ENABLE_TBDD
 int bdd_error(int);
-#define BDD_MEMORY (-1)
+#define ILIST_ALLOC (-23)
 #endif
 
 /*============================================
@@ -22,7 +22,7 @@ int bdd_error(int);
 static ilist ilist_error(char *fname) {
     fprintf(stderr, "ilist error in %s\n", fname);
 #if ENABLE_TBDD
-    bdd_error(BDD_MEMORY);
+    bdd_error(ILIST_ALLOC);
 #else
     exit(1);
 #endif
