@@ -124,7 +124,7 @@ xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
     bdd xfun = bdd_build_xor(variables, phase);
     if (verbosity_level >= 2) {
 	show_xor_buf(ibuf, vars, p, BUFLEN);
-	print_proof_comment(2, "Validate BDD node N%d representing Xor constraint %s", bdd_nameid(xfun.get_BDD()), ibuf);
+	print_proof_comment(2, "Validate BDD node N%d representing Xor constraint %s", bdd_nameid(xfun), ibuf);
     }
     validation = tbdd_validate(xfun, vfun);
     key = priority_key(vars);
@@ -144,7 +144,7 @@ int xor_constraint::validate_clause(ilist clause) {
 }
 
 void xor_constraint::show(FILE *out) {
-    fprintf(out, "Xor Constraint: Node N%d validates ", bdd_nameid(validation.get_root().get_BDD()));
+    fprintf(out, "Xor Constraint: Node N%d validates ", tbdd_nameid(validation));
     show_xor(out, variables, phase);
     fprintf(out, "\n");
 }

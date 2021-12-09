@@ -214,7 +214,8 @@ class tbdd
     tbdd operator=(const tbdd &tr)    { if (root != tr.root) { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delref(dr); root = tr.root; bdd_addref(root); } clause_id = tr.clause_id; return *this; }
     tbdd operator&(const tbdd &tr) const;
     tbdd operator&=(const tbdd &tr);
-
+    
+    // Backdoor functions provide read-only access
     bdd get_root()                     { return bdd(root); }
     int get_clause_id()                { return clause_id; }
 
@@ -231,6 +232,7 @@ class tbdd
     friend tbdd tbdd_trust(bdd r);
     friend int tbdd_validate_clause(ilist clause, tbdd &tr);
     friend tbdd tbdd_from_xor(ilist variables, int phase);
+    friend int tbdd_nameid(tbdd &tr);
 
     // Convert to low-level form
     friend void tbdd_xfer(tbdd &tr, TBDD &res);
@@ -266,6 +268,9 @@ inline int tbdd_validate_clause(ilist clause, tbdd &tr)
 
 inline tbdd tbdd_from_xor(ilist variables, int phase)
 { return TBDD_from_xor(variables, phase); }
+
+inline int tbdd_nameid(tbdd &tr)
+{ return bdd_nameid(tr.root); }
 
 #endif /* CPLUSPLUS */
 

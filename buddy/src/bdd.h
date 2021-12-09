@@ -504,9 +504,9 @@ class bdd
    int operator==(const bdd &r) const;
    int operator!=(const bdd &r) const;
    
-   // Backdoor to access private value
+   // Backdoor to access private value.  Not for general use.
    inline BDD get_BDD() const { return root; }
-   // Backdoor to create bdd from BDD
+   // Backdoor to create bdd from BDD.  Not for general use.
    bdd(BDD r) { bdd_addref(root=r); }
 
 private:
@@ -523,6 +523,7 @@ private:
    friend int      bdd_var(const bdd &);
    friend bdd      bdd_low(const bdd &);
    friend bdd      bdd_high(const bdd &);
+   friend int      bdd_nameid(const bdd &);
    friend int      bdd_scanset(const bdd &, int *&, int &);
    friend bdd      bdd_makesetpp(int *, int);
    friend int      bdd_setbddpair(bddPair*, int, const bdd &);
@@ -632,6 +633,9 @@ inline bdd bdd_low(const bdd &r)
 
 inline bdd bdd_high(const bdd &r)
 { return bdd_high(r.root); }
+
+inline int bdd_nameid(const bdd &r)
+{ return bdd_nameid(r.root); }
 
 inline int bdd_scanset(const bdd &r, int *&v, int &n)
 { return bdd_scanset(r.root, &v, &n); }
