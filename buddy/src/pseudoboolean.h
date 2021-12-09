@@ -8,6 +8,7 @@
 #include <cstdint>
 #include "tbdd.h"
 
+namespace trustbdd{
 // An Xor constraint is represented by a set of variables and a phase
 // It also contains a TBDD validation 
 
@@ -20,13 +21,13 @@ class xor_constraint {
 
  public:
     // Empty constraint represents a tautology
-    xor_constraint() { variables = ilist_new(0); phase = 0; validation = tbdd_tautology(); key = 0; }
+    xor_constraint() { variables = ilist_new(0); phase = 0; validation = trustbdd::tbdd_tautology(); key = 0; }
 
     // Construct Xor constraint extracted from product of clauses
     // vfun indicates the TBDD representation of that product
     // For use when generating LRAT proofs
     // The list of variables is used within the constraint and deleted by the Xor constraint destructor
-    xor_constraint(ilist vars, int p, tbdd &vfun);
+    xor_constraint(ilist vars, int p, trustbdd::tbdd &vfun);
 
     // Assert that Xor constraint is implied by the clauses
     // For use when generating DRAT proofs
@@ -36,7 +37,7 @@ class xor_constraint {
     xor_constraint(xor_constraint &x) { variables = ilist_copy(x.variables); phase = x.phase; validation = x.validation; key = x.key; }
     
     // Destructor deletes the list of variables
-    ~xor_constraint(void) { ilist_free(variables); variables = NULL; validation = tbdd_null();  }
+    ~xor_constraint(void) { ilist_free(variables); variables = NULL; validation = trustbdd::tbdd_null();  }
 
     // Does the constraint have ANY solutions?
     bool is_feasible(void) { return ilist_length(variables) > 0 || phase == 0; }
@@ -79,5 +80,6 @@ class xor_set {
 
     size_t size() { return xlist.size(); }
 };
+} /* Namespace trustbdd */
 
 #endif /* PSEUDOBOOLEAN */

@@ -2,6 +2,8 @@
 #include "prover.h"
 #include <queue>
 
+using namespace trustbdd;
+
 #define BUFLEN 2048
 // For formatting information
 static char ibuf[BUFLEN];
@@ -149,7 +151,7 @@ void xor_constraint::show(FILE *out) {
     fprintf(out, "\n");
 }
 
-xor_constraint *xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
+xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
     ilist nvariables = xor_sum(arg1->variables, arg2->variables);
     int nphase = arg1->phase ^ arg2->phase;
     tbdd nvalidation = tbdd_and(arg1->validation, arg2->validation);
@@ -243,7 +245,7 @@ static xor_constraint *xor_sum_list_pq(xor_constraint **xlist, int len) {
     return pq.top();
 }
 
-xor_constraint *xor_sum_list(xor_constraint **xlist, int len) {
+xor_constraint *trustbdd::xor_sum_list(xor_constraint **xlist, int len) {
     if (len <= 4)
 	return xor_sum_list_linear(xlist, len);
     else

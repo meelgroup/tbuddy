@@ -8,6 +8,8 @@
 #include "pseudoboolean.h"
 
 
+using namespace trustbdd;
+
 // GC Parameters
 
 // Minimum number of dead nodes to trigger GC

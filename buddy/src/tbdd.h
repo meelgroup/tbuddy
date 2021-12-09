@@ -196,7 +196,7 @@ extern void assert_clause(ilist clause);
 /*============================================
  C++ interface
 ============================================*/
-
+namespace trustbdd {
 class tbdd
 {
  public:
@@ -272,6 +272,7 @@ inline tbdd tbdd_from_xor(ilist variables, int phase)
 inline int tbdd_nameid(tbdd &tr)
 { return bdd_nameid(tr.root); }
 
+} /* Namespace trustbdd */
 #endif /* CPLUSPLUS */
 
 #endif /* _TBDD_H */

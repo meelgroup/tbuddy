@@ -16,6 +16,8 @@
 
 #include "pseudoboolean.h"
 
+using namespace trustbdd;
+
 
 // $begin xtree-abbrev 
 // Shorthand names for the 4 top-level nodes
