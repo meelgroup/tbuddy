@@ -16,6 +16,10 @@
 
 #include "pseudoboolean.h"
 
+#ifndef BINARY
+#define BINARY 0
+#endif
+
 using namespace trustbdd;
 
 
@@ -150,15 +154,15 @@ static void gen_cnf(char *fname, int n) {
 }
 
 // $begin xtree-drat
-static void gen_drat_proof(char *fname, int n) {
-    FILE *proof_file = fopen(fname, "w");
+static void gen_drat_proof(char *fname, int n, bool binary) {
+    FILE *proof_file = fopen(fname, binary ? "wb" : "w");
     if (!proof_file) {
 	std::cerr << "Couldn't open file " << fname << std::endl;
 	exit(1);
     }
     int vcount = 3*n;  // Total number of variables
     // TBDD initializer for DRAT proof generation
-    tbdd_init_drat(proof_file, vcount);  ///line:initialize
+    tbdd_init_drat(proof_file, vcount, binary);  ///line:initialize
 
     // Use parity reasoning to infer constraint R1 ^ R2 = 1
     xor_set xset; ///line:xset:start
@@ -203,8 +207,10 @@ int main(int argc, char *argv[]) {
 	exit(0);
     }
     char *anum = argv[1];
-    char fname[strlen(anum) + 10];
+    char fnamec[strlen(anum) + 10];
+    char fnamed[strlen(anum) + 10];
     int n = atoi(anum);
+    bool binary = BINARY ? true : false;
 
     if (argc == 3) {
 	int seed = atoi(argv[2]);
@@ -214,10 +220,14 @@ int main(int argc, char *argv[]) {
     double start = tod();
     gen_xors(n);
     gen_binaries(n);
-    sprintf(fname, "xtree-%s.cnf", anum);
-    gen_cnf(fname, n);
-    sprintf(fname, "xtree-%s.drat", anum);
-    gen_drat_proof(fname, n);
+    sprintf(fnamec, "xtree-%s.cnf", anum);
+    gen_cnf(fnamec, n);
+    if (binary) {
+	sprintf(fnamed, "xtree-%s.dratb", anum);
+    } else {
+	sprintf(fnamed, "xtree-%s.drat", anum);
+    }
+    gen_drat_proof(fnamed, n, binary);
     printf("Elapsed seconds: %.2f\n", tod()-start);
     return 0;
 }
