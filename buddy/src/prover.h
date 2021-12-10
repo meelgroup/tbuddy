@@ -26,7 +26,7 @@ extern int input_variable_count;
 extern int max_live_clause_count;
 
 /* Prover setup and completion */
-extern int prover_init(FILE *pfile, int input_variable_count, int input_clause_count, ilist *clauses, bool lrat);
+extern int prover_init(FILE *pfile, int input_variable_count, int input_clause_count, ilist *clauses, bool lrat, bool binary);
 extern void prover_done();
 
 /* Put literals in clause in canonical order */

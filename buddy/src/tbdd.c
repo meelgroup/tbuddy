@@ -30,16 +30,16 @@ static char ibuf[BUFLEN];
   Returns 0 if OK, otherwise error code
 */
 
-int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat) {
-    return prover_init(pfile, variable_count, clause_count, input_clauses, lrat);
+int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat, bool binary) {
+    return prover_init(pfile, variable_count, clause_count, input_clauses, lrat, binary);
 }
 
-int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses) {
-    return tbdd_init(pfile, variable_count, clause_count, input_clauses, true);
+int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool binary) {
+    return tbdd_init(pfile, variable_count, clause_count, input_clauses, true, binary);
 }
 
-int tbdd_init_drat(FILE *pfile, int variable_count) {
-    return tbdd_init(pfile, variable_count, 0, NULL, false);
+int tbdd_init_drat(FILE *pfile, int variable_count, bool binary) {
+    return tbdd_init(pfile, variable_count, 0, NULL, false, binary);
 }
 
 void tbdd_set_verbose(int level) {

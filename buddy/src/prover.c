@@ -20,13 +20,17 @@ static FILE *proof_file = NULL;
    For DRAT, need dictionary of all clauses in order to delete them.
 */
 
+static bool do_binary = false;
 static ilist *all_clauses = NULL;
 static int input_clause_count = 0;
 static int alloc_clause_count = 0;
 static int live_clause_count = 0;
 static ilist deferred_deletion_list = NULL;
-
 static bool empty_clause_detected = false;
+
+// Buffer used when generating binary files
+static unsigned char *dest_buf = NULL;
+static size_t dest_buf_len = 0;
 
 // Parameters
 // Cutoff betweeen large and small allocations (in terms of clauses)
@@ -47,9 +51,16 @@ static bool empty_clause_detected = false;
 
 /* API functions */
 
-int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat) {
+int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat, bool binary) {
     empty_clause_detected = false;
     do_lrat = lrat;
+    do_binary = binary;
+    if (do_binary) {
+	dest_buf_len = 100;
+	dest_buf = malloc(dest_buf_len);
+	if (!dest_buf)
+	    return bdd_error(BDD_MEMORY);
+    }
     proof_file = pfile;
     print_proof_comment(0, "Proof of CNF file with %d variables and %d clauses", variable_count, clause_count);    
 
@@ -91,8 +102,10 @@ int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_
 }
 
 void prover_done() {
+    free(dest_buf);
     bdd_done();
 }
+
 
 /* Print clause */
 void print_clause(FILE *out, ilist clause) {
@@ -189,6 +202,45 @@ static ilist clean_hints(ilist hints) {
 }
 
 
+/*
+  Compress integer list into byte sequence.
+  Unsigned char array passed in to fill.
+  Should be 5x longer than number of int's
+ */
+static int check_buffer(int icount) {
+    size_t len = 5*icount;
+    if (len > dest_buf_len) {
+	dest_buf_len = len;
+	dest_buf = realloc(dest_buf, len);
+	if (dest_buf == NULL) 
+	    return bdd_error(BDD_MEMORY);
+    }
+    return 0;
+}
+
+/* Convert integer into byte sequence.  Return number of bytes */
+static int int_byte_pack(int x, unsigned char *dest) {
+    unsigned char *d = dest;
+    unsigned u = x < 0 ? 2*(-x)+1 : 2*x;
+    while (u >= 128) {
+	unsigned char b = u & 0x7F;
+	u >>= 7;
+	*d++ =  b+128;
+    }
+    *d++ = u;
+    return d - dest;
+}
+
+/* Convert integer list into byte sequence.  Return number of bytes */
+static int ilist_byte_pack(ilist src_list, unsigned char *dest) {
+    int i;
+    unsigned char *d = dest;
+    for (i = 0; i < ilist_length(src_list); i++) {
+	d += int_byte_pack(src_list[i], d);
+    }
+    return d - dest;
+}
+
 /* Return clause ID */
 /* For DRAT proof, hints can be NULL */
 int generate_clause(ilist literals, ilist hints) {
@@ -196,6 +248,12 @@ int generate_clause(ilist literals, ilist hints) {
     int cid = ++last_clause_id;
     int rval = 0;
     hints = clean_hints(hints);
+    unsigned char *d = dest_buf;
+    if (do_binary) {
+	check_buffer(ilist_length(literals) + ilist_length(hints) + 4);
+	d = dest_buf;
+    }
+
 #if DO_TRACE
     trace_list(clause, cid, "Generated clause");
     trace_list(hints, cid, "Supplied hints");
@@ -204,23 +262,45 @@ int generate_clause(ilist literals, ilist hints) {
     if (clause == TAUTOLOGY_CLAUSE)
 	return TAUTOLOGY;
     if (!empty_clause_detected) {
+	if (do_binary)
+	    *d++ = 'a';
 	if (do_lrat) {
-	    rval = fprintf(proof_file, "%d ", cid);
+	    if (do_binary) {
+		d += int_byte_pack(cid, d);
+	    } else {
+		rval = fprintf(proof_file, "%d ", cid);
+		if (rval < 0)
+		    bdd_error(BDD_FILE);
+	    }
+	}
+	if (do_binary) {
+	    d += ilist_byte_pack(clause, d);
+	} else
+	    ilist_print(clause, proof_file, " ");
+
+	if (do_lrat) {
+	    if (do_binary) {
+		d += int_byte_pack(0, d);
+		d += ilist_byte_pack(hints, d);
+	    } else {
+		rval = fprintf(proof_file, " 0 ");
+		if (rval < 0) 
+		    bdd_error(BDD_FILE);
+		rval = ilist_print(hints, proof_file, " ");
+		if (rval < 0) 
+		    bdd_error(BDD_FILE);
+	    }
+	}
+	if (do_binary) {
+	    d += int_byte_pack(0, d);
+	    rval = fwrite(dest_buf, 1, d - dest_buf, proof_file);
 	    if (rval < 0)
 		bdd_error(BDD_FILE);
-	}
-	ilist_print(clause, proof_file, " ");
-	if (do_lrat) {
-	    rval = fprintf(proof_file, " 0 ");
-	    if (rval < 0) 
-		bdd_error(BDD_FILE);
-	    rval = ilist_print(hints, proof_file, " ");
+	} else {
+	    rval = fprintf(proof_file, " 0\n");
 	    if (rval < 0) 
 		bdd_error(BDD_FILE);
 	}
-	rval = fprintf(proof_file, " 0\n");
-	if (rval < 0) 
-	    bdd_error(BDD_FILE);
     }
     total_clause_count++;
     live_clause_count++;
@@ -244,6 +324,7 @@ int generate_clause(ilist literals, ilist hints) {
 
 void delete_clauses(ilist clause_ids) {
     int rval;
+    unsigned char *d = dest_buf;
     if (empty_clause_detected)
 	return;
     clause_ids = clean_hints(clause_ids);
@@ -253,13 +334,25 @@ void delete_clauses(ilist clause_ids) {
 #endif
 
     if (do_lrat) {
-	rval = fprintf(proof_file, "%d d ", last_clause_id);
-	if (rval < 0)
-	    bdd_error(BDD_FILE);
-	ilist_print(clause_ids, proof_file, " ");
-	rval = fprintf(proof_file, " 0\n");
-	if (rval < 0) 
-	    bdd_error(BDD_FILE);
+	if (do_binary) {
+	    check_buffer(ilist_length(clause_ids) + 3);
+	    d = dest_buf;
+	    *d++ = 'd';
+	    //	    d += int_byte_pack(last_clause_id, d);
+	    d += ilist_byte_pack(clause_ids, d);
+	    d += int_byte_pack(0, d);
+	    rval = fwrite(dest_buf, 1, d - dest_buf, proof_file);
+	    if (rval < 0)
+		bdd_error(BDD_FILE);
+	} else {
+	    rval = fprintf(proof_file, "%d d ", last_clause_id);
+	    if (rval < 0)
+		bdd_error(BDD_FILE);
+	    ilist_print(clause_ids, proof_file, " ");
+	    rval = fprintf(proof_file, " 0\n");
+	    if (rval < 0) 
+		bdd_error(BDD_FILE);
+	}
     } else {
 	int i;
 	for (i = 0; i < ilist_length(clause_ids); i++) {
@@ -267,15 +360,26 @@ void delete_clauses(ilist clause_ids) {
 	    ilist clause = all_clauses[cid-1];
 	    if (clause == TAUTOLOGY_CLAUSE || ilist_length(clause) < 2)
 		continue;
-	    rval = fprintf(proof_file, "d ");
-	    if (rval < 0) 
-		bdd_error(BDD_FILE);
-	    rval = ilist_print(clause, proof_file, " ");
-	    if (rval < 0) 
-		bdd_error(BDD_FILE);
-	    rval = fprintf(proof_file, " 0\n");
-	    if (rval < 0) 
-		bdd_error(BDD_FILE);
+	    if (do_binary) {
+		check_buffer(ilist_length(clause) + 2);
+		d = dest_buf;
+		*d++ = 'd';
+		d += ilist_byte_pack(clause, d);
+		d += int_byte_pack(0, d);
+		rval = fwrite(dest_buf, 1, d - dest_buf, proof_file);
+		if (rval < 0)
+		    bdd_error(BDD_FILE);
+	    } else {
+		rval = fprintf(proof_file, "d ");
+		if (rval < 0) 
+		    bdd_error(BDD_FILE);
+		rval = ilist_print(clause, proof_file, " ");
+		if (rval < 0) 
+		    bdd_error(BDD_FILE);
+		rval = fprintf(proof_file, " 0\n");
+		if (rval < 0) 
+		    bdd_error(BDD_FILE);
+	    }
 	    ilist_free(clause);
 	    all_clauses[cid-1] = TAUTOLOGY_CLAUSE;
 	}
@@ -305,9 +409,7 @@ ilist get_input_clause(int id) {
 }
 
 bool print_ok(int vlevel) {
-    bool ok = !empty_clause_detected && verbosity_level >= vlevel;
-    return ok;
-    //    return do_lrat && ok;
+    return !empty_clause_detected && verbosity_level >= vlevel && !do_binary;
 }
 
 void print_proof_comment(int vlevel, const char *fmt, ...) {

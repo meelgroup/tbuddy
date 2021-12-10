@@ -61,13 +61,13 @@ extern "C" {
   Return 0 if OK, otherwise error code
 */
 
-extern int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat);
+extern int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat, bool binary);
 
 /* 
    Initializers specific for the two proof formats
  */
-extern int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses);
-extern int tbdd_init_drat(FILE *pfile, int variable_count);
+extern int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool binary);
+extern int tbdd_init_drat(FILE *pfile, int variable_count, bool binary);
 
 
 /*
