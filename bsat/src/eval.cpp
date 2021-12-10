@@ -423,7 +423,7 @@ public:
 
 };
 
-bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, bool lrat) {
+bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, bool lrat, bool binary) {
   CNF cset = CNF(cnf_file);
   fclose(cnf_file);
   if (cset.failed()) {

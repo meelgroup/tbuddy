@@ -5,18 +5,18 @@
 #include <string.h>
 #include "clause.h"
 
-extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, bool lrat);
+extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, bool lrat, bool binary);
 
 // BDD-based SAT solver
 
 void usage(char *name) {
-  printf("Usage: %s [-h] [-b] [-v VERB] [-i FILE.cnf] [-o FILE.lrat] [-s FILE.sched]\n", name);
-  printf("  -h            Print this message\n");
-  printf("  -b            Use bucket elimination\n");
-  printf("  -v VERB       Set verbosity level (0-3)\n");
-  printf("  -i FILE.cnf   Specify input file (otherwise use standard input)\n");
-  printf("  -o FILE.lrat  Specify output proof file (otherwise use standard output)\n");
-  printf("  -s FILE.sched Specify schedule file\n");
+  printf("Usage: %s [-h] [-b] [-v VERB] [-i FILE.cnf] [-o FILE.lrat(b)] [-s FILE.sched]\n", name);
+  printf("  -h               Print this message\n");
+  printf("  -b               Use bucket elimination\n");
+  printf("  -v VERB          Set verbosity level (0-3)\n");
+  printf("  -i FILE.cnf      Specify input file (otherwise use standard input)\n");
+  printf("  -o FILE.lrat(b)  Specify output proof file (otherwise use standard output)\n");
+  printf("  -s FILE.sched    Specify schedule file\n");
   exit(0);
 }
 
@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
   FILE *proof_file = stdout;
   bool bucket = false;
   bool lrat = true;
+  bool binary = false;
   int c;
   int verb = 1;
   while ((c = getopt(argc, argv, "hbv:i:o:s:")) != -1) {
@@ -79,8 +80,26 @@ int main(int argc, char *argv[]) {
 	exit(1);
       }
       extension = get_extension(optarg);
-      if (extension && strcmp(extension, "drat") == 0)
-	lrat = false;
+      if (!extension) {
+	  std::cerr << "Unknown file type '" << optarg << "'" << std::endl;
+	  usage(argv[0]);
+      }
+      if (strcmp(extension, "drat") == 0) {
+	  binary = false;
+	  lrat = false;
+      } else if (strcmp(extension, "dratb") == 0) {
+	  binary = true;
+	  lrat = false;
+      } else if (strcmp(extension, "lrat") == 0) {
+	  binary = false;
+	  lrat = true;
+      } else if (strcmp(extension, "lratb") == 0) {
+	  binary = true;
+	  lrat = true;
+      } else {
+	  std::cerr << "Unknown file type '" << optarg << "'" << std::endl;
+	  usage(argv[0]);
+      }
       break;
     default:
       std::cerr << "Unknown option '" << buf << "'" << std::endl;
@@ -88,7 +107,7 @@ int main(int argc, char *argv[]) {
     }
   }
   double start = tod();
-  if (solve(cnf_file, proof_file, sched_file, bucket, verb, lrat)) {
+  if (solve(cnf_file, proof_file, sched_file, bucket, verb, lrat, binary)) {
     if (verb >= 1) {
       printf("Elapsed seconds: %.2f\n", tod()-start);
     }
