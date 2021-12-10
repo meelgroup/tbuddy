@@ -1,7 +1,7 @@
 CC=gcc
 CXX=g++
-##OPT=-O2
-OPT=-O0
+OPT=-O2
+#OPT=-O0
 CFLAGS=-g $(OPT) -Wno-nullability-completeness
 INC=-I../../buddy/include
 LDIR = ../../buddy/lib
@@ -29,5 +29,5 @@ ctest: ctest.cpp clause.cpp clause.h
 
 clean:
 	rm -f *.o *~
-	rm -f bsat ctest tbsat bsat-TBDD
+	rm -f bsat ctest tbsat
 

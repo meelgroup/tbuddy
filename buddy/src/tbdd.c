@@ -34,12 +34,20 @@ int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_cl
     return prover_init(pfile, variable_count, clause_count, input_clauses, lrat, binary);
 }
 
-int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool binary) {
-    return tbdd_init(pfile, variable_count, clause_count, input_clauses, true, binary);
+int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses) {
+    return tbdd_init(pfile, variable_count, clause_count, input_clauses, true, false);
 }
 
-int tbdd_init_drat(FILE *pfile, int variable_count, bool binary) {
-    return tbdd_init(pfile, variable_count, 0, NULL, false, binary);
+int tbdd_init_lrat_binary(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses) {
+    return tbdd_init(pfile, variable_count, clause_count, input_clauses, true, true);
+}
+
+int tbdd_init_drat(FILE *pfile, int variable_count) {
+    return tbdd_init(pfile, variable_count, 0, NULL, false, false);
+}
+
+int tbdd_init_drat_binary(FILE *pfile, int variable_count) {
+    return tbdd_init(pfile, variable_count, 0, NULL, false, true);
 }
 
 void tbdd_set_verbose(int level) {
