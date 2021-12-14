@@ -173,10 +173,12 @@ static void gen_drat_proof(char *fname, int n) {
 // $end xtree-drat
 #if BINARY
     tbdd_init_drat_binary(proof_file, vcount);
+    tbdd_set_verbose(2);
 #else
 // $begin xtree-drat
     tbdd_init_drat(proof_file, vcount);  ///line:initialize
 // $end xtree-drat
+    tbdd_set_verbose(2);
 #endif
 // $begin xtree-drat    
     // Use parity reasoning to infer constraint R1 ^ R2 = 1
@@ -201,7 +203,7 @@ static void gen_drat_proof(char *fname, int n) {
     assert_clause(ilist_resize(lits, 0)); ///line:empty
 
     // Finish up
-    tbdd_done();
+    pseudo_done();
     fclose(proof_file);
     ilist_free(lits);
     std::cout << "File " << fname << " written" << std::endl << std::endl;
