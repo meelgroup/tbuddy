@@ -5,6 +5,7 @@ DFLAGS =  -DCACHESTATS
 OPT = -O2
 #OPT = -O0
 CFLAGS=-g $(OPT) -fPIC -Wno-nullability-completeness $(DFLAGS)
+CXXFLAGS=-std=c++11
 INC = -I..
 LDIR = ../lib
 IDIR = ../include
@@ -53,7 +54,7 @@ bddtest: bddtest.cxx buddy.a
 	$(CC) $(CFLAGS) $(TFLAGS) $(INC) -c $< -o $@
 
 .cxx.to:
-	$(CXX) $(CFLAGS) $(TFLAGS) $(INC) -c $< -o $@
+	$(CXX) $(CFLAGS) $(CXXFLAGS) $(TFLAGS) $(INC) -c $< -o $@
 
 clean:
 	 rm -f bddtest *.a *.o *.to *~
