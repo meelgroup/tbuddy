@@ -1,12 +1,57 @@
+#include <queue>
+#include <unordered_map>
+
 #include "pseudoboolean.h"
 #include "prover.h"
-#include <queue>
 
 using namespace trustbdd;
 
 #define BUFLEN 2048
 // For formatting information
 static char ibuf[BUFLEN];
+
+/*
+  Statistics gathering
+ */
+static int pseudo_xor_created = 0;
+static int pseudo_xor_unique = 0;
+static int pseudo_total_length = 0;
+static int pseudo_plus_computed = 0;
+static int pseudo_plus_unique = 0;
+
+// Track previously generated xor constraints
+// As consequence, all of the TBDDs for the xor constraints will
+// be kept, preventing the deletion of their unit clauses
+static std::unordered_map<int, xor_constraint*> xor_map;
+
+void pseudo_init() {
+    pseudo_xor_created = 0;
+    pseudo_xor_unique = 0;
+    pseudo_total_length = 0;
+}
+
+static int show_xor_buf(char *buf, ilist variables, int phase, int maxlen);
+
+
+void trustbdd::pseudo_done() {
+    printf("Number of XOR constraints used: %d\n", pseudo_xor_created);
+    printf("Number of unique XOR constraints: %d\n", pseudo_xor_unique);
+    if (pseudo_xor_unique > 0)
+	printf("Average (unique) constraint size: %.2f\n", (double) pseudo_total_length / pseudo_xor_unique);
+    printf("Number of XOR additions performed: %d\n", pseudo_plus_computed);
+    printf("Number of unique XOR additions: %d\n", pseudo_plus_unique);
+
+    for (auto p = xor_map.begin(); p != xor_map.end(); p++) {
+	xor_constraint *xcp = p->second;
+	if (verbosity_level >= 3) {
+	    show_xor_buf(ibuf, xcp->get_variables(), xcp->get_phase(), BUFLEN);
+	    printf("Deleting constraint N%d.  %s\n", p->first, ibuf);
+	}
+	delete xcp;
+    }
+    xor_map.clear();
+    tbdd_done();
+}
 
 /*
   Sort integers in ascending order
@@ -25,11 +70,13 @@ int int_compare(const void *i1p, const void *i2p) {
   Construct priority key for constraint
 */
 static int64_t priority_key1(ilist vars) {
+    //Primary = first literal.  Secondary = length
     int64_t weight = ilist_length(vars) == 0 ? 0 : ((int64_t) vars[0] << 32) | ((int64_t) ilist_length(vars) << 0);
     return -weight;
 }
 
 static int64_t priority_key2(ilist vars) {
+    //Primary = length.  Secondary = first literal
     int64_t weight = ilist_length(vars) == 0 ? 0 : ((int64_t) vars[0] << 0) | ((int64_t) ilist_length(vars) << 32) ;
     return -weight;
 }
@@ -41,7 +88,7 @@ void show_key(int64_t weight) {
 }
 
 static int64_t priority_key(ilist vars) {
-    return priority_key1(vars);
+    return priority_key2(vars);
 }
 
 static void show_xor(FILE *outf, ilist variables, int phase) {
@@ -119,26 +166,62 @@ static bdd bdd_build_xor(ilist variables, int phase) {
     return r;
 }
 
-
-xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
-    variables = vars;
-    phase = p;
-    bdd xfun = bdd_build_xor(variables, phase);
-    if (verbosity_level >= 2) {
-	show_xor_buf(ibuf, vars, p, BUFLEN);
-	print_proof_comment(2, "Validate BDD node N%d representing Xor constraint %s", bdd_nameid(xfun), ibuf);
-    }
-    validation = tbdd_validate(xfun, vfun);
-    key = priority_key(vars);
+/*
+  Use BDD representation of XOR constraint as canonical representation.
+  Keep table of created constraints.
+  Sets xfun to derived BDD
+ */
+static xor_constraint* find_constraint(ilist variables, int phase, bdd &xfun) {
+    xfun = bdd_build_xor(variables, phase);
+    int id = bdd_nameid(xfun);
+    if (xor_map.count(id) > 0)
+	return xor_map[id];
+    else
+	return NULL;
 }
 
-// When generating DRAT proof, need to construct XOR from
-// clauses so that checker will accept the result
-xor_constraint::xor_constraint(ilist vars, int p) {
+static void save_constraint(int id, xor_constraint *xcp) {
+    ilist variables = xcp->get_variables();
+    int phase = xcp->get_phase();
+    xor_map[id] = new xor_constraint(*xcp);
+    if (verbosity_level >= 2) {
+	show_xor_buf(ibuf, variables, phase, BUFLEN);
+	printf("Creating constraint N%d.  %s\n", id, ibuf);
+    }
+    pseudo_xor_unique ++;
+    pseudo_total_length += ilist_length(variables);
+}
+
+xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
+    pseudo_xor_created ++;
     variables = vars;
     phase = p;
-    validation = tbdd_from_xor(variables, phase);
     key = priority_key(vars);
+    bdd xfun;
+    xor_constraint *xcp = find_constraint(variables, phase, xfun);
+    if (xcp == NULL) {
+	validation = tbdd_validate(xfun, vfun);
+	int id = bdd_nameid(xfun);
+	save_constraint(id, this);
+    } else
+	validation = xcp->validation;
+}
+
+// When generating DRAT proof, either reuse or generate validation
+xor_constraint::xor_constraint(ilist vars, int p) {
+    pseudo_xor_created ++;
+    variables = vars;
+    phase = p;
+    key = priority_key(vars);
+    bdd xfun;
+    xor_constraint *xcp = find_constraint(variables, phase, xfun);
+    if (xcp == NULL) {
+	validation = tbdd_from_xor(variables, phase);
+	int id = bdd_nameid(xfun);
+	save_constraint(id, this);
+    }
+    else
+	validation = xcp->validation;
 }
 
 int xor_constraint::validate_clause(ilist clause) {
@@ -154,7 +237,7 @@ void xor_constraint::show(FILE *out) {
 xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
     ilist nvariables = xor_sum(arg1->variables, arg2->variables);
     int nphase = arg1->phase ^ arg2->phase;
-    tbdd nvalidation = tbdd_and(arg1->validation, arg2->validation);
+    pseudo_plus_computed++;
 
 #if 0
     printf("XOR sum: ");
@@ -165,7 +248,16 @@ xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
     show_xor(stdout, nvariables, nphase);
     printf("\n");
 #endif
-    return new xor_constraint(nvariables, nphase, nvalidation);
+
+
+    bdd xfun;
+    xor_constraint *xcp = find_constraint(nvariables, nphase, xfun);
+    if (xcp == NULL) {
+	pseudo_plus_unique++;
+	tbdd nvalidation = tbdd_and(arg1->validation, arg2->validation);
+	return new xor_constraint(nvariables, nphase, nvalidation);
+    } else
+	return xcp;
 }
 
 static xor_constraint *xor_sum_list_linear(xor_constraint **xlist, int len) {
@@ -175,8 +267,8 @@ static xor_constraint *xor_sum_list_linear(xor_constraint **xlist, int len) {
     for (int i = 1; i < len; i++) {
 	xor_constraint *a = xlist[i];
 	xor_constraint *nsum = xor_plus(sum, a);
-	delete a;
-	delete sum;
+	//	delete a;
+	//	delete sum;
 	sum = nsum;
 	if (!sum->is_feasible())
 	    break;
@@ -204,8 +296,8 @@ static xor_constraint *xor_sum_list_bf(xor_constraint **xlist, int len) {
 	xor_constraint *arg1 = xbuf[left++];
 	xor_constraint *arg2 = xbuf[left++];
 	xbuf[++right] = xor_plus(arg1, arg2);
-	delete arg1;
-	delete arg2;
+	//	delete arg1;
+	//	delete arg2;
 	if (!xbuf[right]->is_feasible())
 	    break;
     }
@@ -237,8 +329,8 @@ static xor_constraint *xor_sum_list_pq(xor_constraint **xlist, int len) {
 	pq.pop();
 	xor_constraint *sum = xor_plus(arg1, arg2);
 	pq.push(sum);
-	delete arg1;
-	delete arg2;
+	//	delete arg1;
+	//	delete arg2;
 	if (!sum->is_feasible())
 	    return sum;
     }
@@ -249,7 +341,7 @@ xor_constraint *trustbdd::xor_sum_list(xor_constraint **xlist, int len) {
     if (len <= 4)
 	return xor_sum_list_linear(xlist, len);
     else
-	return xor_sum_list_bf(xlist, len);
+	return xor_sum_list_pq(xlist, len);
 }
 
 xor_set::~xor_set() {

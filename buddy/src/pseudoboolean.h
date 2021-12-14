@@ -9,9 +9,15 @@
 #include "tbdd.h"
 
 namespace trustbdd{
+
+// Initialize internal data structures
+void pseudo_init();    
+// Free data structures and print statistics
+void pseudo_done();
+
+
 // An Xor constraint is represented by a set of variables and a phase
 // It also contains a TBDD validation 
-
 class xor_constraint {
  private:
     ilist variables;
@@ -47,6 +53,9 @@ class xor_constraint {
 
     // Get the validation TBDD
     tbdd get_validation() { return validation; }
+
+    ilist get_variables() { return variables; }
+    int get_phase() { return phase; }
 
     // Print a representation of the constraint to the file
     void show(FILE *out);
