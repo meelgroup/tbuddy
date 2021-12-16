@@ -203,7 +203,7 @@ static void gen_drat_proof(char *fname, int n) {
     assert_clause(ilist_resize(lits, 0)); ///line:empty
 
     // Finish up
-    pseudo_done();
+    tbdd_done();
     fclose(proof_file);
     ilist_free(lits);
     std::cout << "File " << fname << " written" << std::endl << std::endl;
