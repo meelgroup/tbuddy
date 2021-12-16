@@ -77,6 +77,14 @@ extern int tbdd_init_drat_binary(FILE *pfile, int variable_count);
  */
 extern void tbdd_done();
 
+/*
+  Functions that can be added to provide more data on exit.
+  Function takes verbosity level as argument.
+ */
+typedef void (*tbdd_info_fun)(int);
+
+void tbdd_add_info_fun(tbdd_info_fun f);
+
 
 /*
   Setting optional solver features

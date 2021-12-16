@@ -409,7 +409,7 @@ ilist get_input_clause(int id) {
 }
 
 bool print_ok(int vlevel) {
-    return !empty_clause_detected && verbosity_level >= vlevel && !do_binary;
+    return !empty_clause_detected && verbosity_level >= vlevel+1 && !do_binary;
 }
 
 void print_proof_comment(int vlevel, const char *fmt, ...) {

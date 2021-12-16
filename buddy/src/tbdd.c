@@ -4,9 +4,17 @@
 #include "tbdd.h"
 #include "kernel.h"
 
+/*============================================
+  Local data
+============================================*/
+
 #define BUFLEN 2048
 // For formatting information
 static char ibuf[BUFLEN];
+
+#define IFUN_MAX 10
+static tbdd_info_fun ifuns[IFUN_MAX];
+static int ifun_count = 0;
 
 
 /*============================================
@@ -55,6 +63,7 @@ void tbdd_set_verbose(int level) {
 }
 
 void tbdd_done() {
+    int i;
     if (verbosity_level >= 1) {
 	bddStat s;
 	bdd_stats(&s);
@@ -64,6 +73,17 @@ void tbdd_done() {
 	printf("Max live clauses: %d\n", s.maxclausenum);
 	printf("Total variables: %d\n", s.variablenum);
     }
+    for (i = 0; i < ifun_count; i++) {
+	ifuns[i](verbosity_level);
+    }
+}
+
+void tbdd_add_info_fun(tbdd_info_fun f) {
+    if (ifun_count >= IFUN_MAX) {
+	fprintf(stderr, "Limit of %d TBDD information functions.  Request ignored\n", IFUN_MAX);
+	return;
+    }
+    ifuns[ifun_count++] = f;
 }
 
 /* 

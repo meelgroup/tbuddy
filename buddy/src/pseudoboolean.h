@@ -10,12 +10,6 @@
 
 namespace trustbdd{
 
-// Initialize internal data structures
-void pseudo_init();    
-// Free data structures and print statistics
-void pseudo_done();
-
-
 // An Xor constraint is represented by a set of variables and a phase
 // It also contains a TBDD validation 
 class xor_constraint {

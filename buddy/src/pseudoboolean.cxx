@@ -18,35 +18,41 @@ static int pseudo_xor_unique = 0;
 static int pseudo_total_length = 0;
 static int pseudo_plus_computed = 0;
 static int pseudo_plus_unique = 0;
+static int pseudo_arg_clause_count = 0;
 
 // Track previously generated xor constraints
 // As consequence, all of the TBDDs for the xor constraints will
 // be kept, preventing the deletion of their unit clauses
 static std::unordered_map<int, xor_constraint*> xor_map;
 
-void pseudo_init() {
-    pseudo_xor_created = 0;
-    pseudo_xor_unique = 0;
-    pseudo_total_length = 0;
+static int show_xor_buf(char *buf, ilist variables, int phase, int maxlen);
+static void pseudo_info_fun(int vlevel);
+
+static bool initialized = false;
+
+static void pseudo_init() {
+    if (!initialized) {
+	tbdd_add_info_fun(pseudo_info_fun);
+    }
+    initialized = true;
 }
 
-static int show_xor_buf(char *buf, ilist variables, int phase, int maxlen);
-
-
-void trustbdd::pseudo_done() {
+static void pseudo_info_fun(int vlevel) {
+    if (vlevel < 1)
+	return;
     printf("Number of XOR constraints used: %d\n", pseudo_xor_created);
     printf("Number of unique XOR constraints: %d\n", pseudo_xor_unique);
     if (pseudo_xor_unique > 0)
 	printf("Average (unique) constraint size: %.2f\n", (double) pseudo_total_length / pseudo_xor_unique);
     printf("Number of XOR additions performed: %d\n", pseudo_plus_computed);
     printf("Number of unique XOR additions: %d\n", pseudo_plus_unique);
+    printf("Number of clauses generated from arguments: %d\n", pseudo_arg_clause_count);
+}
 
+
+static void pseudo_done(int vlevel) {
     for (auto p = xor_map.begin(); p != xor_map.end(); p++) {
 	xor_constraint *xcp = p->second;
-	if (verbosity_level >= 3) {
-	    show_xor_buf(ibuf, xcp->get_variables(), xcp->get_phase(), BUFLEN);
-	    printf("Deleting constraint N%d.  %s\n", p->first, ibuf);
-	}
 	delete xcp;
     }
     xor_map.clear();
@@ -118,7 +124,7 @@ static int show_xor_buf(char *buf, ilist variables, int phase, int maxlen) {
 
 /* Form xor sum of coefficients */
 /* Assumes both sets of variables are in ascending order  */
-static ilist xor_sum(ilist list1, ilist list2) {
+static ilist coefficient_sum(ilist list1, ilist list2) {
     int i1 = 0;
     int i2 = 0;
     int len1 = ilist_length(list1);
@@ -174,8 +180,13 @@ static bdd bdd_build_xor(ilist variables, int phase) {
 static xor_constraint* find_constraint(ilist variables, int phase, bdd &xfun) {
     xfun = bdd_build_xor(variables, phase);
     int id = bdd_nameid(xfun);
-    if (xor_map.count(id) > 0)
+    if (xor_map.count(id) > 0) {
+	if (verbosity_level >= 3) {
+	    show_xor_buf(ibuf, variables, phase, BUFLEN);
+	    printf("Reusing constraint N%d.  %s\n", id, ibuf);
+	}
 	return xor_map[id];
+    }
     else
 	return NULL;
 }
@@ -216,9 +227,11 @@ xor_constraint::xor_constraint(ilist vars, int p) {
     bdd xfun;
     xor_constraint *xcp = find_constraint(variables, phase, xfun);
     if (xcp == NULL) {
+	int start_clause = total_clause_count;
 	validation = tbdd_from_xor(variables, phase);
 	int id = bdd_nameid(xfun);
 	save_constraint(id, this);
+	pseudo_arg_clause_count += (total_clause_count - start_clause);
     }
     else
 	validation = xcp->validation;
@@ -235,7 +248,7 @@ void xor_constraint::show(FILE *out) {
 }
 
 xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
-    ilist nvariables = xor_sum(arg1->variables, arg2->variables);
+    ilist nvariables = coefficient_sum(arg1->variables, arg2->variables);
     int nphase = arg1->phase ^ arg2->phase;
     pseudo_plus_computed++;
 
@@ -356,6 +369,7 @@ void xor_set::add(xor_constraint &con) {
 }
 
 xor_constraint *xor_set::sum() {
+    pseudo_init();
     return xor_sum_list(xlist.data(), xlist.size());
     xlist.resize(0,0);
 }
