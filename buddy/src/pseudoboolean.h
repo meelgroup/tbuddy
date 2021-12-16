@@ -57,6 +57,10 @@ class xor_constraint {
     // Get the key
     int64_t get_key() { return key; }
 
+    // Get ID for BDD representation of constraint
+    int get_nameid() { return tbdd_nameid(validation); }
+
+
     // Generate an Xor constraint as the sum of two constraints
     friend xor_constraint *xor_plus(xor_constraint *arg1, xor_constraint *arg2);
     // Compute the sum of a list of Xors.  Used by the xor_set class
