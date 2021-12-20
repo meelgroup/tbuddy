@@ -17,11 +17,10 @@ class xor_constraint {
     ilist variables;
     int phase;
     tbdd validation;
-    int64_t key; // For use in priority queue
 
  public:
     // Empty constraint represents a tautology
-    xor_constraint() { variables = ilist_new(0); phase = 0; validation = trustbdd::tbdd_tautology(); key = 0; }
+    xor_constraint() { variables = ilist_new(0); phase = 0; validation = trustbdd::tbdd_tautology(); }
 
     // Construct Xor constraint extracted from product of clauses
     // vfun indicates the TBDD representation of that product
@@ -34,7 +33,7 @@ class xor_constraint {
     xor_constraint(ilist vars, int p);
 
     // Copy an Xor constraint, duplicating the data
-    xor_constraint(xor_constraint &x) { variables = ilist_copy(x.variables); phase = x.phase; validation = x.validation; key = x.key; }
+    xor_constraint(xor_constraint &x) { variables = ilist_copy(x.variables); phase = x.phase; validation = x.validation; }
     
     // Destructor deletes the list of variables
     ~xor_constraint(void) { ilist_free(variables); variables = NULL; validation = trustbdd::tbdd_null();  }
@@ -49,13 +48,11 @@ class xor_constraint {
     tbdd get_validation() { return validation; }
 
     ilist get_variables() { return variables; }
+
     int get_phase() { return phase; }
 
     // Print a representation of the constraint to the file
     void show(FILE *out);
-
-    // Get the key
-    int64_t get_key() { return key; }
 
     // Get ID for BDD representation of constraint
     int get_nameid() { return tbdd_nameid(validation); }
@@ -65,8 +62,6 @@ class xor_constraint {
     friend xor_constraint *xor_plus(xor_constraint *arg1, xor_constraint *arg2);
     // Compute the sum of a list of Xors.  Used by the xor_set class
     friend xor_constraint *xor_sum_list(xor_constraint **xlist, int len);
-    // Comparison function for priority queue
-    friend bool xor_less(xor_constraint *arg1, xor_constraint *arg2) { return arg1->key < arg2->key; }
 };
 
 // Representation of a set of Xor constraints

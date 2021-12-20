@@ -1,6 +1,4 @@
-#include <queue>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "pseudoboolean.h"
 #include "prover.h"
@@ -25,9 +23,6 @@ static int pseudo_arg_clause_count = 0;
 // As consequence, all of the TBDDs for the xor constraints will
 // be kept, preventing the deletion of their unit clauses
 static std::unordered_map<int, xor_constraint*> xor_map;
-
-// Track previously generated argument pairs for sum computation
-static std::unordered_set<int64_t> plus_set;
 
 static int show_xor_buf(char *buf, ilist variables, int phase, int maxlen);
 static void pseudo_info_fun(int vlevel);
@@ -60,12 +55,8 @@ static void pseudo_done(int vlevel) {
 	delete xcp;
     }
     xor_map.clear();
-    plus_set.clear();
     tbdd_done();
 }
-
-/// Note: Following are functions to set up a priority queue for summation
-///       Didn't find any selection that was superior to simple, breadth-first evaluation
 
 /*
   Sort integers in ascending order
@@ -78,31 +69,6 @@ int int_compare(const void *i1p, const void *i2p) {
     if (i1 > i2)
 	return 1;
     return 0;
-}
-
-/*
-  Construct priority key for constraint
-*/
-static int64_t priority_key1(ilist vars) {
-    //Primary = first literal.  Secondary = length
-    int64_t weight = ilist_length(vars) == 0 ? 0 : ((int64_t) vars[0] << 32) | ((int64_t) ilist_length(vars) << 0);
-    return -weight;
-}
-
-static int64_t priority_key2(ilist vars) {
-    //Primary = length.  Secondary = first literal
-    int64_t weight = ilist_length(vars) == 0 ? 0 : ((int64_t) vars[0] << 0) | ((int64_t) ilist_length(vars) << 32) ;
-    return -weight;
-}
-
-void show_key(int64_t weight) {
-    int upper = -weight >> 32;
-    int lower = -weight & 0xFFFFFFFF;
-    printf("Key = %d/%d", upper, lower);
-}
-
-static int64_t priority_key(ilist vars) {
-    return priority_key2(vars);
 }
 
 static void show_xor(FILE *outf, ilist variables, int phase) {
@@ -210,45 +176,12 @@ static void save_constraint(xor_constraint *xcp) {
     pseudo_total_length += ilist_length(variables);
 }
 
-/// Note: Following was attempt to reuse previously computed sums.
-//   Found that did not significantly reduce overall work
-
-static int64_t plus_key(xor_constraint *arg1, xor_constraint *arg2) {
-    int id1 = arg1->get_nameid();
-    int id2 = arg2->get_nameid();
-    if (id1 < id2)
-	return ((int64_t) id1 << 32) | id2;
-    else
-	return ((int64_t) id2 << 32) | id1;
-}
-
-// See if sum has already been computed.  If so, return result
-// Otherwise NULL
-static xor_constraint* check_plus(xor_constraint *arg1, xor_constraint *arg2) {
-    int64_t key = plus_key(arg1, arg2);
-    if (plus_set.count(key) == 0) {
-	return NULL;
-    }
-    ilist nvariables = coefficient_sum(arg1->get_variables(), arg2->get_variables());
-    int nphase = arg1->get_phase() ^ arg2->get_phase();
-    bdd xfun;
-    pseudo_plus_computed++;
-    return find_constraint(nvariables, nphase, xfun);
-}
-
-static void record_plus(xor_constraint *arg1, xor_constraint *arg2) {
-    int64_t key = plus_key(arg1, arg2);
-    plus_set.insert(key);
-}
-
-
 /// Methods & functions for xor constraints
 
 xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
     pseudo_xor_created ++;
     variables = vars;
     phase = p;
-    key = priority_key(vars);
     bdd xfun;
     xor_constraint *xcp = find_constraint(variables, phase, xfun);
     if (xcp == NULL) {
@@ -263,7 +196,6 @@ xor_constraint::xor_constraint(ilist vars, int p) {
     pseudo_xor_created ++;
     variables = vars;
     phase = p;
-    key = priority_key(vars);
     bdd xfun;
     xor_constraint *xcp = find_constraint(variables, phase, xfun);
     if (xcp == NULL) {
@@ -296,13 +228,11 @@ xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
 	pseudo_plus_unique++;
 	tbdd nvalidation = tbdd_and(arg1->validation, arg2->validation);
 	xcp = new xor_constraint(nvariables, nphase, nvalidation);
-	record_plus(arg1, arg2);
     }
     return xcp;
 }
 
 /// Various ways to compute the sum of a list of xor constraints
-
 
 // Linear evaluation.  Good for small sets
 static xor_constraint *xor_sum_list_linear(xor_constraint **xlist, int len) {
@@ -346,97 +276,6 @@ static xor_constraint *xor_sum_list_bf(xor_constraint **xlist, int len) {
     return sum;
 }
 
-// Breadth-first computation, but greedily check if sum has already been computed with another argument
-//   This did not work as well as was hoped
-static xor_constraint *xor_sum_list_bf_check(xor_constraint **xlist, int len) {
-    if (len == 0)
-	return new xor_constraint();
-    xor_constraint **xbuf = new xor_constraint*[2*len];
-    for (int i = 0; i < len; i++)
-	xbuf[i] = xlist[i];
-    // Left and right-most positions that have been used in the buffer 
-    int left = 0;
-    int right = len-1;
-    while (left < right) {
-	int i1, i2;
-	bool reused = false;
-	// Loop invariant: xbuf[right] != NULL
-	xor_constraint *arg1, *arg2, *nsum;
-	do {
-	    i1 = left;
-	    arg1 = xbuf[left++];
-	} while (arg1 == NULL); // By LI, this will eventually succeed
-	if (left == right)
-	    break;
-	// See if arg1 has already been added to one of the other arguments
-	for (int idx = left; idx <= right; idx++) {
-	    i2 = idx;
-	    xor_constraint *oarg = xbuf[idx];
-	    if (oarg == NULL)
-		continue;
-	    nsum = check_plus(arg1, oarg);
-	    if (nsum != NULL) {
-		delete arg1;
-		delete oarg;
-		reused = true;
-		// May temporarily violate loop invariant
-		xbuf[idx] = NULL;
-		break;
-	    }
-	}
-	if (nsum == NULL) {
-	    do {
-		i2 = left;
-		arg2 = xbuf[left++];
-	    } while (arg2 == NULL);
-	    nsum = xor_plus(arg1, arg2);
-	    delete arg1; 
-	    delete arg2;
-	}
-	// Loop invariant restored
-	xbuf[++right] = nsum;
-	if (!nsum->is_feasible())
-	    break;
-    }
-    xor_constraint *sum = xbuf[right];
-    delete[] xbuf;
-    return sum;
-}
-
-
-// Used for priority queue version of summation
-
-class xcomp {
-public:
-    bool operator() (xor_constraint *arg1, xor_constraint *arg2) {
-	return xor_less(arg1, arg2);
-    }
-
-};
-
-// Sum using priority queue.  Did not do as well as BF.
-static xor_constraint *xor_sum_list_pq(xor_constraint **xlist, int len) {
-    if (len == 0)
-	return new xor_constraint();
-    std::priority_queue<xor_constraint*, std::vector<xor_constraint*>, xcomp> pq;
-
-    for (int i = 0; i < len; i++)
-	pq.push(xlist[i]);
-
-    while (pq.size() > 1) {
-	xor_constraint *arg1 = pq.top();
-	pq.pop();
-	xor_constraint *arg2 = pq.top();
-	pq.pop();
-	xor_constraint *sum = xor_plus(arg1, arg2);
-	pq.push(sum);
-	delete arg1;
-	delete arg2;
-	if (!sum->is_feasible())
-	    return sum;
-    }
-    return pq.top();
-}
 
 xor_constraint *trustbdd::xor_sum_list(xor_constraint **xlist, int len) {
     if (len <= 4)
