@@ -269,6 +269,26 @@ static bool xoverlap(xor_constraint *xcp1, xor_constraint *xcp2) {
     return false;
 }
 
+/*
+  Use 32-bit words packed into pairs
+ */
+static int64_t pack(int upper, int lower) {
+    return ((int64_t) upper << 32) | lower;
+}
+
+static int64_t ordered_pack(int x1, int x2) {
+    return x1 < x2 ? pack(x1, x2) : pack(x2, x1);
+}
+
+static int upper(int64_t pair) {
+    return (int) (pair>>32);
+}
+
+static int lower(int64_t pair) {
+    return (int) (pair & 0xFFFFFFFF);
+}
+
+
 /* Determine the cost of adding two xor constraints */
 /* 
    Result is 64 bits, where upper bits represent cost function,
@@ -298,7 +318,7 @@ static int64_t xcost(xor_constraint *xcp1, xor_constraint *xcp2, int lower) {
     }
     upper += (len1-i1);
     upper += (len2-i2);
-    return ((int64_t) upper << 32) | lower;
+    return pack(upper, lower);
 }
 
 
@@ -319,37 +339,10 @@ public:
     bool operator<(sgraph_edge &oedge) { return cost < oedge.cost; }
 
     void show(const char *prefix) {
-	int upper = (cost >> 32);
-	int lower = (cost & 0xFFFFFFF);
-	printf("%s: Edge %d <--> %d.  Cost = %d/%d\n", prefix, node1, node2, upper, lower);
+	printf("%s: Edge %d <--> %d.  Cost = %d/%d\n", prefix, node1, node2, upper(cost), lower(cost));
     }
 };
 
-// Data structure for adjacency list element
-class sgraph_adj {
-
-public:
-    sgraph_adj(int n, sgraph_edge *e) { neighbor = n; edge = e; next = NULL; }
-
-    int neighbor;
-    sgraph_edge *edge;
-    // Put in linked list ordered by ascending node ID
-    sgraph_adj *next;
-
-};    
-    
-static sgraph_adj *insert_adj(sgraph_adj *alist, sgraph_adj *ae) {
-    if (alist == NULL || ae->neighbor < alist->neighbor) {
-	ae->next = alist;
-	return ae;
-    }
-    sgraph_adj *pos = alist;
-    while (pos->next && ae->neighbor > pos->neighbor)
-	pos = pos->next;
-    ae->next = pos;
-    pos->next = ae;
-    return alist;
-}
 
 class sum_graph {
 
@@ -359,31 +352,31 @@ public:
 	srandom(seed);
 	nodes = xlist;
 	real_node_count = node_count = xcount;
-	adj_lists = new sgraph_adj*[node_count];
+	neighbors = new std::set<int> [node_count];
 	// Build inverse map from variables to nodes.  Use to keep track of
 	// which nodes share common variables
 	// Generate graph edges while building up reverse map
-	std::set<int> *imap = new std::set<int>[variable_count+1];
-	for (int x = xcount-1; x >= 0; x--) {
-	    ilist variables = nodes[x]->get_variables();
+	std::set<int> *imap = new std::set<int>[variable_count];
+	for (int n1 = 0; n1 < node_count; n1++) {
+	    ilist variables = nodes[n1]->get_variables();
 	    for (int i = 0; i < ilist_length(variables); i++) {
 		int v = variables[i];
-		if (imap[v].count(x) == 0) {
-		    for (auto rit = imap[v].rbegin(); rit != imap[v].rend(); rit++) {
-			int ox = *rit;
-			add_edge(x, ox);
-		    }
-		    imap[v].insert(x);
+		for (int n2 : imap[v-1]) {
+		    if (edge_map.count(ordered_pack(n1, n2)) == 0)
+			add_edge(n1, n2);
 		}
+		imap[v-1].insert(n1);
 	    }
 	}
 	delete[] imap;
+	show("Initial");
     }
 
     ~sum_graph() {
 	nodes = NULL;
 	edges.clear();
-	delete[] adj_lists;
+	edge_map.clear();
+	delete [] neighbors;
     }
 
     xor_constraint *get_sum() {
@@ -391,62 +384,67 @@ public:
 	while (edges.size() > 0) {
 	    sgraph_edge *e = *edges.begin();
 	    edges.erase(e);
-	    int x = e->node1;
-	    int nx = e->node2;
-	    xor_constraint *xc = xor_plus(nodes[x], nodes[nx]);
-	    delete nodes[x];
-	    delete nodes[nx];
-	    nodes[x] = xc;
-	    nodes[nx] = NULL;
+	    int n1 = e->node1;
+	    int n2 = e->node2;
+	    xor_constraint *xc = xor_plus(nodes[n1], nodes[n2]);
+	    delete nodes[n1];
+	    delete nodes[n2];
+	    nodes[n1] = xc;
+	    nodes[n2] = NULL;
 	    real_node_count--;
+	    e->show("Contracting");
 	    contract_edge(e);
+	    show("After contraction");
 	    delete e;
-	}	
+	}
+	xor_constraint *sum = new xor_constraint();
 	// Add up any remaining nodes (one per component of graph)
-	xor_constraint *sum = NULL;
-	for (int x = 0; x < node_count; x++) {
-	    if (nodes[x] != NULL) {
-		if (sum == NULL)
-		    sum = nodes[x];
-		else {
-		    xor_constraint *nsum = xor_plus(sum, nodes[x]);
-		    delete sum;
-		    delete nodes[x];
-		    sum = nsum;
-		    nodes[x] = NULL;
-		    real_node_count--;
-		}
+	for (int n = 0; n < node_count; n++) {
+	    if (nodes[n] != NULL) {
+		xor_constraint *nsum = xor_plus(sum, nodes[n]);
+		delete sum;
+		delete nodes[n];
+		sum = nsum;
+		nodes[n] = NULL;
+		real_node_count--;
 	    }
 	}	
 	return sum;
-    }    
+    }
+
 
     void show(const char *prefix) {
 	printf("%s: %d nodes, %d edges\n", prefix, real_node_count, (int) edges.size());
-	for (int x = 0; x < node_count; x++) {
-	    if (nodes[x] == NULL)
+	for (int n1 = 0; n1 < node_count; n1++) {
+	    if (nodes[n1] == NULL)
 		continue;
-	    printf("    Node %d.  Constraint ", x);
-	    nodes[x]->show(stdout);
-	    sgraph_adj *ax = adj_lists[x];
-	    while (ax != NULL) {
-		ax->edge->show("        ");
-		ax = ax->next;
+	    printf("    Node %d.  Constraint ", n1);
+	    nodes[n1]->show(stdout);
+	    for (int n2 : neighbors[n1]) {
+		sgraph_edge *e = edge_map[ordered_pack(n1, n2)];
+		e->show("        ");
 	    }
 	}
     }
 
 
 private:
+    // Set of constraints, which serve as graph nodes
+    // These get deleted as summation proceeds
     xor_constraint **nodes;
     
     int node_count;
     int real_node_count;
 
-    // Adjacency lists.  One per node
-    sgraph_adj **adj_lists;
     // Edges, ordered by increasing cost
     std::set<sgraph_edge *> edges;
+
+    // For each node, the set of adjacent nodes
+    std::set<int> *neighbors;
+    
+    // For each edge (n1, n2), a mapping from the pair to the edge
+    std::unordered_map<int64_t,sgraph_edge*> edge_map;
+
 
     // This should be fixed to be local to class
     int new_lower() {
@@ -455,149 +453,72 @@ private:
 	return edges.size() + 1;
     }
 
-    // Add new edge. Guarantee that x < ox.
-    void add_edge(int x, int ox) {
-	int64_t cost = xcost(nodes[x], nodes[ox], new_lower());
-	sgraph_edge *e = new sgraph_edge(x, ox, cost);
+    // Add new edge.
+    void add_edge(int n1, int n2) {
+	if (n1 > n2) 
+	    { int t = n1; n1 = n2; n2 = t; }  // Reorder nodes
+	int64_t cost = xcost(nodes[n1], nodes[n2], new_lower());
+	sgraph_edge *e = new sgraph_edge(n1, n2, cost);
 	edges.insert(e);
+	int64_t pair = pack(n1, n2);
+	edge_map[pair] = e;
+	neighbors[n1].insert(n2);
+	neighbors[n2].insert(n1);
+    }
 
-	sgraph_adj *ax = new sgraph_adj(ox, e);
-	// Ordered insertion
-	adj_lists[x] = insert_adj(adj_lists[x], ax);
-	sgraph_adj *aox = new sgraph_adj(x, e);
-	adj_lists[ox] = insert_adj(adj_lists[ox], aox);
+    void remove_edge(sgraph_edge *e) {
+	int n1 = e->node1;
+	int n2 = e->node2;
+	edges.erase(e);
+	int64_t pair = pack(n1, n2);
+	edge_map.erase(pair);
+	neighbors[n1].erase(n2);
+	neighbors[n2].erase(n1);
     }
 
     // This function gets called when edge de has been selected
     // and the constraint for node2 has been added to that of node1
     // Now must build merged adjacency list.
     void contract_edge(sgraph_edge *de) {
-	int x = de->node1;
-	int ox = de->node2;
-	sgraph_adj *ax = adj_lists[x];
-	adj_lists[x] = NULL;
-	sgraph_adj *aox = adj_lists[ox];
-	adj_lists[ox] = NULL;
-	sgraph_adj **tail = &adj_lists[x];
-	// Build new adjacency list for x;
-	while (ax != NULL && aox != NULL) {
-	    int nx = ax->neighbor;
-	    if (nx == ox) {
-		// Here's the edge were contracting
-		sgraph_adj *save = ax;
-		ax = ax->next;
-		delete save;
+	std::set<int> new_neighbors;
+	std::vector<sgraph_edge *> dedges;
+	int n1 = de->node1;
+	int n2 = de->node2;
+	// Determine new neighbors of n1
+	for (int nn1 : neighbors[n1]) {
+	    if (nn1 == n2)
+		// This edge is being contracted
 		continue;
-	    }
-	    int nox = aox->neighbor;
-	    if (nox == x) {
-		// Here's the edge were contracting
-		sgraph_adj *save = aox;
-		aox = aox->next;
-		delete save;
-		continue;
-	    }
-	    if (nx == nox) {
-		// The two nodes shared a common neighbor.
-		if (xoverlap(nodes[x], nodes[nx])) {
-		    // Reuse existing edge and adjacency element
-		    sgraph_edge *e = ax->edge;
-		    edges.erase(e);
-		    e->show("Erasing");
-		    e->cost = xcost(nodes[x], nodes[nx], new_lower());
-		    // Reinsert using new cost
-		    e->show("Reinserting");
-		    edges.insert(e);
-		    *tail = ax;
-		    ax = ax->next;
-		    tail = &((*tail)->next);
-		    *tail = NULL;
-		    sgraph_adj *save = aox;
-		    aox = aox->next;
-		    delete save;
-		    continue;
-		} else {
-		    // This edge can be discarded
-		    sgraph_edge *e = ax->edge;
-		    e->show("Discarding");
-		    edges.erase(e);
-		    delete e;
-		    sgraph_adj *save = ax;
-		    ax = ax->next;
-		    delete save;
-		    save = aox;
-		    aox = aox->next;
-		    delete save;
-		    continue;
-		}
-	    }
-	    if (nx < nox)  {
-		// Update edge for nx
-		sgraph_edge *e = ax->edge;
-		e->show("Erasing");
-		edges.erase(e);
-		e->show("Updating_1");
-		e->cost = xcost(nodes[x], nodes[nx], new_lower());
-		edges.insert(e);
-		*tail = ax;
-		ax = ax->next;
-		tail = &((*tail)->next);
-		*tail = NULL;
-		continue;
-	    } else {
-		// Repurpose edge for nox;
-		sgraph_edge *e = aox->edge;
-		e->show("Erasing");
-		edges.erase(e);
-		e->cost = xcost(nodes[x], nodes[nox], new_lower());
-		if (e->node1 == ox)
-		    e->node1 = x;
-		else
-		    e->node2 = x;
-		e->show("Repurposing_1");
-		aox->neighbor = x;
-		edges.insert(e);
-		*tail = aox;
-		aox = aox->next;
-		tail = &((*tail)->next);
-		*tail = NULL;
-		continue;
-	    }
+	    sgraph_edge *e = edge_map[ordered_pack(n1, nn1)];
+	    dedges.push_back(e);
+	    if (xoverlap(nodes[n1], nodes[nn1]))
+		// This looks interesting
+		new_neighbors.insert(nn1);
 	}
-	while (ax != NULL) {
-	    // Update edge for nx
-	    sgraph_edge *e = ax->edge;
-	    e->show("Erasing");
-	    edges.erase(e);
-	    e->show("Updating_2");
-	    int nx = ax->neighbor;
-	    e->cost = xcost(nodes[x], nodes[nx], new_lower());
-	    edges.insert(e);
-	    *tail = ax;
-	    ax = ax->next;
-	    tail = &((*tail)->next);
-	    *tail = NULL;
+	for (int nn2 : neighbors[n2]) {
+	    if (nn2 == n1)
+		// This edge is being contracted
+		continue;
+	    sgraph_edge *e = edge_map[ordered_pack(n2, nn2)];
+	    dedges.push_back(e);
+	    if (new_neighbors.count(nn2) > 0)
+		// Already have this one
+		continue;
+	    if (xoverlap(nodes[n1], nodes[nn2]))
+		// This looks interesting
+		new_neighbors.insert(nn2);
 	}
-	while (aox != NULL) {
-	    // Repurpose edge for nox;
-	    sgraph_edge *e = aox->edge;
-	    e->show("Erasing");
-	    edges.erase(e);
-	    int nox = aox->neighbor;
-	    e->cost = xcost(nodes[x], nodes[nox], new_lower());
-	    if (e->node1 == ox)
-		e->node1 = x;
-	    else
-		e->node2 = x;
-	    e->show("Repurposing_2");
-	    edges.insert(e);
-	    *tail = aox;
-	    aox = aox->next;
-	    tail = &((*tail)->next);
-	    *tail = NULL;
+	for (sgraph_edge *e : dedges) {
+	    remove_edge(e);
+	    delete e;
 	}
-	de->show("Contracted");
-	show("Following contraction");
+	// Add new edges for n1
+	neighbors[n1].clear();
+	neighbors[n2].clear();
+	for (int nn1 : new_neighbors) {
+	    add_edge(n1, nn1);
+	}
+
     }
 };
 
