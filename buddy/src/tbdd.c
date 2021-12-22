@@ -286,7 +286,7 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
 	fprintf(stderr, "Failed to prove implication N%d --> N%d\n", NNAME(tr.root), NNAME(r));
 	exit(1);
     }
-    print_proof_comment(2, "Validation of unit clause for N%d by implication from N%d",NNAME(r), NNAME(tr.root));
+     print_proof_comment(2, "Validation of unit clause for N%d by implication from N%d",NNAME(r), NNAME(tr.root));
     ilist_fill1(clause, XVAR(r));
     ilist_fill2(ant, ABS(t.clause_id), ABS(tr.clause_id));
     TBDD rr;
