@@ -1,3 +1,4 @@
+#include <map>
 #include <unordered_map>
 #include <set>
 
@@ -5,6 +6,9 @@
 #include "prover.h"
 
 using namespace trustbdd;
+
+// To aid debugging
+#define VERBOSE 0
 
 #define BUFLEN 2048
 // For formatting information
@@ -33,6 +37,7 @@ static bool initialized = false;
 static void pseudo_init() {
     if (!initialized) {
 	tbdd_add_info_fun(pseudo_info_fun);
+	tbdd_set_verbose(1);
     }
     initialized = true;
 }
@@ -214,9 +219,11 @@ int xor_constraint::validate_clause(ilist clause) {
 }
 
 void xor_constraint::show(FILE *out) {
-    fprintf(out, "Xor Constraint: Node N%d validates ", tbdd_nameid(validation));
-    show_xor(out, variables, phase);
-    fprintf(out, "\n");
+    if (verbosity_level >= 2) {
+	fprintf(out, "Xor Constraint: Node N%d validates ", tbdd_nameid(validation));
+	show_xor(out, variables, phase);
+	fprintf(out, "\n");
+    }
 }
 
 xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
@@ -336,13 +343,12 @@ public:
     int node2;
     int64_t cost;
 
-    bool operator<(sgraph_edge &oedge) { return cost < oedge.cost; }
-
     void show(const char *prefix) {
-	printf("%s: Edge %d <--> %d.  Cost = %d/%d\n", prefix, node1, node2, upper(cost), lower(cost));
+	if (verbosity_level >= 2) {
+	    printf("%s: Edge %d <--> %d.  Cost = %d/%d\n", prefix, node1, node2, upper(cost), lower(cost));
+	}
     }
 };
-
 
 class sum_graph {
 
@@ -382,8 +388,8 @@ public:
     xor_constraint *get_sum() {
 	// Reduce the graph
 	while (edges.size() > 0) {
-	    sgraph_edge *e = *edges.begin();
-	    edges.erase(e);
+	    sgraph_edge *e = edges.begin()->second;
+	    edges.erase(e->cost);
 	    int n1 = e->node1;
 	    int n2 = e->node2;
 	    xor_constraint *xc = xor_plus(nodes[n1], nodes[n2]);
@@ -414,15 +420,17 @@ public:
 
 
     void show(const char *prefix) {
-	printf("%s: %d nodes, %d edges\n", prefix, real_node_count, (int) edges.size());
-	for (int n1 = 0; n1 < node_count; n1++) {
-	    if (nodes[n1] == NULL)
-		continue;
-	    printf("    Node %d.  Constraint ", n1);
-	    nodes[n1]->show(stdout);
-	    for (int n2 : neighbors[n1]) {
-		sgraph_edge *e = edge_map[ordered_pack(n1, n2)];
-		e->show("        ");
+	if (verbosity_level >= 2) {
+	    printf("%s: %d nodes, %d edges\n", prefix, real_node_count, (int) edges.size());
+	    for (int n1 = 0; n1 < node_count; n1++) {
+		if (nodes[n1] == NULL)
+		    continue;
+		printf("    Node %d.  Constraint ", n1);
+		nodes[n1]->show(stdout);
+		for (int n2 : neighbors[n1]) {
+		    sgraph_edge *e = edge_map[ordered_pack(n1, n2)];
+		    e->show("        ");
+		}
 	    }
 	}
     }
@@ -436,8 +444,8 @@ private:
     int node_count;
     int real_node_count;
 
-    // Edges, ordered by increasing cost
-    std::set<sgraph_edge *> edges;
+    // Edges, indexed by cost
+    std::map<int64_t,sgraph_edge *> edges;
 
     // For each node, the set of adjacent nodes
     std::set<int> *neighbors;
@@ -448,9 +456,9 @@ private:
 
     // This should be fixed to be local to class
     int new_lower() {
-	//	return random();
+	return random();
 	// Temporarily determinize
-	return edges.size() + 1;
+	//	return edges.size() + 1;
     }
 
     // Add new edge.
@@ -459,7 +467,7 @@ private:
 	    { int t = n1; n1 = n2; n2 = t; }  // Reorder nodes
 	int64_t cost = xcost(nodes[n1], nodes[n2], new_lower());
 	sgraph_edge *e = new sgraph_edge(n1, n2, cost);
-	edges.insert(e);
+	edges[cost] = e;
 	int64_t pair = pack(n1, n2);
 	edge_map[pair] = e;
 	neighbors[n1].insert(n2);
@@ -469,7 +477,7 @@ private:
     void remove_edge(sgraph_edge *e) {
 	int n1 = e->node1;
 	int n2 = e->node2;
-	edges.erase(e);
+	edges.erase(e->cost);
 	int64_t pair = pack(n1, n2);
 	edge_map.erase(pair);
 	neighbors[n1].erase(n2);
@@ -569,7 +577,8 @@ static xor_constraint *xor_sum_list_bf(xor_constraint **xlist, int len) {
 // Chosen method for computing sum
 xor_constraint *trustbdd::xor_sum_list(xor_constraint **xlist, int len, int maxvar) {
     if (len <= 4)
-	return xor_sum_list_linear(xlist, len);
+ 	return xor_sum_list_linear(xlist, len);
+    //    return xor_sum_list_bf(xlist, len);
     sum_graph g(xlist, len, maxvar, 1);
     return g.get_sum();
 }
