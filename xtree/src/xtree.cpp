@@ -20,6 +20,10 @@
 #define BINARY 0
 #endif
 
+#ifndef VERBOSITY
+#define VERBOSITY 1
+#endif
+
 using namespace trustbdd;
 
 
@@ -68,11 +72,13 @@ static void rperm(int *dest, int n) {
 	dest[i] = dest[i+index];
 	dest[i+index] = t;
     }
-    printf("Permutation:");
-    for (i = 0; i < n; i++) {
-	printf(" %d", dest[i]);
+    if (VERBOSITY >= 2) {
+	printf("Permutation:");
+	for (i = 0; i < n; i++) {
+	    printf(" %d", dest[i]);
+	}
+	printf("\n");
     }
-    printf("\n");
 }
 
 
@@ -173,12 +179,12 @@ static void gen_drat_proof(char *fname, int n) {
 // $end xtree-drat
 #if BINARY
     tbdd_init_drat_binary(proof_file, vcount);
-    tbdd_set_verbose(2);
+    tbdd_set_verbose(VERBOSITY);
 #else
 // $begin xtree-drat
     tbdd_init_drat(proof_file, vcount);  ///line:initialize
 // $end xtree-drat
-    tbdd_set_verbose(2);
+    tbdd_set_verbose(VERBOSITY);
 #endif
 // $begin xtree-drat    
     // Use parity reasoning to infer constraint R1 ^ R2 = 1
