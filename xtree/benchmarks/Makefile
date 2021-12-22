@@ -57,6 +57,13 @@ $(ROOT)-$(N).cnf:
 .cnf.fcdata:
 	$(CMS) $(CFLAGS)  $< | tee $@
 
+tbuddy-data:
+	rm -f tbuddy-*.csv
+	$(GRAB) "Total clauses" *.data > tbuddy-clauses.csv
+	$(GRAB) "Elapsed" *.data > tbuddy-generation-seconds.csv
+	$(GRAB) "verification time" *.xdata > tbuddy-drat-seconds.csv
+
+
 data:
 	rm -f *.csv
 	$(GRAB) "Total clauses" *.data > tbuddy-clauses.csv
