@@ -256,7 +256,10 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
 	for (i = 0; i < len; i++)
 	    lits[i] = (bits >> i) & 0x1 ? -vars[i] : vars[i];
 	TBDD tc = tbdd_from_clause(lits);
-	result = tbdd_and(result, tc);
+	TBDD nresult = tbdd_addref(tbdd_and(tbdd_addref(result), tbdd_addref(tc)));
+	tbdd_delref(tc);
+	tbdd_delref(result);
+	result = nresult;
     }
     if (verbosity_level >= 2) {
 	ilist_format(vars, ibuf, " ^ ", BUFLEN);
