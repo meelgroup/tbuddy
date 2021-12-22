@@ -37,7 +37,7 @@ static bool initialized = false;
 static void pseudo_init() {
     if (!initialized) {
 	tbdd_add_info_fun(pseudo_info_fun);
-	tbdd_set_verbose(1);
+	//	tbdd_set_verbose(2);
     }
     initialized = true;
 }
@@ -219,11 +219,9 @@ int xor_constraint::validate_clause(ilist clause) {
 }
 
 void xor_constraint::show(FILE *out) {
-    if (verbosity_level >= 2) {
-	fprintf(out, "Xor Constraint: Node N%d validates ", tbdd_nameid(validation));
-	show_xor(out, variables, phase);
-	fprintf(out, "\n");
-    }
+    fprintf(out, "Xor Constraint: Node N%d validates ", tbdd_nameid(validation));
+    show_xor(out, variables, phase);
+    fprintf(out, "\n");
 }
 
 xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
@@ -329,13 +327,34 @@ static int64_t xcost(xor_constraint *xcp1, xor_constraint *xcp2, int lower) {
 }
 
 
+// Pseudo-random number generator based on the Lehmer MINSTD RNG
+// Use to both randomize selection and to provide a unique value
+// for each cost.
+
+class sequencer {
+
+public:
+    sequencer(void) { set_seed(123456); }
+
+    void set_seed(uint64_t s) { seed = s == 0 ? 1 : s; next() ; next(); }
+
+    uint32_t next() { seed = (seed * mval) % groupsize; return seed; }
+
+private:
+    uint64_t seed;
+    const uint64_t mval = 48271;
+    const uint64_t groupsize = 2147483647LL;
+
+};
+
 // Data structure for list edge
 class sgraph_edge {
 public:
     sgraph_edge(int n1, int n2, int64_t c)
-    { node1 = n1, node2 = n2; cost = c; show("Adding"); }
+    { node1 = n1, node2 = n2; cost = c; 
+	if (verbosity_level >= 3 )show("Adding"); }
 
-    ~sgraph_edge() { show("Deleting"); }
+    ~sgraph_edge() { if (verbosity_level >= 3) show("Deleting"); }
 
     // Nodes numbered by their position in the list of nodes
     // Ordered node1 < node2
@@ -344,9 +363,7 @@ public:
     int64_t cost;
 
     void show(const char *prefix) {
-	if (verbosity_level >= 2) {
-	    printf("%s: Edge %d <--> %d.  Cost = %d/%d\n", prefix, node1, node2, upper(cost), lower(cost));
-	}
+	printf("%s: Edge %d <--> %d.  Cost = %d/%d\n", prefix, node1, node2, upper(cost), lower(cost));
     }
 };
 
@@ -354,8 +371,7 @@ class sum_graph {
 
 public:
     sum_graph(xor_constraint **xlist, int xcount, int variable_count, unsigned seed) {
-	// Initial RNG.  Should make this class-specific
-	srandom(seed);
+	seq.set_seed(seed);
 	nodes = xlist;
 	real_node_count = node_count = xcount;
 	neighbors = new std::set<int> [node_count];
@@ -375,7 +391,8 @@ public:
 	    }
 	}
 	delete[] imap;
-	show("Initial");
+	if (verbosity_level >= 3)
+	    show("Initial");
     }
 
     ~sum_graph() {
@@ -398,9 +415,11 @@ public:
 	    nodes[n1] = xc;
 	    nodes[n2] = NULL;
 	    real_node_count--;
-	    e->show("Contracting");
+	    if (verbosity_level >= 2)
+		e->show("Contracting");
 	    contract_edge(e);
-	    show("After contraction");
+	    if (verbosity_level >= 3)
+		show("After contraction");
 	    delete e;
 	}
 	xor_constraint *sum = new xor_constraint();
@@ -420,17 +439,15 @@ public:
 
 
     void show(const char *prefix) {
-	if (verbosity_level >= 2) {
-	    printf("%s: %d nodes, %d edges\n", prefix, real_node_count, (int) edges.size());
-	    for (int n1 = 0; n1 < node_count; n1++) {
-		if (nodes[n1] == NULL)
-		    continue;
-		printf("    Node %d.  Constraint ", n1);
-		nodes[n1]->show(stdout);
-		for (int n2 : neighbors[n1]) {
-		    sgraph_edge *e = edge_map[ordered_pack(n1, n2)];
-		    e->show("        ");
-		}
+	printf("%s: %d nodes, %d edges\n", prefix, real_node_count, (int) edges.size());
+	for (int n1 = 0; n1 < node_count; n1++) {
+	    if (nodes[n1] == NULL)
+		continue;
+	    printf("    Node %d.  Constraint ", n1);
+	    nodes[n1]->show(stdout);
+	    for (int n2 : neighbors[n1]) {
+		sgraph_edge *e = edge_map[ordered_pack(n1, n2)];
+		e->show("        ");
 	    }
 	}
     }
@@ -453,10 +470,12 @@ private:
     // For each edge (n1, n2), a mapping from the pair to the edge
     std::unordered_map<int64_t,sgraph_edge*> edge_map;
 
+    // For assigning unique values to cost
+    sequencer seq;
 
     // This should be fixed to be local to class
     int new_lower() {
-	return random();
+	return (int) seq.next();
 	// Temporarily determinize
 	//	return edges.size() + 1;
     }
