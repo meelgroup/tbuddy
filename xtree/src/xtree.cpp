@@ -160,7 +160,8 @@ static void gen_cnf(char *fname, int n) {
 }
 
 // $begin xtree-drat
-static void gen_drat_proof(char *fname, int n) {
+void gen_drat_proof(char *fname, int n) {
+    ilist lits = ilist_new(2); // For adding clauses directly to proof
 // $end xtree-drat
 #if BINARY
     FILE *proof_file = fopen(fname, "wb");
@@ -175,8 +176,8 @@ static void gen_drat_proof(char *fname, int n) {
 	exit(1);
     }
     int vcount = 3*n;  // Total number of variables
-    // TBDD initializer for DRAT proof generation
 // $end xtree-drat
+    // TBDD initialization
 #if BINARY
     tbdd_init_drat_binary(proof_file, vcount);
     tbdd_set_verbose(VERBOSITY);
@@ -193,18 +194,14 @@ static void gen_drat_proof(char *fname, int n) {
 	xor_constraint xc(xor_variables[x], xor_phases[x]);
 	xset.add(xc);
     } ///line:xset:end
+    // Direct program to sum the constraints
     xor_constraint *sum = xset.sum(); ///line:xset:sum
-
-    // Add clauses to proof
-    ilist lits = ilist_new(2);
 
     // Assert inequivalence of R1 and R2, extracted from XOR sum
     assert_clause(ilist_fill2(lits, R1(n), R2(n)));  ///line:xor:start
     assert_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:xor:end
-
     // Assert unit clause for R1
     assert_clause(ilist_fill1(lits, R1(n))); ///line:unit
-
     // Assert empty clause
     assert_clause(ilist_resize(lits, 0)); ///line:empty
 
