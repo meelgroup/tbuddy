@@ -308,12 +308,16 @@ int generate_clause(ilist literals, ilist hints) {
     
     if (!do_lrat) {
 	/* Must store copy of clause */
-	if (alloc_clause_count <= cid) {
+	if (cid >= alloc_clause_count) {
 	    /* must expand */
-	    alloc_clause_count *= 2;
-	    all_clauses = realloc(all_clauses, alloc_clause_count * sizeof(ilist));
+	    int new_alloc_clause_count = alloc_clause_count * 2;
+	    int i;
+	    all_clauses = realloc(all_clauses, new_alloc_clause_count * sizeof(ilist));
 	    if (all_clauses == NULL)
 		bdd_error(BDD_MEMORY);
+	    for (i = alloc_clause_count; i < new_alloc_clause_count; i++) 
+		all_clauses[i] = TAUTOLOGY_CLAUSE;
+	    alloc_clause_count = new_alloc_clause_count;
 	}
 	all_clauses[cid-1] = ilist_copy(clause);
     }
