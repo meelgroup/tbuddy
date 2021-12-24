@@ -97,20 +97,14 @@ void BddCache_reset(BddCache *cache)
 void BddCache_clause_evict(BddCacheData *entry) {
     int dbuf[2+ILIST_OVHD];
     ilist dlist;
-    int id, aid;
+    int id;
     if (entry->a != -1 &&
 	(entry->c == bddop_andj || entry->c == bddop_imptstj)) {
 	id = entry->r.jclause;
-	aid = ABS(id);
-	if (aid == TAUTOLOGY)
+	if (id == TAUTOLOGY)
 	    return;
 	dlist = ilist_make(dbuf, 2);	
-	if (id < 0) {
-	    defer_delete_clause(aid-1);
-	    defer_delete_clause(aid);
-	}
-	else
-	    defer_delete_clause(aid);
+	defer_delete_clause(id);
     }
 }
 
