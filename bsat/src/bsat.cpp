@@ -5,7 +5,9 @@
 #include <string.h>
 #include "clause.h"
 
-extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, bool lrat, bool binary);
+#include "tbdd.h"
+
+extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary);
 
 // BDD-based SAT solver
 
@@ -43,7 +45,7 @@ int main(int argc, char *argv[]) {
   FILE *sched_file = NULL;
   FILE *proof_file = stdout;
   bool bucket = false;
-  bool lrat = true;
+  proof_type_t ptype = PROOF_LRAT;
   bool binary = false;
   int c;
   int verb = 1;
@@ -86,16 +88,16 @@ int main(int argc, char *argv[]) {
       }
       if (strcmp(extension, "drat") == 0) {
 	  binary = false;
-	  lrat = false;
+	  ptype = PROOF_DRAT;
       } else if (strcmp(extension, "dratb") == 0) {
 	  binary = true;
-	  lrat = false;
+	  ptype = PROOF_DRAT;
       } else if (strcmp(extension, "lrat") == 0) {
 	  binary = false;
-	  lrat = true;
+	  ptype = PROOF_LRAT;
       } else if (strcmp(extension, "lratb") == 0) {
 	  binary = true;
-	  lrat = true;
+	  ptype = PROOF_LRAT;
       } else {
 	  std::cerr << "Unknown file type '" << optarg << "'" << std::endl;
 	  usage(argv[0]);
@@ -107,7 +109,7 @@ int main(int argc, char *argv[]) {
     }
   }
   double start = tod();
-  if (solve(cnf_file, proof_file, sched_file, bucket, verb, lrat, binary)) {
+  if (solve(cnf_file, proof_file, sched_file, bucket, verb, ptype, binary)) {
     if (verb >= 1) {
       printf("Elapsed seconds: %.2f\n", tod()-start);
     }

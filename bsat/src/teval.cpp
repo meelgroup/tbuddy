@@ -181,7 +181,7 @@ private:
     int clause_count;
     int32_t max_variable;
     int verblevel;
-    bool do_lrat;
+    proof_type_t proof_type;
     // Estimated total number of nodes
     int total_count;
     // Estimated number of unreachable nodes
@@ -195,7 +195,7 @@ private:
     int max_bdd;
 
     void check_gc() {
-	int collect_min = do_lrat ? COLLECT_MIN_LRAT : COLLECT_MIN_DRAT;
+	int collect_min = proof_type == PROOF_LRAT ? COLLECT_MIN_LRAT : COLLECT_MIN_DRAT;
 	if (dead_count >= collect_min && (double) dead_count / total_count >= COLLECT_FRACTION) {
 	    if (verbosity_level >= 2) {
 		std::cout << "Initiating GC.  Estimated total nodes = " << total_count << ".  Estimated dead nodes = " << dead_count << std::endl;
@@ -208,9 +208,9 @@ private:
 
 public:
 
-    TermSet(CNF &cnf, FILE *proof_file, int verb, bool lrat, bool binary) {
+    TermSet(CNF &cnf, FILE *proof_file, int verb, proof_type_t ptype, bool binary) {
 	verblevel = verb;
-	do_lrat = lrat;
+	proof_type = ptype;
 	tbdd_set_verbose(verb);
 	total_count = dead_count = 0;
 	clause_count = cnf.clause_count();
@@ -222,7 +222,7 @@ public:
 	    clauses[i] = cp->data();
 	}
 	int rcode;
-	if ((rcode = tbdd_init(proof_file, max_variable, clause_count, clauses, lrat, binary)) != 0) {
+	if ((rcode = tbdd_init(proof_file, max_variable, clause_count, clauses, ptype, binary)) != 0) {
 	    fprintf(stderr, "Initialization failed.  Return code = %d\n", rcode);
 	    exit(1);
 	}
@@ -673,7 +673,7 @@ public:
 
 };
 
-bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, bool lrat, bool binary) {
+bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary) {
     CNF cset = CNF(cnf_file);
     fclose(cnf_file);
     if (cset.failed()) {
@@ -685,7 +685,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int 
 	if (verblevel >= 1)
 	    std::cout << "Read " << cset.clause_count() << " clauses.  " 
 		      << cset.max_variable() << " variables" << std::endl;
-    TermSet tset = TermSet(cset, proof_file, verblevel, lrat, binary);
+    TermSet tset = TermSet(cset, proof_file, verblevel, ptype, binary);
     tbdd tr = tbdd_tautology();
     if (sched_file != NULL)
 	tr = tset.schedule_reduce(sched_file);

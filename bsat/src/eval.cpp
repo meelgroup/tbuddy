@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-#include "bdd.h"
+#include "tbdd.h"
 #include "clause.h"
 
 // Buddy paramters
@@ -423,7 +423,7 @@ public:
 
 };
 
-bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, bool lrat, bool binary) {
+bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary) {
   CNF cset = CNF(cnf_file);
   fclose(cnf_file);
   if (cset.failed()) {

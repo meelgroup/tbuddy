@@ -5,7 +5,7 @@
 
 
 /* Global variables exported by prover */
-bool do_lrat = false;
+proof_type_t proof_type = PROOF_LRAT;
 int verbosity_level = 1;
 int last_variable = 0;
 int last_clause_id = 0;
@@ -17,7 +17,7 @@ int max_live_clause_count = 0;
 static FILE *proof_file = NULL;
 /* 
    For LRAT, only need to keep dictionary of input clauses.
-   For DRAT, need dictionary of all clauses in order to delete them.
+   For DRAT & FRAT, need dictionary of all clauses in order to delete them.
 */
 
 static bool do_binary = false;
@@ -51,9 +51,9 @@ static size_t dest_buf_len = 0;
 
 /* API functions */
 
-int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat, bool binary) {
+int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, proof_type_t ptype, bool binary) {
     empty_clause_detected = false;
-    do_lrat = lrat;
+    proof_type = ptype;
     do_binary = binary;
     if (do_binary) {
 	dest_buf_len = 100;
@@ -264,7 +264,7 @@ int generate_clause(ilist literals, ilist hints) {
     if (!empty_clause_detected) {
 	if (do_binary)
 	    *d++ = 'a';
-	if (do_lrat) {
+	if (proof_type == PROOF_LRAT) {
 	    if (do_binary) {
 		d += int_byte_pack(cid, d);
 	    } else {
@@ -278,7 +278,7 @@ int generate_clause(ilist literals, ilist hints) {
 	} else
 	    ilist_print(clause, proof_file, " ");
 
-	if (do_lrat) {
+	if (proof_type == PROOF_LRAT) {
 	    if (do_binary) {
 		d += int_byte_pack(0, d);
 		d += ilist_byte_pack(hints, d);
@@ -306,7 +306,7 @@ int generate_clause(ilist literals, ilist hints) {
     live_clause_count++;
     max_live_clause_count = MAX(max_live_clause_count, live_clause_count);
     
-    if (!do_lrat) {
+    if (proof_type != PROOF_LRAT) {
 	/* Must store copy of clause */
 	if (cid >= alloc_clause_count) {
 	    /* must expand */
@@ -337,7 +337,7 @@ void delete_clauses(ilist clause_ids) {
     trace_list(clause_ids, last_clause_id, "Deleted clauses");
 #endif
 
-    if (do_lrat) {
+    if (proof_type == PROOF_LRAT) {
 	if (do_binary) {
 	    check_buffer(ilist_length(clause_ids) + 3);
 	    d = dest_buf;

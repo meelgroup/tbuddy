@@ -61,7 +61,10 @@ extern "C" {
   Return 0 if OK, otherwise error code
 */
 
-extern int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, bool lrat, bool binary);
+/* Supported proof types */
+typedef enum { PROOF_LRAT, PROOF_DRAT, PROOF_FRAT } proof_type_t;
+
+extern int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, proof_type_t ptype, bool binary);
 
 /* 
    Initializers specific for the four combinations of proof formats

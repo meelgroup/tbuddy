@@ -15,9 +15,8 @@
 extern "C" {
 #endif
 
-
 /* Global variables exported by prover */
-extern bool do_lrat;
+extern proof_type_t proof_type;
 extern int verbosity_level;
 extern int last_variable;
 extern int last_clause_id;
@@ -26,7 +25,7 @@ extern int input_variable_count;
 extern int max_live_clause_count;
 
 /* Prover setup and completion */
-extern int prover_init(FILE *pfile, int input_variable_count, int input_clause_count, ilist *clauses, bool lrat, bool binary);
+extern int prover_init(FILE *pfile, int input_variable_count, int input_clause_count, ilist *clauses, proof_type_t ptype, bool binary);
 extern void prover_done();
 
 /* Put literals in clause in canonical order */
