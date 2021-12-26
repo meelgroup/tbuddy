@@ -16,6 +16,9 @@ static char ibuf[BUFLEN];
 static tbdd_info_fun ifuns[IFUN_MAX];
 static int ifun_count = 0;
 
+static int last_variable = 0;
+static int last_clause_id = 0;
+
 
 /*============================================
   Package setup.
@@ -38,24 +41,40 @@ static int ifun_count = 0;
   Returns 0 if OK, otherwise error code
 */
 
-int tbdd_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, proof_type_t ptype, bool binary) {
-    return prover_init(pfile, variable_count, clause_count, input_clauses, ptype, binary);
+int tbdd_init(FILE *pfile, int *variable_counter, int *clause_id_counter, ilist *input_clauses, proof_type_t ptype, bool binary) {
+    return prover_init(pfile, variable_counter, clause_id_counter, input_clauses, ptype, binary);
 }
 
 int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses) {
-    return tbdd_init(pfile, variable_count, clause_count, input_clauses, PROOF_LRAT, false);
+    last_variable = variable_count;
+    last_clause_id = clause_count;
+    return tbdd_init(pfile, &last_variable, &last_clause_id, input_clauses, PROOF_LRAT, false);
 }
 
 int tbdd_init_lrat_binary(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses) {
-    return tbdd_init(pfile, variable_count, clause_count, input_clauses, PROOF_LRAT, true);
+    last_variable = variable_count;
+    last_clause_id = clause_count;
+    return tbdd_init(pfile, &last_variable, &last_clause_id, input_clauses, PROOF_LRAT, true);
 }
 
 int tbdd_init_drat(FILE *pfile, int variable_count) {
-    return tbdd_init(pfile, variable_count, 0, NULL, PROOF_DRAT, false);
+    last_variable = variable_count;
+    last_clause_id = 0;
+    return tbdd_init(pfile, &last_variable, &last_clause_id, NULL, PROOF_DRAT, false);
 }
 
 int tbdd_init_drat_binary(FILE *pfile, int variable_count) {
-    return tbdd_init(pfile, variable_count, 0, NULL, PROOF_DRAT, true);
+    last_variable = variable_count;
+    last_clause_id = 0;
+    return tbdd_init(pfile, &last_variable, &last_clause_id, NULL, PROOF_DRAT, true);
+}
+
+int tbdd_init_frat(FILE *pfile, int *variable_counter, int *clause_id_counter) {
+    return tbdd_init(pfile, variable_counter, clause_id_counter, NULL, PROOF_DRAT, false);
+}
+
+int tbdd_init_frat_binary(FILE *pfile, int *variable_counter, int *clause_id_counter) {
+    return tbdd_init(pfile, variable_counter, clause_id_counter, NULL, PROOF_DRAT, false);
 }
 
 void tbdd_set_verbose(int level) {

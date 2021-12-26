@@ -103,7 +103,6 @@ static void gen_xor(int *vars, int len, int phase) {
 static void xor3(int v1, int v2, int v3, int phase) {
     int vars[3] = {v1, v2, v3};
     gen_xor(vars, 3, phase);
-    const char *op = phase == 0 ? "==" : "^";
 }
 
 // Create xor tree with randomly permuted inputs
@@ -194,10 +193,10 @@ void gen_drat_proof(char *fname, int n) {
 	xor_constraint xc(xor_variables[x], xor_phases[x]);
 	xset.add(xc);
     } ///line:xset:end
-    // Direct program to sum the constraints
+    // Form the sum of the constraints
     xor_constraint *sum = xset.sum(); ///line:xset:sum
 
-    // Assert inequivalence of R1 and R2, extracted from XOR sum
+    // Assert inequivalence of R1 and R2, as is implied by XOR sum
     assert_clause(ilist_fill2(lits, R1(n), R2(n)));  ///line:xor:start
     assert_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:xor:end
     // Assert unit clause for R1

@@ -7,8 +7,8 @@
 /* Global variables exported by prover */
 proof_type_t proof_type = PROOF_LRAT;
 int verbosity_level = 1;
-int last_variable = 0;
-int last_clause_id = 0;
+int *variable_counter = NULL;
+int *clause_id_counter = NULL;
 int total_clause_count = 0;
 int input_variable_count = 0;
 int max_live_clause_count = 0;
@@ -50,8 +50,7 @@ static size_t dest_buf_len = 0;
 
 
 /* API functions */
-
-int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, proof_type_t ptype, bool binary) {
+int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_clauses, proof_type_t ptype, bool binary) {
     empty_clause_detected = false;
     proof_type = ptype;
     do_binary = binary;
@@ -62,21 +61,24 @@ int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_
 	    return bdd_error(BDD_MEMORY);
     }
     proof_file = pfile;
-    print_proof_comment(0, "Proof of CNF file with %d variables and %d clauses", variable_count, clause_count);    
 
-    input_variable_count = last_variable = variable_count;
-    last_clause_id = input_clause_count = total_clause_count = clause_count;
-    live_clause_count = max_live_clause_count = clause_count;
-    alloc_clause_count = clause_count + INITIAL_CLAUSE_COUNT;
+    variable_counter = var_counter;
+    input_variable_count = *variable_counter;
+    clause_id_counter = cls_counter;
+    input_clause_count = total_clause_count = *clause_id_counter;
+    live_clause_count = max_live_clause_count = total_clause_count;
+    alloc_clause_count = input_clause_count + INITIAL_CLAUSE_COUNT;
     all_clauses = calloc(alloc_clause_count, sizeof(ilist));
     deferred_deletion_list = ilist_new(100);
+
+    print_proof_comment(0, "Proof of CNF file with %d variables and %d clauses", input_variable_count, input_clause_count);
 
     if (all_clauses == NULL) {
 	return bdd_error(BDD_MEMORY);
     }
     int cid;
     if (input_clauses) {
-	for (cid = 0; cid < clause_count; cid++) {
+	for (cid = 0; cid < input_clause_count; cid++) {
 	    all_clauses[cid] = ilist_copy(input_clauses[cid]);
 	    if (print_ok(2)) {
 		fprintf(proof_file, "c Input Clause #%d: ", cid+1);
@@ -85,17 +87,17 @@ int prover_init(FILE *pfile, int variable_count, int clause_count, ilist *input_
 	    }
 	}
     } else {
-	for (cid = 0; cid < clause_count; cid++)
+	for (cid = 0; cid < input_clause_count; cid++)
 	    all_clauses[cid] = TAUTOLOGY_CLAUSE;
     }
-    int bnodes = clause_count < BUDDY_THRESHOLD ? BUDDY_NODES_SMALL : BUDDY_NODES_LARGE;
+    int bnodes = input_clause_count < BUDDY_THRESHOLD ? BUDDY_NODES_SMALL : BUDDY_NODES_LARGE;
     int bcache = bnodes/BUDDY_CACHE_RATIO;
     int bincrease = bnodes/BUDDY_INCREASE_RATIO;
     int rval = bdd_init(bnodes, bcache);
 
     bdd_setcacheratio(BUDDY_CACHE_RATIO);
     bdd_setmaxincrease(bincrease);
-    bdd_setvarnum(variable_count+1);
+    bdd_setvarnum(input_variable_count+1);
     bdd_disable_reorder();
 
     return rval;
@@ -245,7 +247,7 @@ static int ilist_byte_pack(ilist src_list, unsigned char *dest) {
 /* For DRAT proof, hints can be NULL */
 int generate_clause(ilist literals, ilist hints) {
     ilist clause = clean_clause(literals);
-    int cid = ++last_clause_id;
+    int cid = ++(*clause_id_counter);
     int rval = 0;
     hints = clean_hints(hints);
     unsigned char *d = dest_buf;
@@ -334,7 +336,7 @@ void delete_clauses(ilist clause_ids) {
     clause_ids = clean_hints(clause_ids);
 
 #if DO_TRACE
-    trace_list(clause_ids, last_clause_id, "Deleted clauses");
+    trace_list(clause_ids, *clause_id_counter, "Deleted clauses");
 #endif
 
     if (proof_type == PROOF_LRAT) {
@@ -342,14 +344,14 @@ void delete_clauses(ilist clause_ids) {
 	    check_buffer(ilist_length(clause_ids) + 3);
 	    d = dest_buf;
 	    *d++ = 'd';
-	    //	    d += int_byte_pack(last_clause_id, d);
+	    //	    d += int_byte_pack(*clause_counter, d);
 	    d += ilist_byte_pack(clause_ids, d);
 	    d += int_byte_pack(0, d);
 	    rval = fwrite(dest_buf, 1, d - dest_buf, proof_file);
 	    if (rval < 0)
 		bdd_error(BDD_FILE);
 	} else {
-	    rval = fprintf(proof_file, "%d d ", last_clause_id);
+	    rval = fprintf(proof_file, "%d d ", *clause_id_counter);
 	    if (rval < 0)
 		bdd_error(BDD_FILE);
 	    ilist_print(clause_ids, proof_file, " ");

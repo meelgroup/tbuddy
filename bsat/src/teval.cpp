@@ -186,6 +186,9 @@ private:
     int total_count;
     // Estimated number of unreachable nodes
     int dead_count;
+    // Counters used by proof generator
+    int variable_count;
+    int last_clause_id;
   
     // Statistics
     int and_count;
@@ -215,6 +218,8 @@ public:
 	total_count = dead_count = 0;
 	clause_count = cnf.clause_count();
 	max_variable = cnf.max_variable();
+	last_clause_id = clause_count;
+	variable_count = max_variable;
 
 	ilist *clauses = new ilist[clause_count];
 	for (int i = 0; i < clause_count; i++) {
@@ -222,7 +227,7 @@ public:
 	    clauses[i] = cp->data();
 	}
 	int rcode;
-	if ((rcode = tbdd_init(proof_file, max_variable, clause_count, clauses, ptype, binary)) != 0) {
+	if ((rcode = tbdd_init(proof_file, &variable_count, &last_clause_id, clauses, ptype, binary)) != 0) {
 	    fprintf(stderr, "Initialization failed.  Return code = %d\n", rcode);
 	    exit(1);
 	}

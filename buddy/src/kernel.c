@@ -757,7 +757,7 @@ void bdd_stats(bddStat *s)
 #if ENABLE_TBDD
    s->clausenum = total_clause_count;
    s->maxclausenum = max_live_clause_count;
-   s->variablenum = last_variable;
+   s->variablenum = *variable_counter;
 #endif
 
 }
@@ -1501,7 +1501,7 @@ int bdd_makenode(unsigned int level, int low, int high)
    
    #if ENABLE_TBDD
    if (level > 0) {
-       int nid = ++last_variable;
+       int nid = ++(*variable_counter);
        int vid = level;
        int hid = XVAR(high);
        int lid = XVAR(low);
@@ -1513,7 +1513,7 @@ int bdd_makenode(unsigned int level, int low, int high)
        ilist alist = ilist_make(abuf, 2);
        int huid, luid;
        XVARp(node) = nid;
-       DCLAUSEp(node) = last_clause_id + 1;
+       DCLAUSEp(node) = *clause_id_counter + 1;
        print_proof_comment(2, "Defining clauses for node N%d = ITE(V%d, N%d, N%d)", nid, vid, hname, lname);
        huid = generate_clause(defining_clause(dlist, DEF_HU, nid, vid, hid, lid), alist);
        luid = generate_clause(defining_clause(dlist, DEF_LU, nid, vid, hid, lid), alist);
