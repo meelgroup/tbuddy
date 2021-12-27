@@ -191,7 +191,6 @@ void gen_drat_proof(char *fname, int n, int vlevel) {
 }
 // $end xtree-drat
 
-// $begin xtree-dratb
 void gen_dratb_proof(char *fname, int n, int vlevel) {
     ilist lits = ilist_new(2); // For adding clauses directly to proof
     FILE *proof_file = fopen(fname, "wb");
@@ -226,7 +225,6 @@ void gen_dratb_proof(char *fname, int n, int vlevel) {
     ilist_free(lits);
     std::cout << "File " << fname << " written" << std::endl << std::endl;
 }
-// $end xtree-dratb
 
 // $begin xtree-frat
 void gen_frat_proof(char *fname, int n, int vlevel) {
@@ -241,13 +239,12 @@ void gen_frat_proof(char *fname, int n, int vlevel) {
     int ccount = clauses.size();    // Tracks number of clauses
     // Initialization
     // FRAT file requires declaration of input clauses
-    for (int cid = 1; cid <= clauses.size(); cid++)
+    for (int cid = 1; cid <= clauses.size(); cid++)  ///line:frat:initialize:start
 	insert_frat_clause(proof_file, 'o', cid, clauses[cid-1], false);
     tbdd_set_verbose(vlevel);
-    tbdd_init_frat(proof_file, &vcount, &ccount);  ///line:frat:initialize
+    tbdd_init_frat(proof_file, &vcount, &ccount);  ///line:frat:initialize:end
     // Use parity reasoning to infer constraint R1 ^ R2 = 1
     xor_set xset; ///line:frat:xset:start
-
     for (int x = 0; x < xor_variables.size(); x++) {
 	xor_constraint xc(xor_variables[x], xor_phases[x]);
 	xset.add(xc);
@@ -256,23 +253,22 @@ void gen_frat_proof(char *fname, int n, int vlevel) {
     xor_constraint *sum = xset.sum(); ///line:frat:xset:sum
 
     // Assert inequivalence of R1 and R2, as is implied by XOR sum
-    tbdd validation = sum->get_validation();
-    int c1 = tbdd_validate_clause(ilist_fill2(lits, R1(n), R2(n)), validation);  ///line:frat:xor:start
-    int c2 = tbdd_validate_clause(ilist_fill2(lits, -R1(n), -R2(n)), validation); ///line:frat:xor:end
+    tbdd vd = sum->get_validation();   ///line:frat:xor:start
+    int c1 = tbdd_validate_clause(ilist_fill2(lits, R1(n), R2(n)), vd);
+    int c2 = tbdd_validate_clause(ilist_fill2(lits, -R1(n), -R2(n)), vd); ///line:frat:xor:end
     // Assert unit clause for R1
     int c3 = assert_clause(ilist_fill1(lits, R1(n))); ///line:frat:unit
     // Assert empty clause
     int c4 = assert_clause(ilist_resize(lits, 0)); ///line:frat:empty
-    // Delete intermediate clauses
-    delete_clauses(ilist_fill3(dels, c1, c2, c3));
     // Finish up
-    delete sum; // Free underlying BDDs.  Delete clauses
-    validation = tbdd_tautology(); // Delete unit clause
-    tbdd_done();
+    delete_clauses(ilist_fill3(dels, c1, c2, c3)); ///line:frat:finish:start
+    delete sum; 
+    vd = tbdd_tautology();
+    tbdd_done();  // Eliminates previous reference ///line:frat:finish:end
     // FRAT requires declaring all remaining clauses
+    insert_frat_clause(proof_file, 'f', c4, ilist_resize(lits, 0), false); ///line:frat:finalize:start
     for (int cid = 1; cid <= clauses.size(); cid++)
-	insert_frat_clause(proof_file, 'f', cid, clauses[cid-1], false);
-    insert_frat_clause(proof_file, 'f', c4, ilist_resize(lits, 0), false);
+	insert_frat_clause(proof_file, 'f', cid, clauses[cid-1], false);///line:frat:finalize:end
     fclose(proof_file);
     ilist_free(lits);
     ilist_free(dels);

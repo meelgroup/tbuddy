@@ -3,7 +3,7 @@ OPT=-O2
 #OPT=-O0
 CFLAGS=-g $(OPT) -Wno-nullability-completeness
 INC=-I../../buddy/include
-LDIR = ../..//buddy/lib
+LDIR = ../../buddy/lib
 TLIB = $(LDIR)/tbuddy.a
 
 all: xtree
@@ -13,6 +13,6 @@ xtree: xtree.cpp
 
 clean:
 	rm -f *.o *~
-	rm -f *.cnf *.drat *.dratb
+	rm -f *.cnf *.drat *.dratb *.frat *.fratb *.lrat *.lratb *.temp
 	rm -f xtree xtreeb
 
