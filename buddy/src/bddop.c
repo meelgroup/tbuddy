@@ -642,6 +642,10 @@ static BDD apply_rec(BDD l, BDD r)
 
       POPREF(2);
 
+#if ENABLE_TBDD
+      BddCache_clause_evict(entry);
+#endif      
+
       entry->a = l;
       entry->b = r;
       entry->c = applyop;

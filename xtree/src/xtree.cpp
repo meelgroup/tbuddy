@@ -258,7 +258,7 @@ void gen_frat_proof(char *fname, int n, int vlevel) {
     // Assert inequivalence of R1 and R2, as is implied by XOR sum
     tbdd validation = sum->get_validation();
     int c1 = tbdd_validate_clause(ilist_fill2(lits, R1(n), R2(n)), validation);  ///line:frat:xor:start
-    int c2 = tbdd_validate_clause(ilist_fill2(lits, -R1(n), -R2(n)),validation); ///line:frat:xor:end
+    int c2 = tbdd_validate_clause(ilist_fill2(lits, -R1(n), -R2(n)), validation); ///line:frat:xor:end
     // Assert unit clause for R1
     int c3 = assert_clause(ilist_fill1(lits, R1(n))); ///line:frat:unit
     // Assert empty clause
@@ -267,6 +267,7 @@ void gen_frat_proof(char *fname, int n, int vlevel) {
     delete_clauses(ilist_fill3(dels, c1, c2, c3));
     // Finish up
     delete sum; // Free underlying BDDs.  Delete clauses
+    validation = tbdd_tautology(); // Delete unit clause
     tbdd_done();
     // FRAT requires declaring all remaining clauses
     for (int cid = 1; cid <= clauses.size(); cid++)

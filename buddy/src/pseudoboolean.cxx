@@ -59,7 +59,6 @@ static void pseudo_info_fun(int vlevel) {
 static void pseudo_done_fun() {
     for (auto p = xor_map.begin(); p != xor_map.end(); p++) {
 	xor_constraint *xcp = p->second;
-	printf("PSEUDO: Deleting constraint with validating node N%d\n", xcp->get_nameid());
 	delete xcp;
     }
     xor_map.clear();
@@ -601,7 +600,7 @@ static xor_constraint *xor_sum_list_bf(xor_constraint **xlist, int len) {
 
 // Chosen method for computing sum
 xor_constraint *trustbdd::xor_sum_list(xor_constraint **xlist, int len, int maxvar) {
-    if (len <= 400)
+    if (len <= 4)
  	return xor_sum_list_linear(xlist, len);
     //    return xor_sum_list_bf(xlist, len);
     sum_graph g(xlist, len, maxvar, 1);

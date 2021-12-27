@@ -28,6 +28,12 @@
    been generated showing that it is logically
    entailed by a set of input clauses.
 */
+/*
+  A trusted BDD must have a reference count >= 1, or else
+  it's validating clause will be deleted.
+  Consequently, all operations that a return a TBDD
+  have an incremented reference count.  
+ */
 typedef struct {
     BDD root;
     int clause_id;  /* Id of justifying clause */
@@ -131,8 +137,9 @@ extern TBDD TBDD_tautology();
 extern TBDD TBDD_null();
 
 /*
-   Test whether underlying BDD is 0
+   Test whether underlying BDD is 0/1
  */
+extern bool tbdd_is_true(TBDD tr);
 extern bool tbdd_is_false(TBDD tr);
 
 /*
@@ -223,9 +230,9 @@ class tbdd
     //    tbdd(const BDD &r, const int &id) { bdd_addref(root=r); clause_id=id; }
     tbdd(const bdd &r, const int &id) { bdd_addref(root=r.get_BDD()); clause_id=id; }
     tbdd(const tbdd &t)               { bdd_addref(root=t.root); clause_id=t.clause_id; }
-    tbdd(TBDD tr)                     { bdd_addref(root=tr.root); clause_id=tr.clause_id; }
-    tbdd(ilist clause)                { tbdd(tbdd_from_clause(clause)) ; }
-    tbdd(int id)                      { tbdd(tbdd_from_clause_id(id)) ; }
+    tbdd(TBDD tr)                     { root=tr.root; clause_id=tr.clause_id; }
+    //    tbdd(ilist clause)                { tbdd(tbdd_from_clause(clause)) ; }
+    //    tbdd(int id)                      { tbdd(tbdd_from_clause_id(id)) ; }
     tbdd(void)                        { root=1; clause_id = TAUTOLOGY; }
 
     ~tbdd(void)                       { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delref(dr); }
@@ -264,6 +271,8 @@ inline tbdd tbdd_tautology(void)
 inline tbdd tbdd_null(void)
 { return tbdd(TBDD_null()); }
 
+inline bool tbdd_is_true(tbdd &tr)
+{ return tr.root == bdd_true().get_BDD(); }
 
 inline bool tbdd_is_false(tbdd &tr)
 { return tr.root == bdd_false().get_BDD(); }
@@ -287,7 +296,7 @@ inline int tbdd_validate_clause(ilist clause, tbdd &tr)
 { TBDD TR; tbdd_xfer(tr, TR); return tbdd_validate_clause(clause, TR); }
 
 inline tbdd tbdd_from_xor(ilist variables, int phase)
-{ return TBDD_from_xor(variables, phase); }
+{ return tbdd(TBDD_from_xor(variables, phase)); }
 
 inline int tbdd_nameid(tbdd &tr)
 { return bdd_nameid(tr.root); }

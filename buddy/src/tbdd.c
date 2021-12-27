@@ -174,6 +174,16 @@ void tbdd_delref(TBDD tr) {
 }
 
 /*
+  Make copy of TBDD
+ */
+static TBDD tbdd_duplicate(TBDD tr) {
+    TBDD rr;
+    rr.root = bdd_addref(tr.root);
+    rr.clause_id = tr.clause_id;
+    return rr;
+}
+
+/*
   Generate BDD representation of specified input clause.
   Generate proof that BDD will evaluate to TRUE
   for all assignments satisfying clause.
@@ -199,23 +209,18 @@ static BDD bdd_from_clause(ilist clause) {
     return r;
 }
 
-TBDD tbdd_from_clause(ilist clause) {
+TBDD tbdd_from_clause_old(ilist clause) {
     if (verbosity_level >= 2) {
 	ilist_format(clause, ibuf, " ", BUFLEN);
-	print_proof_comment(2, "BDD representation of clause [%s]", ibuf);
+	print_proof_comment(2, "Generating BDD representation of clause [%s]", ibuf);
     }
     BDD r = bdd_from_clause(clause);
-    return tbdd_trust(r);
+    TBDD tr = tbdd_trust(r);
+    return tr;
 }
 
-
-TBDD tbdd_from_clause_id(int id) {
+static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     TBDD rr;
-    ilist clause = get_input_clause(id);
-    if (clause == NULL) {
-	fprintf(stderr, "Invalid input clause id #%d\n", id);
-	exit(1);
-    }
     print_proof_comment(2, "Build BDD representation of clause #%d", id);
     BDD r = bdd_addref(bdd_from_clause(clause));
     int len = ilist_length(clause);
@@ -242,11 +247,29 @@ TBDD tbdd_from_clause_id(int id) {
     int cbuf[1+ILIST_OVHD];
     ilist uclause = ilist_make(cbuf, 1);
     ilist_fill1(uclause, XVAR(r));
-    bdd_delref(r);
     rr.root = r;
     rr.clause_id = generate_clause(uclause, ant);
     print_proof_comment(2, "Validate BDD representation of Clause #%d.  Node = N%d.", id, NNAME(rr.root));
     return rr;
+}
+
+TBDD tbdd_from_clause(ilist clause) {
+    int dbuf[ILIST_OVHD+1];
+    ilist dels = ilist_make(dbuf, 1);
+    int id = assert_clause(clause);
+    TBDD tr = tbdd_from_clause_with_id(clause, id);
+    delete_clauses(ilist_fill1(dels, id));
+    return tr;
+}
+
+
+TBDD tbdd_from_clause_id(int id) {
+    ilist clause = get_input_clause(id);
+    if (clause == NULL) {
+	fprintf(stderr, "Invalid input clause #%d\n", id);
+	exit(1);
+    }
+    return tbdd_from_clause_with_id(clause, id);
 }
 
 /*
@@ -294,11 +317,11 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
 	    continue;
 	for (i = 0; i < len; i++)
 	    lits[i] = (bits >> i) & 0x1 ? -vars[i] : vars[i];
-	TBDD tc = tbdd_addref(tbdd_from_clause(lits));
+	TBDD tc = tbdd_from_clause(lits);
 	if (tbdd_is_true(result)) {
 	    result = tc;
 	} else {
-	    TBDD nresult = tbdd_addref(tbdd_and(result, tc));
+	    TBDD nresult = tbdd_and(result, tc);
 	    tbdd_delref(tc);
 	    tbdd_delref(result);
 	    result = nresult;
@@ -318,13 +341,14 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
   implication from another TBDD
  */
 TBDD tbdd_validate(BDD r, TBDD tr) {
+    TBDD rr;
+    if (r == tr.root)
+	return tbdd_duplicate(tr);
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
     int abuf[2+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 2);
-    TBDD t = bdd_imptstj(bdd_addref(tr.root), bdd_addref(r));
-    bdd_delref(tr.root);
-    bdd_delref(r);
+    TBDD t = bdd_imptstj(tr.root, bdd_addref(r));
     if (t.root != bdd_true()) {
 	fprintf(stderr, "Failed to prove implication N%d --> N%d\n", NNAME(tr.root), NNAME(r));
 	exit(1);
@@ -332,7 +356,6 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     print_proof_comment(2, "Validation of unit clause for N%d by implication from N%d",NNAME(r), NNAME(tr.root));
     ilist_fill1(clause, XVAR(r));
     ilist_fill2(ant, t.clause_id, tr.clause_id);
-    TBDD rr;
     rr.clause_id = generate_clause(clause, ant);
     rr.root = r;
     return rr;
@@ -352,7 +375,7 @@ TBDD tbdd_trust(BDD r) {
     print_proof_comment(2, "Assertion of N%d",NNAME(r));
     ilist_fill1(clause, XVAR(r));
     rr.clause_id = generate_clause(clause, ant);
-    rr.root = r;
+    rr.root = bdd_addref(r);
     return rr;
 }
 
@@ -361,7 +384,11 @@ TBDD tbdd_trust(BDD r) {
   their conjunction implies the new one
  */
 TBDD tbdd_and(TBDD tr1, TBDD tr2) {
-    TBDD t = bdd_andj(bdd_addref(tr1.root), bdd_addref(tr2.root));
+    if (tbdd_is_true(tr1))
+	return tbdd_duplicate(tr2);
+    if (tbdd_is_true(tr2))
+	return tbdd_duplicate(tr1);
+    TBDD t = tbdd_addref(bdd_andj(tr1.root, tr2.root));
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
     int abuf[3+ILIST_OVHD];
@@ -371,8 +398,6 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     ilist_fill3(ant, tr1.clause_id, tr2.clause_id, t.clause_id);
     /* Insert proof of unit clause into t's justification */
     t.clause_id = generate_clause(clause, ant);
-    bdd_delref(tr1.root);
-    bdd_delref(tr2.root);
     return t;
 }
 
@@ -382,9 +407,8 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
  */
 TBDD tbdd_validate_with_and(BDD r, TBDD tl, TBDD tr) {
     TBDD ta = tbdd_and(tl, tr);
-    bdd_addref(ta.root);
     TBDD tres = tbdd_validate(r, ta);
-    bdd_delref(ta.root);
+    tbdd_delref(ta);
     return tres;
 }
 
@@ -454,8 +478,6 @@ static int tbdd_validate_clause_path(ilist clause, TBDD tr) {
     return id;
 }
 
-
-
 int tbdd_validate_clause(ilist clause, TBDD tr) {
     clause = clean_clause(clause);
     if (test_validation_path(clause, tr)) {
@@ -466,14 +488,15 @@ int tbdd_validate_clause(ilist clause, TBDD tr) {
 	    ilist_format(clause, buf, " ", BUFLEN);
 	    print_proof_comment(2, "Validation of clause [%s] from N%d requires generating intermediate BDD", buf, NNAME(tr.root));
 	}
-	BDD cr = bdd_addref(bdd_from_clause(clause));
-	TBDD tcr = tbdd_addref(tbdd_validate(cr, tr));
+	BDD cr = bdd_from_clause(clause);
+	TBDD tcr = tbdd_validate(cr, tr);
 	int id = tbdd_validate_clause_path(clause, tcr);
 	if (id < 0) {
 	    char buf[BUFLEN];
 	    ilist_format(clause, buf, " ", BUFLEN);
 	    print_proof_comment(2, "Oops.  Couldn't validate clause [%s] from N%d", buf, NNAME(tr.root));
 	}
+	tbdd_delref(tcr);
 	return id;
     }
 }

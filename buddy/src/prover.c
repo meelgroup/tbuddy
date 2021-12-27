@@ -10,6 +10,7 @@ int verbosity_level = 1;
 int *variable_counter = NULL;
 int *clause_id_counter = NULL;
 int total_clause_count = 0;
+int input_clause_count = 0;
 int input_variable_count = 0;
 int max_live_clause_count = 0;
 
@@ -22,7 +23,6 @@ static FILE *proof_file = NULL;
 
 static bool do_binary = false;
 static ilist *all_clauses = NULL;
-static int input_clause_count = 0;
 static int alloc_clause_count = 0;
 static int live_clause_count = 0;
 static ilist deferred_deletion_list = NULL;
