@@ -95,15 +95,12 @@ void BddCache_reset(BddCache *cache)
 
 #if ENABLE_TBDD
 void BddCache_clause_evict(BddCacheData *entry) {
-    int dbuf[2+ILIST_OVHD];
-    ilist dlist;
     int id;
     if (entry->a != -1 &&
 	(entry->c == bddop_andj || entry->c == bddop_imptstj)) {
 	id = entry->r.jclause;
 	if (id == TAUTOLOGY)
 	    return;
-	dlist = ilist_make(dbuf, 2);	
 	defer_delete_clause(id);
     }
 }
@@ -111,6 +108,7 @@ void BddCache_clause_evict(BddCacheData *entry) {
 void BddCache_clear_clauses(BddCache *cache)
 {
    register int n;
+   print_proof_comment(2, "Deleting justifying clauses for cached operations");
    for (n=0 ; n<cache->tablesize ; n++) {
        BddCacheData *entry = &cache->table[n];
        BddCache_clause_evict(entry);

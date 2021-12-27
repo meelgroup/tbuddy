@@ -86,6 +86,7 @@ class xor_set {
 
     size_t size() { return xlist.size(); }
 
+    void clear();
 };
 } /* Namespace trustbdd */
 

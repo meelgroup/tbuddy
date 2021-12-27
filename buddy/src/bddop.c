@@ -212,6 +212,10 @@ void bdd_operator_done(void)
    if (quantvarset != NULL)
       free(quantvarset);
    
+#if ENABLE_TBDD
+   BddCache_clear_clauses(&applycache);
+   process_deferred_deletions();
+#endif
    BddCache_done(&applycache);
    BddCache_done(&itecache);
    BddCache_done(&quantcache);

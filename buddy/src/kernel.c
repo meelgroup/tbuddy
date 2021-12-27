@@ -181,6 +181,9 @@ static int checkrange(int v) {
     return v;
 }
 
+#if ENABLE_TBDD
+static int bdd_dclause_p(BddNode *n, dclause_t dtype);
+#endif
 
 /*************************************************************************
   BDD misc. user operations
@@ -299,6 +302,37 @@ void bdd_done(void)
    bdd_reorder_done();
    bdd_pairs_done();
    
+#if ENABLE_TBDD
+   int dbuf[4+ILIST_OVHD];
+   ilist dlist;
+   int id;
+   int n;
+
+   print_proof_comment(2, "Delete clauses for all remaining nodes");
+   for (n=bddnodesize-1; n>=2 ; n--)
+   {
+       BddNode *node = &bddnodes[n];
+       if (LEVELp(node) > 0 && LOWp(node) != -1)
+       {
+	   dlist = ilist_make(dbuf, 4);
+	      /* Delete defining clauses */
+	      if ((id = bdd_dclause_p(node, DEF_HU)) != TAUTOLOGY)
+		  ilist_push(dlist, id);
+	      if ((id = bdd_dclause_p(node, DEF_LU)) != TAUTOLOGY)
+		  ilist_push(dlist, id);
+	      if ((id = bdd_dclause_p(node, DEF_HD)) != TAUTOLOGY)
+		  ilist_push(dlist, id);
+	      if ((id = bdd_dclause_p(node, DEF_LD)) != TAUTOLOGY)
+		  ilist_push(dlist, id);
+
+	      if (ilist_length(dlist) > 0)
+		  print_proof_comment(2, "Delete defining clauses for node N%d.", XVARp(node));
+
+	      delete_clauses(dlist);
+       }
+   }
+#endif
+
    free(bddnodes);
    free(bddrefstack);
    free(bddvarset);
@@ -1076,7 +1110,7 @@ int bdd_dclause(BDD root, dclause_t dtype)
    }
 }
 
-int bdd_dclause_p(BddNode *n, dclause_t dtype)
+static int bdd_dclause_p(BddNode *n, dclause_t dtype)
 {
    int result = DCLAUSEp(n) + dtype;
    switch (dtype) {
@@ -1199,6 +1233,10 @@ void bdd_gbc(void)
    bddfreepos = 0;
    bddfreenum = 0;
 
+#if ENABLE_TBDD
+   print_proof_comment(2, "Deleting clauses for nodes that have been collected");
+#endif
+
    for (n=bddnodesize-1 ; n>=2 ; n--)
    {
       register BddNode *node = &bddnodes[n];
@@ -1228,8 +1266,9 @@ void bdd_gbc(void)
 	      if ((id = bdd_dclause_p(node, DEF_LD)) != TAUTOLOGY)
 		  ilist_push(dlist, id);
 
-	      if (ilist_length(dlist) > 0)
+	      if (ilist_length(dlist) > 0) {
 		  print_proof_comment(2, "Delete defining clauses for node N%d", XVARp(node));
+	      }
 	      delete_clauses(dlist);
 	  }
 #else

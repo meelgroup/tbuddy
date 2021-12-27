@@ -5,7 +5,7 @@
 
 
 /* Global variables exported by prover */
-proof_type_t proof_type = PROOF_LRAT;
+proof_type_t proof_type = PROOF_FRAT;
 int verbosity_level = 1;
 int *variable_counter = NULL;
 int *clause_id_counter = NULL;
@@ -71,7 +71,7 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
     all_clauses = calloc(alloc_clause_count, sizeof(ilist));
     deferred_deletion_list = ilist_new(100);
 
-    print_proof_comment(0, "Proof of CNF file with %d variables and %d clauses", input_variable_count, input_clause_count);
+    print_proof_comment(1, "Proof of CNF file with %d variables and %d clauses", input_variable_count, input_clause_count);
 
     if (all_clauses == NULL) {
 	return bdd_error(BDD_MEMORY);
@@ -105,7 +105,9 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
 
 void prover_done() {
     free(dest_buf);
-    bdd_done();
+    if (proof_type == PROOF_FRAT)
+	/* Do final garbage collection to delete remaining clauses */
+	bdd_gbc();
 }
 
 
@@ -266,7 +268,9 @@ int generate_clause(ilist literals, ilist hints) {
     if (!empty_clause_detected) {
 	if (do_binary)
 	    *d++ = 'a';
-	if (proof_type == PROOF_LRAT) {
+	else if (proof_type == PROOF_FRAT)
+	    fprintf(proof_file, "a ");
+	if (proof_type == PROOF_LRAT || proof_type == PROOF_FRAT) {
 	    if (do_binary) {
 		d += int_byte_pack(cid, d);
 	    } else {
@@ -280,7 +284,7 @@ int generate_clause(ilist literals, ilist hints) {
 	} else
 	    ilist_print(clause, proof_file, " ");
 
-	if (proof_type == PROOF_LRAT) {
+	if (proof_type == PROOF_LRAT || proof_type == PROOF_FRAT) {
 	    if (do_binary) {
 		d += int_byte_pack(0, d);
 		d += ilist_byte_pack(hints, d);
@@ -308,7 +312,7 @@ int generate_clause(ilist literals, ilist hints) {
     live_clause_count++;
     max_live_clause_count = MAX(max_live_clause_count, live_clause_count);
     
-    if (proof_type != PROOF_LRAT) {
+    if (proof_type == PROOF_DRAT || proof_type == PROOF_FRAT) {
 	/* Must store copy of clause */
 	if (cid >= alloc_clause_count) {
 	    /* must expand */
@@ -327,11 +331,39 @@ int generate_clause(ilist literals, ilist hints) {
     return cid;
 }
 
+/* For FRAT, have special clauses */
+extern void insert_frat_clause(FILE *pfile, char cmd, int clause_id, ilist literals, bool binary) {
+    ilist clause = clean_clause(literals);
+    int rval = 0;
+    unsigned char *d = dest_buf;
+
+    if (binary) {
+	check_buffer(ilist_length(clause) + 3);
+	d = dest_buf;
+	d += int_byte_pack(cmd, d);
+	d += int_byte_pack(clause_id, d);
+	d += ilist_byte_pack(clause, d);
+	d += int_byte_pack(0, d);
+	rval = fwrite(dest_buf, 1, d - dest_buf, pfile);
+	if (rval < 0)
+	    bdd_error(BDD_FILE);
+    } else {
+	rval = fprintf(pfile, "%c %d ", cmd, clause_id);
+	if (rval < 0)
+	    bdd_error(BDD_FILE);
+	rval = ilist_print(clause, pfile, " ");
+	if (rval < 0) 
+	    bdd_error(BDD_FILE);
+	rval = fprintf(pfile, " 0\n");
+	if (rval < 0) 
+	    bdd_error(BDD_FILE);
+    }
+}
 
 void delete_clauses(ilist clause_ids) {
     int rval;
     unsigned char *d = dest_buf;
-    if (empty_clause_detected)
+    if (empty_clause_detected && proof_type != PROOF_FRAT)
 	return;
     clause_ids = clean_hints(clause_ids);
 
@@ -360,16 +392,22 @@ void delete_clauses(ilist clause_ids) {
 		bdd_error(BDD_FILE);
 	}
     } else {
+	// DRAT or FRAT
 	int i;
 	for (i = 0; i < ilist_length(clause_ids); i++) {
 	    int cid = clause_ids[i];
 	    ilist clause = all_clauses[cid-1];
-	    if (clause == TAUTOLOGY_CLAUSE || ilist_length(clause) < 2)
+	    if (clause == TAUTOLOGY_CLAUSE)
+		continue;
+	    if (ilist_length(clause) <= 1 && proof_type == PROOF_DRAT)
+		// Don't delete unit clauses in DRAT
 		continue;
 	    if (do_binary) {
-		check_buffer(ilist_length(clause) + 2);
+		check_buffer(ilist_length(clause) + 3);
 		d = dest_buf;
 		*d++ = 'd';
+		if (proof_type == PROOF_FRAT)
+		    d += int_byte_pack(cid, d);
 		d += ilist_byte_pack(clause, d);
 		d += int_byte_pack(0, d);
 		rval = fwrite(dest_buf, 1, d - dest_buf, proof_file);
@@ -379,6 +417,11 @@ void delete_clauses(ilist clause_ids) {
 		rval = fprintf(proof_file, "d ");
 		if (rval < 0) 
 		    bdd_error(BDD_FILE);
+		if (proof_type == PROOF_FRAT) {
+		    rval = fprintf(proof_file, "%d ", cid);
+		    if (rval < 0)
+			bdd_error(BDD_FILE);
+		}
 		rval = ilist_print(clause, proof_file, " ");
 		if (rval < 0) 
 		    bdd_error(BDD_FILE);
@@ -415,7 +458,13 @@ ilist get_input_clause(int id) {
 }
 
 bool print_ok(int vlevel) {
-    return !empty_clause_detected && verbosity_level >= vlevel+1 && !do_binary;
+    if (do_binary)
+	return false;
+    if (verbosity_level < vlevel+1)
+	return false;
+    if (proof_type != PROOF_FRAT && empty_clause_detected)
+	return false;
+    return true;
 }
 
 void print_proof_comment(int vlevel, const char *fmt, ...) {

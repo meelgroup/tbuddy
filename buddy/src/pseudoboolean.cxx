@@ -31,13 +31,14 @@ static std::unordered_map<int, xor_constraint*> xor_map;
 
 static int show_xor_buf(char *buf, ilist variables, int phase, int maxlen);
 static void pseudo_info_fun(int vlevel);
+static void pseudo_done_fun();
 
 static bool initialized = false;
 
 static void pseudo_init() {
     if (!initialized) {
 	tbdd_add_info_fun(pseudo_info_fun);
-	//	tbdd_set_verbose(2);
+	tbdd_add_done_fun(pseudo_done_fun);
     }
     initialized = true;
 }
@@ -55,13 +56,13 @@ static void pseudo_info_fun(int vlevel) {
 }
 
 
-static void pseudo_done(int vlevel) {
+static void pseudo_done_fun() {
     for (auto p = xor_map.begin(); p != xor_map.end(); p++) {
 	xor_constraint *xcp = p->second;
+	printf("PSEUDO: Deleting constraint with validating node N%d\n", xcp->get_nameid());
 	delete xcp;
     }
     xor_map.clear();
-    tbdd_done();
 }
 
 /*
@@ -556,14 +557,19 @@ static xor_constraint *xor_sum_list_linear(xor_constraint **xlist, int len) {
     if (len == 0)
 	return new xor_constraint();
     xor_constraint *sum = xlist[0];
+    bool done = false;
     for (int i = 1; i < len; i++) {
 	xor_constraint *a = xlist[i];
-	xor_constraint *nsum = xor_plus(sum, a);
-	delete a;
-	delete sum;
-	sum = nsum;
-	if (!sum->is_feasible())
-	    break;
+	xlist[i] = NULL;
+	if (done) {
+	    delete a;
+	} else {
+	    xor_constraint *nsum = xor_plus(sum, a);
+	    delete a;
+	    delete sum;
+	    sum = nsum;
+	    done = !sum->is_feasible();
+	}
     }
     return sum;
 }
@@ -595,7 +601,7 @@ static xor_constraint *xor_sum_list_bf(xor_constraint **xlist, int len) {
 
 // Chosen method for computing sum
 xor_constraint *trustbdd::xor_sum_list(xor_constraint **xlist, int len, int maxvar) {
-    if (len <= 4)
+    if (len <= 400)
  	return xor_sum_list_linear(xlist, len);
     //    return xor_sum_list_bf(xlist, len);
     sum_graph g(xlist, len, maxvar, 1);

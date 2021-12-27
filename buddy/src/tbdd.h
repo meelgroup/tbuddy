@@ -67,7 +67,7 @@ typedef enum { PROOF_LRAT, PROOF_DRAT, PROOF_FRAT } proof_type_t;
 extern int tbdd_init(FILE *pfile, int *variable_counter, int *clause_id_counter, ilist *input_clauses, proof_type_t ptype, bool binary);
 
 /* 
-   Initializers specific for the four combinations of proof formats
+   Initializers specific for the six combinations of proof formats
  */
 extern int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses);
 extern int tbdd_init_lrat_binary(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses);
@@ -90,6 +90,9 @@ typedef void (*tbdd_info_fun)(int);
 
 void tbdd_add_info_fun(tbdd_info_fun f);
 
+typedef void (*tbdd_done_fun)(void);
+
+void tbdd_add_done_fun(tbdd_done_fun f);
 
 /*
   Setting optional solver features
@@ -191,9 +194,11 @@ extern int tbdd_validate_clause(ilist clause, TBDD tr);
 /*
   Assert that a clause holds.  Proof checker
   must provide validation.
-  Use this version when generating DRAT proofs
+  Use this version when generating DRAT proofs,
+  or when don't want to provide antecedent in FRAT proof
+  Returns clause id.
  */
-extern void assert_clause(ilist clause);
+extern int assert_clause(ilist clause);
 
 
 #ifdef CPLUSPLUS
@@ -239,6 +244,7 @@ class tbdd
 
     friend tbdd tbdd_tautology(void);
     friend tbdd tbdd_null(void);
+    friend bool tbdd_is_true(tbdd &tr);
     friend bool tbdd_is_false(tbdd &tr);
     friend tbdd tbdd_and(tbdd &tl, tbdd &tr);
     friend tbdd tbdd_validate(bdd r, tbdd &tr);

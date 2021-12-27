@@ -12,9 +12,12 @@
 // For formatting information
 static char ibuf[BUFLEN];
 
-#define IFUN_MAX 10
-static tbdd_info_fun ifuns[IFUN_MAX];
+#define FUN_MAX 10
+static tbdd_info_fun ifuns[FUN_MAX];
 static int ifun_count = 0;
+
+static tbdd_done_fun dfuns[FUN_MAX];
+static int dfun_count = 0;
 
 static int last_variable = 0;
 static int last_clause_id = 0;
@@ -70,11 +73,11 @@ int tbdd_init_drat_binary(FILE *pfile, int variable_count) {
 }
 
 int tbdd_init_frat(FILE *pfile, int *variable_counter, int *clause_id_counter) {
-    return tbdd_init(pfile, variable_counter, clause_id_counter, NULL, PROOF_DRAT, false);
+    return tbdd_init(pfile, variable_counter, clause_id_counter, NULL, PROOF_FRAT, false);
 }
 
 int tbdd_init_frat_binary(FILE *pfile, int *variable_counter, int *clause_id_counter) {
-    return tbdd_init(pfile, variable_counter, clause_id_counter, NULL, PROOF_DRAT, false);
+    return tbdd_init(pfile, variable_counter, clause_id_counter, NULL, PROOF_FRAT, false);
 }
 
 void tbdd_set_verbose(int level) {
@@ -83,6 +86,9 @@ void tbdd_set_verbose(int level) {
 
 void tbdd_done() {
     int i;
+    for (i = 0; i < dfun_count; i++)
+	dfuns[i]();
+    prover_done();
     if (verbosity_level >= 1) {
 	bddStat s;
 	bdd_stats(&s);
@@ -95,15 +101,25 @@ void tbdd_done() {
     for (i = 0; i < ifun_count; i++) {
 	ifuns[i](verbosity_level);
     }
+    bdd_done();
 }
 
 void tbdd_add_info_fun(tbdd_info_fun f) {
-    if (ifun_count >= IFUN_MAX) {
-	fprintf(stderr, "Limit of %d TBDD information functions.  Request ignored\n", IFUN_MAX);
+    if (ifun_count >= FUN_MAX) {
+	fprintf(stderr, "Limit of %d TBDD information functions.  Request ignored\n", FUN_MAX);
 	return;
     }
     ifuns[ifun_count++] = f;
 }
+
+void tbdd_add_done_fun(tbdd_done_fun f) {
+    if (dfun_count >= FUN_MAX) {
+	fprintf(stderr, "Limit of %d TBDD done functions.  Request ignored\n", FUN_MAX);
+	return;
+    }
+    dfuns[dfun_count++] = f;
+}
+
 
 /* 
    proof_step = TAUTOLOGY
@@ -127,6 +143,10 @@ TBDD TBDD_null() {
     return rr;
 }
 
+bool tbdd_is_true(TBDD tr) {
+    return ISONE(tr.root);
+}
+
 bool tbdd_is_false(TBDD tr) {
     return ISZERO(tr.root);
 }
@@ -147,7 +167,7 @@ void tbdd_delref(TBDD tr) {
 	int dbuf[1+ILIST_OVHD];
 	ilist dlist = ilist_make(dbuf, 1);
 	ilist_fill1(dlist, tr.clause_id);
-	print_proof_comment(2, "Deleting unit clause for node N%d", NNAME(tr.root));
+	print_proof_comment(2, "Deleting unit clause #%d for node N%d", tr.clause_id, NNAME(tr.root));
 	delete_clauses(dlist);
     }
     tr.clause_id = TAUTOLOGY;
@@ -274,11 +294,15 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
 	    continue;
 	for (i = 0; i < len; i++)
 	    lits[i] = (bits >> i) & 0x1 ? -vars[i] : vars[i];
-	TBDD tc = tbdd_from_clause(lits);
-	TBDD nresult = tbdd_addref(tbdd_and(tbdd_addref(result), tbdd_addref(tc)));
-	tbdd_delref(tc);
-	tbdd_delref(result);
-	result = nresult;
+	TBDD tc = tbdd_addref(tbdd_from_clause(lits));
+	if (tbdd_is_true(result)) {
+	    result = tc;
+	} else {
+	    TBDD nresult = tbdd_addref(tbdd_and(result, tc));
+	    tbdd_delref(tc);
+	    tbdd_delref(result);
+	    result = nresult;
+	}
     }
     if (verbosity_level >= 2) {
 	ilist_format(vars, ibuf, " ^ ", BUFLEN);
@@ -305,7 +329,7 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
 	fprintf(stderr, "Failed to prove implication N%d --> N%d\n", NNAME(tr.root), NNAME(r));
 	exit(1);
     }
-     print_proof_comment(2, "Validation of unit clause for N%d by implication from N%d",NNAME(r), NNAME(tr.root));
+    print_proof_comment(2, "Validation of unit clause for N%d by implication from N%d",NNAME(r), NNAME(tr.root));
     ilist_fill1(clause, XVAR(r));
     ilist_fill2(ant, t.clause_id, tr.clause_id);
     TBDD rr;
@@ -457,9 +481,11 @@ int tbdd_validate_clause(ilist clause, TBDD tr) {
 /*
   Assert that a clause holds.  Proof checker
   must provide validation.
-  Use this version when generating DRAT proofs
+  Use this version when generating DRAT proofs,
+  or when don't want to provide antecedent in FRAT proof
+  Returns clause id.
  */
-void assert_clause(ilist clause) {
+int assert_clause(ilist clause) {
     int abuf[1+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 1);
     if (verbosity_level >= 2) {
@@ -467,6 +493,6 @@ void assert_clause(ilist clause) {
 	ilist_format(clause, buf, " ", BUFLEN);
 	print_proof_comment(2, "Assertion of clause [%s]", buf);
     }
-    generate_clause(clause, ant);
+    return generate_clause(clause, ant);
 }
 

@@ -15,17 +15,21 @@
 #include <vector>
 
 #include "pseudoboolean.h"
-
-#ifndef BINARY
-#define BINARY 0
-#endif
-
-#ifndef VERBOSITY
-#define VERBOSITY 1
-#endif
+#include "prover.h"
 
 using namespace trustbdd;
 
+void usage(const char *name) {
+    printf("Usage: %s [-h] -n N [-v VLEVEL] [-m (d|f)] [-b] [-s SEED] [-r ROOT]\n", name);
+    printf("  -h         Print this information\n");
+    printf("  -n  N      Set number of problem variables\n");
+    printf("  -v VLEVEL  Set verbosity level\n");
+    printf("  -m (d|f)   Set proof type (d=DRAT, f=FRAT)\n");
+    printf("  -n         Use binary files\n");
+    printf("  -s SEED    Set random seed\n");
+    printf("  -r ROOT    Root of CNF and proof files\n");
+    exit(0);
+}
 
 // $begin xtree-abbrev 
 // Shorthand names for the 4 top-level nodes
@@ -35,7 +39,7 @@ using namespace trustbdd;
 #define Y2(n) (3*(n))
 // $end xtree-abbrev
 
-// All clauses
+// Input clauses
 std::vector<ilist> clauses;
 
 // $begin xtree-global
@@ -71,13 +75,6 @@ static void rperm(int *dest, int n) {
 	int t = dest[i];
 	dest[i] = dest[i+index];
 	dest[i+index] = t;
-    }
-    if (VERBOSITY >= 2) {
-	printf("Permutation:");
-	for (i = 0; i < n; i++) {
-	    printf(" %d", dest[i]);
-	}
-	printf("\n");
     }
 }
 
@@ -159,58 +156,128 @@ static void gen_cnf(char *fname, int n) {
 }
 
 // $begin xtree-drat
-void gen_drat_proof(char *fname, int n) {
+void gen_drat_proof(char *fname, int n, int vlevel) {
     ilist lits = ilist_new(2); // For adding clauses directly to proof
-// $end xtree-drat
-#if BINARY
-    FILE *proof_file = fopen(fname, "wb");
-#else
-// $begin xtree-drat
     FILE *proof_file = fopen(fname, "w");
-// $end xtree-drat
-#endif
-// $begin xtree-drat    
     if (!proof_file) {
 	std::cerr << "Couldn't open file " << fname << std::endl;
 	exit(1);
     }
     int vcount = 3*n;  // Total number of variables
-// $end xtree-drat
     // TBDD initialization
-#if BINARY
-    tbdd_init_drat_binary(proof_file, vcount);
-    tbdd_set_verbose(VERBOSITY);
-#else
-// $begin xtree-drat
-    tbdd_init_drat(proof_file, vcount);  ///line:initialize
-// $end xtree-drat
-    tbdd_set_verbose(VERBOSITY);
-#endif
-// $begin xtree-drat    
+    tbdd_set_verbose(vlevel);
+    tbdd_init_drat(proof_file, vcount);  ///line:drat:initialize
     // Use parity reasoning to infer constraint R1 ^ R2 = 1
-    xor_set xset; ///line:xset:start
+    xor_set xset; ///line:drat:xset:start
     for (int x = 0; x < xor_variables.size(); x++) {
 	xor_constraint xc(xor_variables[x], xor_phases[x]);
 	xset.add(xc);
-    } ///line:xset:end
+    } ///line:drat:xset:end
     // Form the sum of the constraints
-    xor_constraint *sum = xset.sum(); ///line:xset:sum
-
+    xor_constraint *sum = xset.sum(); ///line:drat:xset:sum
     // Assert inequivalence of R1 and R2, as is implied by XOR sum
-    assert_clause(ilist_fill2(lits, R1(n), R2(n)));  ///line:xor:start
-    assert_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:xor:end
+    assert_clause(ilist_fill2(lits, R1(n), R2(n)));  ///line:drat:xor:start
+    assert_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:drat:xor:end
     // Assert unit clause for R1
-    assert_clause(ilist_fill1(lits, R1(n))); ///line:unit
+    assert_clause(ilist_fill1(lits, R1(n))); ///line:drat:unit
     // Assert empty clause
-    assert_clause(ilist_resize(lits, 0)); ///line:empty
-
+    assert_clause(ilist_resize(lits, 0)); ///line:drat:empty
     // Finish up
+    delete sum; // Free underlying BDDs.  Delete clauses
     tbdd_done();
     fclose(proof_file);
     ilist_free(lits);
     std::cout << "File " << fname << " written" << std::endl << std::endl;
 }
 // $end xtree-drat
+
+// $begin xtree-dratb
+void gen_dratb_proof(char *fname, int n, int vlevel) {
+    ilist lits = ilist_new(2); // For adding clauses directly to proof
+    FILE *proof_file = fopen(fname, "wb");
+    if (!proof_file) {
+	std::cerr << "Couldn't open file " << fname << std::endl;
+	exit(1);
+    }
+    int vcount = 3*n;  // Total number of variables
+    // TBDD initialization
+    tbdd_set_verbose(vlevel);
+    tbdd_init_drat_binary(proof_file, vcount);
+    // Use parity reasoning to infer constraint R1 ^ R2 = 1
+    xor_set xset; ///line:dratb:xset:start
+    for (int x = 0; x < xor_variables.size(); x++) {
+	xor_constraint xc(xor_variables[x], xor_phases[x]);
+	xset.add(xc);
+    } ///line:dratb:xset:end
+    // Form the sum of the constraints
+    xor_constraint *sum = xset.sum(); ///line:dratb:xset:sum
+
+    // Assert inequivalence of R1 and R2, as is implied by XOR sum
+    assert_clause(ilist_fill2(lits, R1(n), R2(n)));  ///line:dratb:xor:start
+    assert_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:dratb:xor:end
+    // Assert unit clause for R1
+    assert_clause(ilist_fill1(lits, R1(n))); ///line:dratb:unit
+    // Assert empty clause
+    assert_clause(ilist_resize(lits, 0)); ///line:dratb:empty
+    // Finish up
+    delete sum; // Free underlying BDDs.  Delete clauses
+    tbdd_done();
+    fclose(proof_file);
+    ilist_free(lits);
+    std::cout << "File " << fname << " written" << std::endl << std::endl;
+}
+// $end xtree-dratb
+
+// $begin xtree-frat
+void gen_frat_proof(char *fname, int n, int vlevel) {
+    ilist lits = ilist_new(2); // For adding clauses directly to proof
+    ilist dels = ilist_new(3); // For deleting intermediate clauses
+    FILE *proof_file = fopen(fname, "w");
+    if (!proof_file) {
+	std::cerr << "Couldn't open file " << fname << std::endl;
+	exit(1);
+    }
+    int vcount = 3*n;  // Tracks number of variables
+    int ccount = clauses.size();    // Tracks number of clauses
+    // Initialization
+    // FRAT file requires declaration of input clauses
+    for (int cid = 1; cid <= clauses.size(); cid++)
+	insert_frat_clause(proof_file, 'o', cid, clauses[cid-1], false);
+    tbdd_set_verbose(vlevel);
+    tbdd_init_frat(proof_file, &vcount, &ccount);  ///line:frat:initialize
+    // Use parity reasoning to infer constraint R1 ^ R2 = 1
+    xor_set xset; ///line:frat:xset:start
+
+    for (int x = 0; x < xor_variables.size(); x++) {
+	xor_constraint xc(xor_variables[x], xor_phases[x]);
+	xset.add(xc);
+    } ///line:frat:xset:end
+    // Form the sum of the constraints
+    xor_constraint *sum = xset.sum(); ///line:frat:xset:sum
+
+    // Assert inequivalence of R1 and R2, as is implied by XOR sum
+    tbdd validation = sum->get_validation();
+    int c1 = tbdd_validate_clause(ilist_fill2(lits, R1(n), R2(n)), validation);  ///line:frat:xor:start
+    int c2 = tbdd_validate_clause(ilist_fill2(lits, -R1(n), -R2(n)),validation); ///line:frat:xor:end
+    // Assert unit clause for R1
+    int c3 = assert_clause(ilist_fill1(lits, R1(n))); ///line:frat:unit
+    // Assert empty clause
+    int c4 = assert_clause(ilist_resize(lits, 0)); ///line:frat:empty
+    // Delete intermediate clauses
+    delete_clauses(ilist_fill3(dels, c1, c2, c3));
+    // Finish up
+    delete sum; // Free underlying BDDs.  Delete clauses
+    tbdd_done();
+    // FRAT requires declaring all remaining clauses
+    for (int cid = 1; cid <= clauses.size(); cid++)
+	insert_frat_clause(proof_file, 'f', cid, clauses[cid-1], false);
+    insert_frat_clause(proof_file, 'f', c4, ilist_resize(lits, 0), false);
+    fclose(proof_file);
+    ilist_free(lits);
+    ilist_free(dels);
+    std::cout << "File " << fname << " written" << std::endl << std::endl;
+}
+// $end xtree-frat
 
 double tod() {
     struct timeval tv;
@@ -220,32 +287,84 @@ double tod() {
 	return 0.0;
 }
 
+
 int main(int argc, char *argv[]) {
-    if (argc < 2 || argc > 3 || argc == 2 && strcmp(argv[1], "-h") == 0) {
-	printf("Usage: %s N [SEED]\n", argv[0]);
-	exit(0);
-    }
-    char *anum = argv[1];
-    char fnamec[strlen(anum) + 10];
-    char fnamed[strlen(anum) + 10];
-    int n = atoi(anum);
+    int vlevel = 1;
+    int n = 0;
+    proof_type_t ptype = PROOF_DRAT;
+    bool do_binary = false;
+    char *root = NULL;
+    char rootbuf[1024];
+    char fnamec[1024];
+    char fnamep[1024];
+    int seed = -1;
 
-    if (argc == 3) {
-	int seed = atoi(argv[2]);
+    int c;
+    while ((c = getopt(argc, argv, "hn:v:m:bs:r:")) != -1) {
+	switch (c) {
+	case 'h':
+	    usage(argv[0]);
+	    return 0;
+	case 'n':
+	    n = atoi(optarg);
+	    break;
+	case 'v':
+	    vlevel = atoi(optarg);
+	    break;
+	case 'm':
+	    switch (optarg[0]) {
+	    case 'd':
+		ptype = PROOF_DRAT;
+		break;
+	    case 'f':
+		ptype = PROOF_FRAT;
+		break;
+	    default:
+		printf("Unknown proof type '%c'\n", optarg[0]);
+		usage(argv[0]);
+		break;
+	    }
+	    break;
+	case 'b':
+	    do_binary = true;
+	    break;
+	case 's':
+	    seed = atoi(optarg);
+	    break;
+	case 'r':
+	    root = optarg;
+	    break;
+	}
+    }
+    if (n == 0) {
+	printf("Must specify value of N\n");
+	usage(argv[0]);
+    }
+    if (seed > 0)
 	srandom(seed);
+    if (!root) {
+	if (seed > 0)
+	    sprintf(rootbuf, "xtree-%d-%d", n, seed);
+	else
+	    sprintf(rootbuf, "xtree-%d", n);
+	root = rootbuf;
     }
-
+    sprintf(fnamec, "%s.cnf", root);
+    char mchar = ptype == PROOF_DRAT ? 'd' : 'f';
+    const char *suffix = do_binary ? "b" : "";
+    sprintf(fnamep, "%s.%crat%s", root, mchar, suffix);
     double start = tod();
     gen_xors(n);
     gen_binaries(n);
-    sprintf(fnamec, "xtree-%s.cnf", anum);
     gen_cnf(fnamec, n);
-#if BINARY
-    sprintf(fnamed, "xtree-%s.dratb", anum);
-#else
-    sprintf(fnamed, "xtree-%s.drat", anum);
-#endif
-    gen_drat_proof(fnamed, n);
+    if (ptype == PROOF_DRAT) {
+	if (do_binary)
+	    gen_dratb_proof(fnamep, n, vlevel);
+	else
+	    gen_drat_proof(fnamep, n, vlevel);
+    } else {
+	gen_frat_proof(fnamep, n, vlevel);
+    }
     printf("Elapsed seconds: %.2f\n", tod()-start);
     return 0;
 }

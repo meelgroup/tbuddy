@@ -241,5 +241,6 @@ int ilist_format(ilist ils, char *out, const char *sep, int maxlen) {
 	len += xlen;
 	space = sep;
     }
+    out[len] = '\0';
     return len;
 }

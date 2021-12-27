@@ -35,6 +35,9 @@ extern ilist clean_clause(ilist clause);
 /* For DRAT proof, antecedents can be NULL */
 extern int generate_clause(ilist literals, ilist antecedent);
 
+/* For FRAT, have special clauses */
+extern void insert_frat_clause(FILE *pfile, char cmd, int clause_id, ilist literals, bool binary);
+
 extern void delete_clauses(ilist clause_ids);
 
 /* Some deletions must be deferred until top-level apply completes */
