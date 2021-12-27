@@ -243,6 +243,16 @@ static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     return rr;
 }
 
+TBDD tbdd_from_clause_old(ilist clause) {
+    if (verbosity_level >= 2) {
+	ilist_format(clause, ibuf, " ", BUFLEN);
+	print_proof_comment(2, "BDD representation of clause [%s]", ibuf);
+    }
+    BDD r = bdd_from_clause(clause);
+    return tbdd_trust(r);    
+}
+
+// This seems like it should be easier to check, but it isn't.
 TBDD tbdd_from_clause(ilist clause) {
     int dbuf[ILIST_OVHD+1];
     ilist dels = ilist_make(dbuf, 1);
