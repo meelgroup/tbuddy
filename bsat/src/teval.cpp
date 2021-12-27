@@ -257,13 +257,7 @@ public:
     Term *conjunct(Term *tp1, Term *tp2) {
 	tbdd tr1 = tp1->get_fun();
 	tbdd tr2 = tp2->get_fun();
-	tbdd nfun;
-	if (tbdd_is_false(tr1))
-	    nfun = tr1;
-	else if (tbdd_is_false(tr2))
-	    nfun = tr2;
-	else
-	    nfun = tbdd_and(tr1, tr2);
+	tbdd nfun = tbdd_and(tr1, tr2);
 	add(new Term(nfun));
 	dead_count += tp1->deactivate();
 	dead_count += tp2->deactivate();

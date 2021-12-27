@@ -209,16 +209,6 @@ static BDD bdd_from_clause(ilist clause) {
     return r;
 }
 
-TBDD tbdd_from_clause_old(ilist clause) {
-    if (verbosity_level >= 2) {
-	ilist_format(clause, ibuf, " ", BUFLEN);
-	print_proof_comment(2, "Generating BDD representation of clause [%s]", ibuf);
-    }
-    BDD r = bdd_from_clause(clause);
-    TBDD tr = tbdd_trust(r);
-    return tr;
-}
-
 static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     TBDD rr;
     print_proof_comment(2, "Build BDD representation of clause #%d", id);
