@@ -27,7 +27,7 @@ INTERP=python3
 GRAB = $(INTERP) ./grab_data.py
 
 $(ROOT)-$(N).cnf:
-	$(GEN) $(N) $(SEED) | tee $(ROOT)-$(N).data
+	$(GEN) -n $(N) -s $(SEED) -m d -r $(ROOT)-$(N) | tee $(ROOT)-$(N).data
 
 .SUFFIXES: .cnf .xdata .kdata .cdata .fcdata .tdata
 
