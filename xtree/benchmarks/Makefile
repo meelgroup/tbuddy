@@ -7,9 +7,13 @@ VLEVEL = 1
 
 RM = rm -f
 
+
 DDIR = ~/repos/drat-trim
 DRAT = $(DDIR)/drat-trim
 LRAT = $(DDIR)/lrat-check
+
+FDIR = ~/repos/frat
+FRAT = $(FDIR)/frat-rs
 
 KDIR = ~/repos/kissat/build
 KISSAT = $(KDIR)/kissat
@@ -29,7 +33,10 @@ GRAB = $(INTERP) ./grab_data.py
 $(ROOT)-$(N).cnf:
 	$(GEN) -n $(N) -s $(SEED) -m d -r $(ROOT)-$(N) | tee $(ROOT)-$(N).data
 
-.SUFFIXES: .cnf .xdata .kdata .cdata .fcdata .tdata
+$(ROOT)-f$(N).cnf:
+	$(GEN) -n $(N) -s $(SEED) -m f -r $(ROOT)-f$(N) | tee $(ROOT)f-$(N).data
+
+.SUFFIXES: .cnf .xdata .kdata .cdata .fcdata .tdata .fdata
 
 .cnf.xdata:
 	$(DRAT) $< $*.drat | tee $@
@@ -56,6 +63,13 @@ $(ROOT)-$(N).cnf:
 
 .cnf.fcdata:
 	$(CMS) $(CFLAGS)  $< | tee $@
+
+.cnf.fdata:
+	{ /usr/bin/time -lp $(FRAT) elab $< $*.frat $*.lrat 2>&1 ; } | tee $@
+	$(LRAT) $< $*.lrat | tee -a $@
+#	$(RM) $*.frat
+	$(RM) $*.frat.tmp
+#	$(RM) $*.lrat
 
 tbuddy-data:
 	rm -f tbuddy-*.csv
