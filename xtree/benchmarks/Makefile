@@ -15,6 +15,9 @@ LRAT = $(DDIR)/lrat-check
 FDIR = ~/repos/frat
 FRAT = $(FDIR)/frat-rs
 
+MDIR = ../../tools
+MATCHER = $(MDIR)/frat-matcher.py
+
 KDIR = ~/repos/kissat/build
 KISSAT = $(KDIR)/kissat
 KFLAGS = --unsat --no-binary --conflicts=$(CONFLICTS)
@@ -40,7 +43,7 @@ $(ROOT)-$(N).cnf:
 $(ROOT)-f-$(N).cnf:
 	$(GEN) -n $(N) -s $(SEED) -m f -r $(ROOT)-f-$(N) | tee $(ROOT)f-$(N).data
 
-.SUFFIXES: .cnf .xdata .kdata .cdata .fcdata .tdata .fdata
+.SUFFIXES: .cnf .xdata .kdata .cdata .fcdata .tdata .fdata .mfdata
 
 .cnf.xdata:
 	$(DRAT) $< $*.drat | tee $@
@@ -72,8 +75,17 @@ $(ROOT)-f-$(N).cnf:
 	{ /usr/bin/time -lp $(FRAT) elab $< $*.frat $*.lrat 2>&1 ; } | tee $@
 	$(LRAT) $< $*.lrat | tee -a $@
 #	$(RM) $*.frat
-	$(RM) $*.frat.tmp
+	$(RM) $*.frat.temp
 #	$(RM) $*.lrat
+
+.cnf.mfdata:
+	$(MATCHER) < $*.frat > $*-matched.frat 2> $@
+	{ /usr/bin/time -lp $(FRAT) elab $< $*-matched.frat $*.lrat 2>&1 ; } | tee -a $@
+	$(LRAT) $< $*.lrat | tee -a $@
+#	$(RM) $*.frat
+	$(RM) $*-matched.frat.temp
+	$(RM) $*.lrat
+
 
 tbuddy-data:
 	rm -f tbuddy-*.csv
@@ -95,6 +107,7 @@ data:
 	$(GRAB) "verification time" *.tdata > tbsat-lrat-seconds.csv	
 	$(GRAB) "Total clauses" *.tdata > tbsat-clauses.csv	
 	$(GRAB) "real" *.fdata > tbuddy-frat-seconds.csv
+	$(GRAB) "real" *.mfdata > tbuddy-frat-matched-seconds.csv
 
 clean:
 	rm -f *~
