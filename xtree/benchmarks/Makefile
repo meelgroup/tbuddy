@@ -101,6 +101,7 @@ data:
 	$(GRAB) "verification time" *.xdata > tbuddy-drat-seconds.csv
 	$(GRAB) "Elapsed time" *.kdata > kissat-generation-seconds.csv
 	$(GRAB) "proof_added" *.kdata > kissat-clauses.csv
+	$(GRAB) "verification time" *.kdata > kissat-drat-seconds.csv
 	$(GRAB) "Total time" *.cdata > cms-generation-seconds.csv
 	$(GRAB) "Total time" *.fcdata > cms-noproof-seconds.csv
 	$(GRAB) "Elapsed" *.tdata > tbsat-generation-seconds.csv
