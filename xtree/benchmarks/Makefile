@@ -30,11 +30,15 @@ TFLAGS = -b -v $(VLEVEL)
 INTERP=python3
 GRAB = $(INTERP) ./grab_data.py
 
+drat: $(ROOT)-$(N).cnf
+
+frat: $(ROOT)-f-$(N).cnf
+
 $(ROOT)-$(N).cnf:
 	$(GEN) -n $(N) -s $(SEED) -m d -r $(ROOT)-$(N) | tee $(ROOT)-$(N).data
 
-$(ROOT)-f$(N).cnf:
-	$(GEN) -n $(N) -s $(SEED) -m f -r $(ROOT)-f$(N) | tee $(ROOT)f-$(N).data
+$(ROOT)-f-$(N).cnf:
+	$(GEN) -n $(N) -s $(SEED) -m f -r $(ROOT)-f-$(N) | tee $(ROOT)f-$(N).data
 
 .SUFFIXES: .cnf .xdata .kdata .cdata .fcdata .tdata .fdata
 
@@ -90,6 +94,7 @@ data:
 	$(GRAB) "Elapsed" *.tdata > tbsat-generation-seconds.csv
 	$(GRAB) "verification time" *.tdata > tbsat-lrat-seconds.csv	
 	$(GRAB) "Total clauses" *.tdata > tbsat-clauses.csv	
+	$(GRAB) "real" *.fdata > tbuddy-frat-seconds.csv
 
 clean:
 	rm -f *~
