@@ -16,7 +16,7 @@ def err_msg(msg):
 
 # Turn clause into canonical string
 def gen_key(clause):
-    ls = sorted(clause)
+    ls = sorted(clause, key = lambda(s): abs(int(s)))
     slist = [str(v) for v in ls]
     return "+".join(slist)
 
@@ -49,7 +49,8 @@ for line in sys.stdin:
         clause = []
         hints = []
         foundz = False
-        for lit in fields[2:-2]:
+        for field in fields[2:-1]:
+            lit = int(field)
             if lit == 0:
                 foundz = True
             else:
