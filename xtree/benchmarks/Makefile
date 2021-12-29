@@ -108,7 +108,6 @@ data:
 	$(GRAB) "verification time" *.tdata > tbsat-lrat-seconds.csv	
 	$(GRAB) "Total clauses" *.tdata > tbsat-clauses.csv	
 	$(GRAB) "real" *.fdata > tbuddy-frat-seconds.csv
-	$(GRAB) "real" *.mfdata > tbuddy-frat-matched-seconds.csv
 
 clean:
 	rm -f *~
