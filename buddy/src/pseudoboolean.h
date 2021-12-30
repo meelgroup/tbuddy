@@ -39,7 +39,7 @@ class xor_constraint {
     ~xor_constraint(void) { ilist_free(variables); variables = NULL; validation = trustbdd::tbdd_null();  }
 
     // Does the constraint have NO solutions?
-    bool is_infeasible(void) { return ilist_length(variables) == 0 || phase != 0; }
+    bool is_infeasible(void) { return ilist_length(variables) == 0 && phase != 0; }
 
     // Does the constraint impose any restrictions on any variables?
     bool is_degenerate(void) { return ilist_length(variables) == 0 && phase == 0; }

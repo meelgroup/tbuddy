@@ -163,7 +163,6 @@ static xor_constraint* find_constraint(ilist variables, int phase, bdd &xfun) {
     if (xor_map.count(id) > 0) {
 	if (verbosity_level >= 3) {
 	    show_xor_buf(ibuf, variables, phase, BUFLEN);
-	    printf("Reusing constraint N%d.  %s\n", id, ibuf);
 	}
 	return new xor_constraint(*xor_map[id]);
     } else
@@ -177,7 +176,6 @@ static void save_constraint(xor_constraint *xcp) {
     xor_map[id] = new xor_constraint(*xcp);
     if (verbosity_level >= 2) {
 	show_xor_buf(ibuf, variables, phase, BUFLEN);
-	printf("Creating constraint N%d.  %s\n", id, ibuf);
     }
     pseudo_xor_unique ++;
     pseudo_total_length += ilist_length(variables);
@@ -225,7 +223,6 @@ int xor_constraint::validate_clause(ilist clause) {
 void xor_constraint::show(FILE *out) {
     fprintf(out, "Xor Constraint: Node N%d validates ", tbdd_nameid(validation));
     show_xor(out, variables, phase);
-    fprintf(out, "\n");
 }
 
 xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
@@ -413,7 +410,7 @@ public:
 	    }
 	}
 	delete[] imap;
-	if (verbosity_level >= 3)
+	if (verbosity_level >= 2)
 	    show("Initial");
     }
 
@@ -477,6 +474,7 @@ public:
 		continue;
 	    printf("    Node %d.  Constraint ", n1);
 	    nodes[n1]->show(stdout);
+	    printf("\n");
 	    for (int n2 : neighbors[n1]) {
 		sgraph_edge *e = edge_map[ordered_pack(n1, n2)];
 		e->show("        ");
@@ -670,7 +668,7 @@ public:
 	imap = new std::set<int>[variable_count];
 	for (int eid = 0; eid < equation_count; eid++) {
 	    ilist vars = equations[eid]->get_variables();
-	    for (int i; i < ilist_length(vars); i++) {
+	    for (int i = 0; i < ilist_length(vars); i++) {
 		int v = vars[i];
 		imap[v-1].insert(eid);
 	    }
@@ -728,7 +726,7 @@ public:
     void gauss_jordan(xor_set &nset) {
 	// Gaussian elimination
 	bool infeasible = false;
-	if (verbosity_level >= 3) {
+	if (verbosity_level >= 2) {
 	    show("Initial");
 	}
 	int step_count = 0;
@@ -803,7 +801,8 @@ private:
 	}
 	if (best_eid < 0)
 	    return NULL;
-	return new pivot(best_eid, var, best_cost);
+	pivot *piv = new pivot(best_eid, var, best_cost);
+	return piv;
     }
 
     // Perform one step of Gaussian elimination
@@ -836,14 +835,17 @@ private:
 	    // Remove any references from inverse map
 	    for (int i = 0; i < ilist_length(evars); i++) {
 		int v = evars[i];
-		imap[v-1].erase(eid);
-		if (v != pvar)
+		if (v != pvar) {
+		    imap[v-1].erase(eid);
 		    touched.insert(v);
+		}
 	    }
 	    // Add the equations
 	    xor_constraint *neq = xor_plus(peq, eq);
 	    delete eq;
 	    if (neq->is_infeasible()) {
+		if (verbosity_level >= 2)
+		    printf("Infeasible equation #%d + #%d encountered\n", peid, eid);
 		equations[eid] = NULL;
 		// Cancel any saved equations or pivots
 		for (xor_constraint *seq : saved_equations)
@@ -869,6 +871,7 @@ private:
 		}
 	    }
 	}
+	imap[pvar-1].clear();
 	if (external_variables.count(pvar) > 0) {
 	    saved_equations.push_back(peq);
 	    saved_pivots.push_back(piv);
@@ -883,7 +886,8 @@ private:
 	    delete opiv;
 	    pivot *npiv = choose_pivot(tv);
 	    pivot_list[tv-1] = npiv;
-	    pivot_selector[npiv->cost] = npiv;
+	    if (npiv)
+		pivot_selector[npiv->cost] = npiv;
 	}
 	return false;
     }
@@ -905,7 +909,7 @@ private:
 		}
 	    }
 	}
-	if (verbosity_level >= 3)
+	if (verbosity_level >= 2)
 	    show("After Jordanizing");
     }
 };
