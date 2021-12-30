@@ -70,10 +70,13 @@ class xor_constraint {
 // Representation of a set of Xor constraints
 class xor_set {
  private:
-    std::vector<xor_constraint *> xlist;
     int maxvar;
 
  public:
+    // Vector of constraints
+    // Normally only read these
+    std::vector<xor_constraint *> xlist;
+
     xor_set() { maxvar = 0; }
 
     ~xor_set();
