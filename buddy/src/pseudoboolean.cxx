@@ -1,6 +1,7 @@
 #include <map>
 #include <unordered_map>
 #include <set>
+#include <unordered_set>
 
 #include "pseudoboolean.h"
 #include "prover.h"
@@ -57,8 +58,8 @@ static void pseudo_info_fun(int vlevel) {
 
 
 static void pseudo_done_fun() {
-    for (auto p = xor_map.begin(); p != xor_map.end(); p++) {
-	xor_constraint *xcp = p->second;
+    for (auto p : xor_map) {
+	xor_constraint *xcp = p.second;
 	delete xcp;
     }
     xor_map.clear();
@@ -182,7 +183,10 @@ static void save_constraint(xor_constraint *xcp) {
     pseudo_total_length += ilist_length(variables);
 }
 
-/// Methods & functions for xor constraints
+///////////////////////////////////////////////////////////////////
+// Methods & functions for xor constraints
+///////////////////////////////////////////////////////////////////
+
 
 xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
     pseudo_xor_created ++;
@@ -238,6 +242,41 @@ xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
     return xcp;
 }
 
+
+
+
+///////////////////////////////////////////////////////////////////
+// Managing pairs packed of ints packed into 64-bit word
+// Use these both as edge identifier
+// and as cost+unique value
+//
+// When combining cost functions with unique identifiers
+// Have upper 32 bits represent cost
+// and lower 32 bits represent unique value, 
+//   assigned either sequentially or via a pseudo-random sequence
+///////////////////////////////////////////////////////////////////
+
+/*
+  Use 32-bit words packed into pairs
+ */
+static int64_t pack(int upper, int lower) {
+    return ((int64_t) upper << 32) | lower;
+}
+
+
+static int64_t ordered_pack(int x1, int x2) {
+    return x1 < x2 ? pack(x1, x2) : pack(x2, x1);
+}
+
+static int upper(int64_t pair) {
+    return (int) (pair>>32);
+}
+
+static int lower(int64_t pair) {
+    return (int) (pair & 0xFFFFFFFF);
+}
+
+
 /// Various ways to compute the sum of a list of xor constraints
 
 ///////////////////////////////////////////////////////////////////
@@ -273,26 +312,6 @@ static bool xoverlap(xor_constraint *xcp1, xor_constraint *xcp2) {
     }
     return false;
 }
-
-/*
-  Use 32-bit words packed into pairs
- */
-static int64_t pack(int upper, int lower) {
-    return ((int64_t) upper << 32) | lower;
-}
-
-static int64_t ordered_pack(int x1, int x2) {
-    return x1 < x2 ? pack(x1, x2) : pack(x2, x1);
-}
-
-static int upper(int64_t pair) {
-    return (int) (pair>>32);
-}
-
-static int lower(int64_t pair) {
-    return (int) (pair & 0xFFFFFFFF);
-}
-
 
 /* Determine the cost of adding two xor constraints */
 /* 
@@ -473,11 +492,9 @@ private:
     // For assigning unique values to cost
     sequencer seq;
 
-    // This should be fixed to be local to class
+    // Assign new unique ID
     int new_lower() {
 	return (int) seq.next();
-	// Temporarily determinize
-	//	return edges.size() + 1;
     }
 
     // Add new edge.
@@ -567,7 +584,7 @@ static xor_constraint *xor_sum_list_linear(xor_constraint **xlist, int len) {
 	    delete a;
 	    delete sum;
 	    sum = nsum;
-	    done = !sum->is_feasible();
+	    done = sum->is_infeasible();
 	}
     }
     return sum;
@@ -590,7 +607,7 @@ static xor_constraint *xor_sum_list_bf(xor_constraint **xlist, int len) {
 	xbuf[++right] = xor_plus(arg1, arg2);
 	delete arg1;
 	delete arg2;
-	if (!xbuf[right]->is_feasible())
+	if (xbuf[right]->is_infeasible())
 	    break;
     }
     xor_constraint *sum = xbuf[right];
@@ -606,6 +623,289 @@ xor_constraint *trustbdd::xor_sum_list(xor_constraint **xlist, int len, int maxv
     sum_graph g(xlist, len, maxvar, 1);
     return g.get_sum();
 }
+
+
+
+
+///////////////////////////////////////////////////////////////////
+// Support for Gauss-Jordan elimination
+///////////////////////////////////////////////////////////////////
+
+// Pivots
+class pivot {
+public:
+    pivot(int eid, int var, int64_t c) {
+	equation_id = eid;
+	variable = var;
+	cost = c;
+    }
+
+    ~pivot() { if (verbosity_level >= 3) show("Deleting"); }
+
+    int equation_id;
+    int variable;
+    int64_t cost;
+
+    void show(const char *prefix) {
+	printf("%s: Pivot Eid = %d.  Var = %d.  Cost = %d/%d\n", prefix, equation_id, variable, upper(cost), lower(cost));
+    }
+};
+
+class gauss {
+public:
+
+    gauss (xor_constraint **xlist, int xcount, ilist exvars, int vcount, unsigned seed) {
+	seq.set_seed(seed);
+	equations = xlist;
+	equation_count = remaining_equation_count = xcount;
+	variable_count = vcount;
+	for (int i = 0; i < ilist_length(exvars); i++)
+	    external_variables.insert(exvars[i]);
+	// Build inverse map
+	imap = new std::set<int>[variable_count];
+	for (int eid = 0; eid < equation_count; eid++) {
+	    ilist vars = equations[eid]->get_variables();
+	    for (int i; i < ilist_length(vars); i++) {
+		int v = vars[i];
+		imap[v-1].insert(eid);
+	    }
+	}
+	pivot_list = new pivot*[variable_count];
+	for (int v = 1; v <= variable_count; v++) {
+	    pivot *piv = choose_pivot(v);
+	    pivot_list[v-1] = piv;
+	    if (piv) {
+		int64_t pcost = piv->cost;
+		pivot_selector[pcost] = piv;
+	    }
+	}
+    }
+
+    ~gauss() {
+	for (int eid = 0; eid < equation_count; eid++) {
+	    xor_constraint *eq = equations[eid];
+	    if (eq) delete eq;
+	}
+	for (xor_constraint *eq : saved_equations)
+	    if (eq) delete eq;
+	for (pivot *piv : saved_pivots)
+	    if (piv) delete piv;
+	for (int v = 1; v <= variable_count; v++) {
+	    pivot *piv = pivot_list[v-1];
+	    if (piv) delete piv;
+	}
+	delete [] imap;
+    }
+
+
+    void show(const char *prefix) {
+	printf("%s status\n", prefix);
+	printf("  %d remaining equations, %d variables\n", remaining_equation_count, (int) pivot_selector.size());
+	if (remaining_equation_count > 0) {
+	    for (int eid= 0; eid < equation_count; eid++) {
+		if (equations[eid] == NULL)
+		    continue;
+		printf("    Equation #%d: ", eid);
+		equations[eid]->show(stdout);
+	    }
+	}
+	if (saved_equations.size() > 0) {
+	    printf("  %d saved equations\n", (int) saved_equations.size());
+	    for (int eid = 0; eid < saved_equations.size(); eid++) {
+		printf("    Pivot variable %d.  Equation: ", saved_pivots[eid]->variable);
+		saved_equations[eid]->show(stdout);
+	    }
+	}
+    }
+
+    void gauss_jordan(xor_set &nset) {
+	// Gaussian elimination
+	bool infeasible = false;
+	if (verbosity_level >= 3) {
+	    show("Initial");
+	}
+	int step_count = 0;
+	while (!infeasible && remaining_equation_count > 0) {
+	    infeasible = gauss_step();
+	    step_count++;
+	    if (verbosity_level >= 3) {
+		char mbuf[30];
+		sprintf(mbuf, "Step #%d", step_count);
+		show(mbuf);
+	    }
+	}
+	// Fix up the final result
+	if (infeasible) {
+	    nset.clear();
+	    xor_constraint *seq = saved_equations[0];
+	    nset.add(*seq);
+	} else if (saved_equations.size() == 0) {
+	    // Degenerate
+	    nset.clear();
+	    xor_constraint deq;
+	    nset.add(deq);
+	} else {
+	    jordanize();
+	    nset.clear();
+	    for (xor_constraint *eq : saved_equations)
+		nset.add(*eq);
+	}
+    }
+
+private:
+    // The set of external variables
+    std::unordered_set<int> external_variables;
+    // The set of equations.  Get set to NULL when eliminated
+    xor_constraint **equations;
+    // The number of original equations
+    int equation_count;
+    // The number of active equations
+    int remaining_equation_count;
+    // Equations saved after elimination
+    std::vector<xor_constraint*> saved_equations;
+    // Ordered list of pivots having external variables that were used
+    std::vector<pivot *>saved_pivots;
+    // Number of variables.  Numbered from 1 .. variable_count
+    int variable_count;
+    // Mapping for (decremented) variable to equation IDs
+    std::set<int> *imap;
+    // Chosen pivot for each variable
+    pivot **pivot_list;
+    // Mapping from cost function to pivot
+    std::map<int64_t,pivot*> pivot_selector;
+    sequencer seq;
+
+    // Assign new unique ID
+    int new_lower() {
+	return (int) seq.next();
+    }
+
+    // Choose best pivot for specified variable
+    pivot *choose_pivot(int var) {
+	int64_t best_cost = INT64_MAX;
+	int best_eid = -1;
+	int cols = imap[var-1].size();
+	for (int eid : imap[var-1]) {
+	    ilist row = equations[eid]->get_variables();
+	    int c = (cols-1)*(ilist_length(row)-1);
+	    if (external_variables.count(var) > 0)
+		c += variable_count * equation_count;  // Penalty for external variable
+	    int64_t cost = pack(c, new_lower());
+	    if (cost < best_cost) {
+		best_cost = cost;
+		best_eid = eid;
+	    }
+	}
+	if (best_eid < 0)
+	    return NULL;
+	return new pivot(best_eid, var, best_cost);
+    }
+
+    // Perform one step of Gaussian elimination
+    // Return true if infeasible equation encountered
+    bool gauss_step() {
+	std::set<int> touched;  // Track variables that are involved
+	pivot *piv = pivot_selector.begin()->second;
+	pivot_selector.erase(piv->cost);
+	if (verbosity_level >= 3) {
+	    piv->show("Using");
+	}
+	int peid = piv->equation_id;
+	int pvar = piv->variable;
+	xor_constraint *peq = equations[peid];
+	ilist pvars = peq->get_variables();
+	// Remove any references from inverse map
+	for (int i = 0; i < ilist_length(pvars); i++) {
+	    int v = pvars[i];
+	    imap[v-1].erase(peid);
+	    if (v != pvar)
+		touched.insert(v);
+	}
+	// Perform eliminination operation on other equations
+	for (int eid : imap[pvar-1]) {
+	    xor_constraint *eq = equations[eid];
+	    ilist evars = eq->get_variables();
+	    // Remove any references from inverse map
+	    for (int i = 0; i < ilist_length(evars); i++) {
+		int v = evars[i];
+		imap[v-1].erase(eid);
+		if (v != pvar)
+		    touched.insert(v);
+	    }
+	    // Add the equations
+	    xor_constraint *neq = xor_plus(peq, eq);
+	    delete eq;
+	    if (neq->is_infeasible()) {
+		// Cancel any saved equations or pivots
+		for (xor_constraint *seq : saved_equations)
+		    delete seq;
+		for (pivot *spiv : saved_pivots)
+		    delete spiv;
+		saved_equations.clear();
+		saved_pivots.clear();
+		saved_equations.push_back(neq);
+		saved_pivots.push_back(piv);
+		return true;
+	    } else if (neq->is_degenerate()) {
+		equations[eid] = NULL;
+		remaining_equation_count--;
+		delete neq;
+	    } else
+		equations[eid] = neq;
+	    // Update inverse map
+	    ilist nvars = neq->get_variables();
+	    for (int i = 0; i < ilist_length(nvars); i++) {
+		int v = nvars[i];
+		imap[v-1].insert(eid);
+	    }
+	}
+	// (re)move pivot equation
+	equations[peid] = NULL;
+	remaining_equation_count--;
+	if (external_variables.count(pvar) > 0) {
+	    saved_equations.push_back(peq);
+	    saved_pivots.push_back(piv);
+	} else {
+	    delete peq;
+	    delete piv;
+	}
+	// Update pivots for variables that were touched
+	for (int tv : touched) {
+	    pivot *opiv = pivot_list[tv-1];
+	    pivot_selector.erase(opiv->cost);
+	    delete opiv;
+	    pivot *npiv = choose_pivot(tv);
+	    pivot_list[tv-1] = npiv;
+	    pivot_selector[npiv->cost] = npiv;
+	}
+	return false;
+    }
+
+    // Convert saved equations into Jordan form
+    void jordanize() {
+	for (int peid = saved_equations.size()-1; peid > 0; peid--) {
+	    xor_constraint *peq = saved_equations[peid];
+	    int pvar = saved_pivots[peid]->variable;
+	    for (int eid = pvar-1; eid >= 0; eid--) {
+		xor_constraint *eq = saved_equations[eid];
+		ilist vars = eq->get_variables();
+		if (ilist_is_member(vars, pvar)) {
+		    xor_constraint *neq = xor_plus(eq, peq);
+		    delete eq;
+		    saved_equations[eid] = eq;
+		}
+	    }
+	}
+	if (verbosity_level >= 3)
+	    show("After Jordanizing");
+    }
+};
+
+
+///////////////////////////////////////////////////////////////////
+// xor_set operations
+///////////////////////////////////////////////////////////////////
+
 
 xor_set::~xor_set() {
     xlist.clear();
@@ -627,4 +927,21 @@ xor_constraint *xor_set::sum() {
     xor_constraint *xsum = xor_sum_list(xlist.data(), xlist.size(), maxvar);
     xlist.clear();
     return xsum;
+}
+
+bool xor_set::is_degenerate() {
+    if (xlist.size() > 1)
+	return false;
+    return xlist[0]->is_degenerate();;
+}
+
+bool xor_set::is_infeasible() {
+    if (xlist.size() > 1)
+	return false;
+    return xlist[0]->is_infeasible();
+}
+
+void xor_set::gauss_jordan(ilist external_variables, xor_set &nset) {
+    gauss g(xlist.data(), xlist.size(), external_variables, maxvar, 1);
+    g.gauss_jordan(nset);
 }

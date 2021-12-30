@@ -38,9 +38,12 @@ class xor_constraint {
     // Destructor deletes the list of variables
     ~xor_constraint(void) { ilist_free(variables); variables = NULL; validation = trustbdd::tbdd_null();  }
 
-    // Does the constraint have ANY solutions?
-    bool is_feasible(void) { return ilist_length(variables) > 0 || phase == 0; }
+    // Does the constraint have NO solutions?
+    bool is_infeasible(void) { return ilist_length(variables) == 0 || phase != 0; }
 
+    // Does the constraint impose any restrictions on any variables?
+    bool is_degenerate(void) { return ilist_length(variables) == 0 && phase == 0; }
+    
     // Use xor constraint to validate a clause
     int validate_clause(ilist clause);
 
@@ -83,6 +86,16 @@ class xor_set {
     // Extract the validated sum of the Xors.
     // All constraints in the set are deleted
     xor_constraint *sum();
+
+    // Perform Gauss - Jordan elimination to set of equations
+    // to reduce it to a set of equations over only the external variables
+    // nset updated to contain the new equations
+    // May be degenerate, infeasible, or with real equations
+    void gauss_jordan(ilist external_variables, xor_set &nset);
+
+    // Testing properties of reduced set
+    bool is_degenerate();  // Does not impose any constraints on external variables
+    bool is_infeasible();  // Has not solutions
 
     size_t size() { return xlist.size(); }
 
