@@ -175,6 +175,16 @@ ilist ilist_copy_list(int *ls, int length) {
     return rils;
 }
 
+/*
+  Test whether value is member of list
+ */
+extern bool ilist_is_member(ilist ils, int val) {
+    int i;
+    for (i = 0; i < ilist_length(ils); i++)
+	if (val == ils[i])
+	    return true;
+    return false;
+}
 
 /*
   Dynamically allocate ilist and copy from existing one.

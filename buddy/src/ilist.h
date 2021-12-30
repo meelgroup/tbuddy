@@ -77,6 +77,11 @@ extern ilist ilist_fill3(ilist ils, int val1, int val2, int val3);
 extern ilist ilist_fill4(ilist ils, int val1, int val2, int val3, int val4);
 
 /*
+  Test whether value is member of list
+ */
+extern bool ilist_is_member(ilist ils, int val);
+
+/*
   Dynamically allocate ilist and copy from existing one.
  */
 extern ilist ilist_copy(ilist ils);
