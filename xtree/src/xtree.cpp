@@ -339,11 +339,14 @@ int main(int argc, char *argv[]) {
     int seed = -1;
 
     int c;
-    while ((c = getopt(argc, argv, "hn:v:m:bs:r:")) != -1) {
+    while ((c = getopt(argc, argv, "hgn:v:m:bs:r:")) != -1) {
 	switch (c) {
 	case 'h':
 	    usage(argv[0]);
 	    return 0;
+	case 'g':
+	    do_gauss = true;
+	    break;
 	case 'n':
 	    n = atoi(optarg);
 	    break;
