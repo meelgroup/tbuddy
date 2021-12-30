@@ -2,7 +2,9 @@
 
 # Convert CNF file containing only xor declarations into
 # schedule file that converts these into pseudo-Boolean equations
-# and then sums all of the extracted equations
+# triggers Gauss-Jordan elimination
+# and loads any remaining clauses.
+# The solver should then shift to bucket elimination
 
 import getopt
 import sys
@@ -47,62 +49,50 @@ class Xor:
             raise self.msgPrefix + "Invalid clause index %d.  Allowed range 1 .. %d" % (idx, len(self.clauses))
         return self.clauses[idx-1]
 
-    # Given set of clauses over common set of variables,
-    # classify as "xor", "xnor" or None
-    def classifyClauses(self, clist):
-        if len(clist) == 0:
-            return None
-        if len(clist) != 2**(len(clist[0])-1):
-            return None
-        isXor = True
-        isXnor = True
-        # Make list of variable phases
-        phases = []
-        isXor = True
-        isXnor = True
-        pvals = []
-        for clause in clist:
-            plist = [1 if lit > 0 else 0 for lit in clause]
+    # Given set of clause IDs  over common set of variables,
+    # Return partitioning into three sets: xors, xnors, other
+    def classifyClauses(self, idlist):
+        xorClauses = []
+        xnorClauses = []
+        otherClauses = []
+        xorNvals = []
+        xnorNvals = []
+        if len(idlist) == 0:
+            return (xorClauses, xnorClause, otherClauses)
+        c0 = self.getClause(idlist[0])
+        tcount = 2**(len(c0)-1)
+        for id in idlist:
+            clause = self.getClause(id)
+            nlist = [1 if lit < 0 else 0 for lit in clause]
+            nval = sum([nlist[i] * 2**i for i in range(len(nlist))])
             # Xor will have even number of negative literals
-            maybeXor = ((len(plist) - sum(plist))) % 2 == 0
-            isXor = isXor and maybeXor
-            isXnor = isXnor and not maybeXor
-            pval = sum([plist[i] * 2**i for i in range(len(plist))])
-            pvals.append(pval)
-        pset = set(pvals)
-        if len(pset) != len(clist):
-            result = None
-        elif isXor:
-            result = "xor"
-        elif isXnor:
-            result = "xnor"
-        else:
-            result = None
-        return result
+            if sum(nlist) % 2 == 0:
+                xorClauses.append(id)
+                xorNvals.append(nval)
+            else:
+                xnorClauses.append(id)
+                xnorNvals.append(nval)
+        # See if have true xors or true xnors
+        nset = set(xorNvals)
+        if len(nset) != tcount:
+            otherClauses = otherClauses + xorClauses
+            xorClauses = []
+        nset = set(xnorNvals)
+        if len(nset) != tcount:
+            otherClauses = otherClauses + xnorClauses
+            xnorClauses = []
+        return (xorClauses, xnorClauses, otherClauses)
         
+    def emitX(self, idlist, phase, outfile):
+        slist = [str(id) for id in idlist]
+        outfile.write("c %s\n" % " ".join(slist))
+        if (len(idlist) > 1):
+            outfile.write("a %d\n" % (len(idlist)-1))
+        vars = [abs(lit) for lit in self.getClause(idlist[0])]
+        stlist = ['1.%d' % v for v in vars]
+        outfile.write("=2 %d %s\n" % (phase, " ".join(stlist)))
+
     def generate(self, oname):
-        idlists = list(self.varMap.values())
-        totalCount = 0
-        unkCount = 0
-        tlist = []
-        for idlist in idlists:
-            clist = [self.getClause(id) for id in idlist]
-            totalCount += len(clist)
-            t = self.classifyClauses(clist)
-            tlist.append(t)
-            if t is None:
-                unkCount += len(clist)
-                slist = [str(id) for id in idlist]
-                exutil.ewrite("%sCould not classify clauses [%s]\n" % (self.msgPrefix, ", ".join(slist)), 3)
-                if not exutil.careful:
-                    break
-                if exutil.verbLevel >= 4:
-                    for id in idlist:
-                        clause = self.getClause(id)
-                        exutil.ewrite("    Clause #%d:%s\n" % (id, str(clause)), 4)
-        if unkCount > 0:
-            exutil.ewrite("%s%d total clauses.  Failed to classify %d clauses\n" % (self.msgPrefix, len(self.clauses), unkCount), 2)
-            return False
         if oname is None:
             outfile = sys.stdout
         else:
@@ -111,22 +101,29 @@ class Xor:
             except:
                 exutil.ewrite("%sCouldn't open output file '%s'\n" % (self.msgPrefix, oname), 1)
                 return False
-        for (idlist, t) in zip(idlists, tlist):
-            slist = [str(id) for id in idlist]
+        idlists = list(self.varMap.values())
+        clauseCount = 0
+        xcount = 0
+        otherIdList = []
+        for idlist in idlists:
+            clauseCount += len(idlist)
+            (xorClauses, xnorClauses, otherClauses) = self.classifyClauses(idlist)
+            if len(xorClauses) > 0:
+                self.emitX(xorClauses, 1, outfile)
+                xcount += 1
+            if len(xnorClauses) > 0:
+                self.emitX(xnorClauses, 0, outfile)
+                xcount += 1
+            otherIdList += otherClauses
+        if (xcount > 0):
+            outfile.write("g\n")
+        if len(otherIdList) > 0:
+            slist = [str(id) for id in sorted(otherIdList)]
             outfile.write("c %s\n" % " ".join(slist))
-            if len(idlist) > 1:
-                outfile.write("a %d\n" % (len(idlist)-1))
-            const = 1 if t == 'xor' else 0
-            vars = [abs(lit) for lit in self.getClause(idlist[0])]
-            stlist = ['1.%d' % v for v in vars]
-            outfile.write("=2 %d %s\n" % (const, " ".join(stlist)))
-        # Finish with summation of all of the Xors
-        outfile.write("+ %d\n" % (len(idlists)-1))
         if oname is not None:
             outfile.close()
-        exutil.ewrite("%s%d equations extracted\n" % (self.msgPrefix, len(idlists)), 1)
+        exutil.ewrite("%s%d equations extracted.  %d other clauses.  %d total clauses\n" % (self.msgPrefix, xcount, len(otherIdList), clauseCount), 1)
         return True
-            
         
 def extract(iname, oname, maxclause):
     try:
@@ -191,7 +188,7 @@ def run(name, args):
             oname = replaceExtension(iname, 'schedule')
             if extract(iname, oname, maxclause):
                 scount += 1
-        exutil.ewrite("Extracted XOR representation of %d/%d files\n" % (scount, len(flist)), 1)
+        exutil.ewrite("Extracted equations for %d/%d files\n" % (scount, len(flist)), 1)
 
 if __name__ == "__main__":
     run(sys.argv[0], sys.argv[1:])
