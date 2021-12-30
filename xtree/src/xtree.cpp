@@ -20,8 +20,9 @@
 using namespace trustbdd;
 
 void usage(const char *name) {
-    printf("Usage: %s [-h] -n N [-v VLEVEL] [-m (d|f)] [-b] [-s SEED] [-r ROOT]\n", name);
+    printf("Usage: %s [-h] [-g] -n N [-v VLEVEL] [-m (d|f)] [-b] [-s SEED] [-r ROOT]\n", name);
     printf("  -h         Print this information\n");
+    printf("  -g         Use Gaussian elimination\n");
     printf("  -n  N      Set number of problem variables\n");
     printf("  -v VLEVEL  Set verbosity level\n");
     printf("  -m (d|f)   Set proof type (d=DRAT, f=FRAT)\n");
@@ -191,6 +192,46 @@ void gen_drat_proof(char *fname, int n, int vlevel) {
 }
 // $end xtree-drat
 
+// $begin xtree-drat-gauss
+void gen_drat_gauss_proof(char *fname, int n, int vlevel) {
+    ilist lits = ilist_new(2); // For adding clauses directly to proof
+    ilist externals = ilist_new(2);
+    FILE *proof_file = fopen(fname, "w");
+    if (!proof_file) {
+	std::cerr << "Couldn't open file " << fname << std::endl;
+	exit(1);
+    }
+    int vcount = 3*n;  // Total number of variables
+    // TBDD initialization
+    tbdd_set_verbose(vlevel);
+    tbdd_init_drat(proof_file, vcount);  ///line:drat-gauss:initialize
+    // Use parity reasoning to infer constraint R1 ^ R2 = 1
+    xor_set xset; ///line:drat-gauss:xset:start
+    for (int x = 0; x < xor_variables.size(); x++) {
+	xor_constraint xc(xor_variables[x], xor_phases[x]);
+	xset.add(xc);
+    } ///line:drat-gauss:xset:end
+    ilist_fill2(externals, R1(n), R2(n));
+    xor_set reduced;
+    xset.gauss_jordan(externals, reduced); ///line:drat-gauss:xset:gauss
+    // Assert inequivalence of R1 and R2, as is implied by XOR sum
+    assert_clause(ilist_fill2(lits, R1(n), R2(n)));  ///line:drat-gauss:xor:start
+    assert_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:drat-gauss:xor:end
+    // Assert unit clause for R1
+    assert_clause(ilist_fill1(lits, R1(n))); ///line:drat-gauss:unit
+    // Assert empty clause
+    assert_clause(ilist_resize(lits, 0)); ///line:drat-gauss:empty
+    // Finish up
+    reduced.clear(); // Free underlying BDDs.  Delete clauses
+    tbdd_done();
+    fclose(proof_file);
+    ilist_free(lits);
+    ilist_free(externals);
+    std::cout << "File " << fname << " written" << std::endl << std::endl;
+}
+// $end xtree-drat-gauss
+
+
 void gen_dratb_proof(char *fname, int n, int vlevel) {
     ilist lits = ilist_new(2); // For adding clauses directly to proof
     FILE *proof_file = fopen(fname, "wb");
@@ -290,6 +331,7 @@ int main(int argc, char *argv[]) {
     int n = 0;
     proof_type_t ptype = PROOF_DRAT;
     bool do_binary = false;
+    bool do_gauss = false;
     char *root = NULL;
     char rootbuf[1024];
     char fnamec[1024];
@@ -357,8 +399,12 @@ int main(int argc, char *argv[]) {
     if (ptype == PROOF_DRAT) {
 	if (do_binary)
 	    gen_dratb_proof(fnamep, n, vlevel);
-	else
-	    gen_drat_proof(fnamep, n, vlevel);
+	else {
+	    if (do_gauss)
+		gen_drat_gauss_proof(fnamep, n, vlevel);
+	    else
+		gen_drat_proof(fnamep, n, vlevel);
+	}
     } else {
 	gen_frat_proof(fnamep, n, vlevel);
     }
