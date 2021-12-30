@@ -8,12 +8,12 @@
 
 using namespace trustbdd;
 
-// To aid debugging
-#define VERBOSE 0
-
 #define BUFLEN 2048
 // For formatting information
 static char ibuf[BUFLEN];
+
+// Standard seed value
+#define DEFAULT_SEED 123456
 
 /*
   Statistics gathering
@@ -246,7 +246,8 @@ xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
 
 
 ///////////////////////////////////////////////////////////////////
-// Managing pairs packed of ints packed into 64-bit word
+// To aid debugging
+// Managing pairs of ints packed into 64-bit word
 // Use these both as edge identifier
 // and as cost+unique value
 //
@@ -257,7 +258,7 @@ xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
 ///////////////////////////////////////////////////////////////////
 
 /*
-  Use 32-bit words packed into pairs
+  32-bit words packed into pairs
  */
 static int64_t pack(int upper, int lower) {
     return ((int64_t) upper << 32) | lower;
@@ -286,7 +287,8 @@ static int lower(int64_t pair) {
 // The sum graph provides a mechanism for implementing that heuristic.
 // There is a node for each remaining argument, and an undirected edge (i,i')
 // if nodes i & j share at least one nonzero coeffienct.
-// The edges are stored as an ordered set.
+//
+// The edges are stored as a map from cost to edge object.
 // Each step involves removing the least edge, (i,i'), (where i < i'), updating
 // node i to be the sum of i & i', and then updating the edges.
 // The edges for the new node i will be a subset of the edges (i,j) and (i',j).
@@ -313,8 +315,8 @@ static bool xoverlap(xor_constraint *xcp1, xor_constraint *xcp2) {
     return false;
 }
 
-/* Determine the cost of adding two xor constraints */
 /* 
+   Determine the cost of adding two xor constraints
    Result is 64 bits, where upper bits represent cost function,
    and lower bits make the value unique.
  */
@@ -353,7 +355,7 @@ static int64_t xcost(xor_constraint *xcp1, xor_constraint *xcp2, int lower) {
 class sequencer {
 
 public:
-    sequencer(void) { set_seed(123456); }
+    sequencer(void) { set_seed(DEFAULT_SEED); }
 
     void set_seed(uint64_t s) { seed = s == 0 ? 1 : s; next() ; next(); }
 
@@ -369,9 +371,10 @@ private:
 // Data structure for list edge
 class sgraph_edge {
 public:
-    sgraph_edge(int n1, int n2, int64_t c)
-    { node1 = n1, node2 = n2; cost = c; 
-	if (verbosity_level >= 3 )show("Adding"); }
+    sgraph_edge(int n1, int n2, int64_t c) {
+	node1 = n1, node2 = n2; cost = c;  
+	if (verbosity_level >= 3 ) show("Adding");
+    }
 
     ~sgraph_edge() { if (verbosity_level >= 3) show("Deleting"); }
 
@@ -396,7 +399,7 @@ public:
 	neighbors = new std::set<int> [node_count];
 	// Build inverse map from variables to nodes.  Use to keep track of
 	// which nodes share common variables
-	// Generate graph edges while building up reverse map
+	// Generate graph edges at the same time
 	std::set<int> *imap = new std::set<int>[variable_count];
 	for (int n1 = 0; n1 < node_count; n1++) {
 	    ilist variables = nodes[n1]->get_variables();
@@ -431,14 +434,24 @@ public:
 	    xor_constraint *xc = xor_plus(nodes[n1], nodes[n2]);
 	    delete nodes[n1];
 	    delete nodes[n2];
-	    nodes[n1] = xc;
 	    nodes[n2] = NULL;
 	    real_node_count--;
-	    if (verbosity_level >= 2)
-		e->show("Contracting");
-	    contract_edge(e);
-	    if (verbosity_level >= 3)
-		show("After contraction");
+	    if (xc->is_degenerate()) {
+		nodes[n1] = NULL;
+		real_node_count--;
+		if (verbosity_level >= 2)
+		    e->show("Deleting min");
+		if (verbosity_level >= 3)
+		    show("After deletion");
+
+	    } else {
+		nodes[n1] = xc;
+		if (verbosity_level >= 2)
+		    e->show("Contracting");
+		contract_edge(e);
+		if (verbosity_level >= 3)
+		    show("After contraction");
+	    }
 	    delete e;
 	}
 	xor_constraint *sum = new xor_constraint();
@@ -573,19 +586,14 @@ static xor_constraint *xor_sum_list_linear(xor_constraint **xlist, int len) {
     if (len == 0)
 	return new xor_constraint();
     xor_constraint *sum = xlist[0];
-    bool done = false;
+    xlist[0] = NULL;
     for (int i = 1; i < len; i++) {
 	xor_constraint *a = xlist[i];
 	xlist[i] = NULL;
-	if (done) {
-	    delete a;
-	} else {
-	    xor_constraint *nsum = xor_plus(sum, a);
-	    delete a;
-	    delete sum;
-	    sum = nsum;
-	    done = sum->is_infeasible();
-	}
+	xor_constraint *nsum = xor_plus(sum, a);
+	delete a;
+	delete sum;
+	sum = nsum;
     }
     return sum;
 }
@@ -596,8 +604,10 @@ static xor_constraint *xor_sum_list_bf(xor_constraint **xlist, int len) {
 	return new xor_constraint();
     // Use breadth-first addition
     xor_constraint **xbuf = new xor_constraint*[2*len];
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < len; i++) {
 	xbuf[i] = xlist[i];
+	xlist[i] = NULL;
+    }
     // Left and right-most positions that have been used in the buffer 
     int left = 0;
     int right = len-1;
@@ -607,8 +617,6 @@ static xor_constraint *xor_sum_list_bf(xor_constraint **xlist, int len) {
 	xbuf[++right] = xor_plus(arg1, arg2);
 	delete arg1;
 	delete arg2;
-	if (xbuf[right]->is_infeasible())
-	    break;
     }
     xor_constraint *sum = xbuf[right];
     delete[] xbuf;
@@ -620,12 +628,9 @@ xor_constraint *trustbdd::xor_sum_list(xor_constraint **xlist, int len, int maxv
     if (len <= 4)
  	return xor_sum_list_linear(xlist, len);
     //    return xor_sum_list_bf(xlist, len);
-    sum_graph g(xlist, len, maxvar, 1);
+    sum_graph g(xlist, len, maxvar, DEFAULT_SEED);
     return g.get_sum();
 }
-
-
-
 
 ///////////////////////////////////////////////////////////////////
 // Support for Gauss-Jordan elimination
@@ -707,6 +712,7 @@ public:
 		    continue;
 		printf("    Equation #%d: ", eid);
 		equations[eid]->show(stdout);
+		printf("\n");
 	    }
 	}
 	if (saved_equations.size() > 0) {
@@ -714,6 +720,7 @@ public:
 	    for (int eid = 0; eid < saved_equations.size(); eid++) {
 		printf("    Pivot variable %d.  Equation: ", saved_pivots[eid]->variable);
 		saved_equations[eid]->show(stdout);
+		printf("\n");
 	    }
 	}
     }
@@ -735,18 +742,13 @@ public:
 	    }
 	}
 	// Fix up the final result
+	nset.clear();
 	if (infeasible) {
-	    nset.clear();
 	    xor_constraint *seq = saved_equations[0];
 	    nset.add(*seq);
-	} else if (saved_equations.size() == 0) {
-	    // Degenerate
-	    nset.clear();
-	    xor_constraint deq;
-	    nset.add(deq);
-	} else {
+	} else if (saved_equations.size() > 0) {
+	    // Not degenerate
 	    jordanize();
-	    nset.clear();
 	    for (xor_constraint *eq : saved_equations)
 		nset.add(*eq);
 	}
@@ -755,7 +757,7 @@ public:
 private:
     // The set of external variables
     std::unordered_set<int> external_variables;
-    // The set of equations.  Get set to NULL when eliminated
+    // The set of equations.  Get set to NULL as eliminated
     xor_constraint **equations;
     // The number of original equations
     int equation_count;
@@ -773,6 +775,7 @@ private:
     pivot **pivot_list;
     // Mapping from cost function to pivot
     std::map<int64_t,pivot*> pivot_selector;
+    // Pseudo RNG to both randomize pivot selection and to generate unique IDs for pivots
     sequencer seq;
 
     // Assign new unique ID
@@ -789,7 +792,9 @@ private:
 	    ilist row = equations[eid]->get_variables();
 	    int c = (cols-1)*(ilist_length(row)-1);
 	    if (external_variables.count(var) > 0)
-		c += variable_count * equation_count;  // Penalty for external variable
+		// Penalty for external variable.
+		// Will have cost > any internal variable
+		c += equation_count * variable_count;
 	    int64_t cost = pack(c, new_lower());
 	    if (cost < best_cost) {
 		best_cost = cost;
@@ -807,12 +812,15 @@ private:
 	std::set<int> touched;  // Track variables that are involved
 	pivot *piv = pivot_selector.begin()->second;
 	pivot_selector.erase(piv->cost);
-	if (verbosity_level >= 3) {
+	if (verbosity_level >= 2) {
 	    piv->show("Using");
 	}
 	int peid = piv->equation_id;
 	int pvar = piv->variable;
+	pivot_list[pvar-1] = NULL;
 	xor_constraint *peq = equations[peid];
+	equations[peid] = NULL;
+	remaining_equation_count--;
 	ilist pvars = peq->get_variables();
 	// Remove any references from inverse map
 	for (int i = 0; i < ilist_length(pvars); i++) {
@@ -836,6 +844,7 @@ private:
 	    xor_constraint *neq = xor_plus(peq, eq);
 	    delete eq;
 	    if (neq->is_infeasible()) {
+		equations[eid] = NULL;
 		// Cancel any saved equations or pivots
 		for (xor_constraint *seq : saved_equations)
 		    delete seq;
@@ -850,18 +859,16 @@ private:
 		equations[eid] = NULL;
 		remaining_equation_count--;
 		delete neq;
-	    } else
+	    } else {
 		equations[eid] = neq;
-	    // Update inverse map
-	    ilist nvars = neq->get_variables();
-	    for (int i = 0; i < ilist_length(nvars); i++) {
-		int v = nvars[i];
-		imap[v-1].insert(eid);
+		// Update inverse map
+		ilist nvars = neq->get_variables();
+		for (int i = 0; i < ilist_length(nvars); i++) {
+		    int v = nvars[i];
+		    imap[v-1].insert(eid);
+		}
 	    }
 	}
-	// (re)move pivot equation
-	equations[peid] = NULL;
-	remaining_equation_count--;
 	if (external_variables.count(pvar) > 0) {
 	    saved_equations.push_back(peq);
 	    saved_pivots.push_back(piv);
@@ -886,13 +893,15 @@ private:
 	for (int peid = saved_equations.size()-1; peid > 0; peid--) {
 	    xor_constraint *peq = saved_equations[peid];
 	    int pvar = saved_pivots[peid]->variable;
+	    delete saved_pivots[peid];
+	    saved_pivots[peid] = NULL;
 	    for (int eid = pvar-1; eid >= 0; eid--) {
 		xor_constraint *eq = saved_equations[eid];
 		ilist vars = eq->get_variables();
 		if (ilist_is_member(vars, pvar)) {
 		    xor_constraint *neq = xor_plus(eq, peq);
 		    delete eq;
-		    saved_equations[eid] = eq;
+		    saved_equations[eid] = neq;
 		}
 	    }
 	}
@@ -908,37 +917,46 @@ private:
 
 
 xor_set::~xor_set() {
-    xlist.clear();
+    clear();
 }
 
 void xor_set::add(xor_constraint &con) {
     pseudo_init();
+    if (con.is_degenerate())
+	// Don't want this degenerate constraints
+	return;
     // Make local copy of the constraint
     xor_constraint *ncon = new xor_constraint(con);
     ilist vars = ncon->get_variables();
     int n = ilist_length(vars);
     if (n > 0 && vars[n-1] > maxvar)
 	maxvar = vars[n-1];
-
     xlist.push_back(ncon);
 }
 
 xor_constraint *xor_set::sum() {
     xor_constraint *xsum = xor_sum_list(xlist.data(), xlist.size(), maxvar);
-    xlist.clear();
+    clear();
     return xsum;
 }
 
 bool xor_set::is_degenerate() {
-    if (xlist.size() > 1)
-	return false;
-    return xlist[0]->is_degenerate();;
+    return xlist.size() == 0;
 }
 
 bool xor_set::is_infeasible() {
-    if (xlist.size() > 1)
+    if (xlist.size() != 1)
 	return false;
     return xlist[0]->is_infeasible();
+}
+
+void xor_set::clear() {
+    for (xor_constraint *xc : xlist) {
+	if (xc == NULL)
+	    delete xc;
+    }
+    xlist.clear();
+    maxvar = 0;
 }
 
 void xor_set::gauss_jordan(ilist external_variables, xor_set &nset) {
