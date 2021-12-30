@@ -2,6 +2,7 @@
 #define _ILIST_H
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <limits.h>
 
 
