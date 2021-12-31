@@ -194,7 +194,6 @@ private:
     int and_count;
     int quant_count;
     int equation_count;
-    int sum_count;
     int max_bdd;
 
     void check_gc() {
@@ -208,6 +207,15 @@ private:
 	    dead_count = 0;
 	}
     }
+
+    // Load new set of terms
+    void reset() {
+	next_term_id = 1;
+	min_active = 1;
+	// Want to number terms starting at 1
+	terms.resize(1, NULL);
+    }
+
 
 public:
 
@@ -227,6 +235,7 @@ public:
 	    clauses[i] = cp->data();
 	}
 	int rcode;
+	tbdd_set_verbose(verblevel);
 	if ((rcode = tbdd_init(proof_file, &variable_count, &last_clause_id, clauses, ptype, binary)) != 0) {
 	    fprintf(stderr, "Initialization failed.  Return code = %d\n", rcode);
 	    exit(1);
@@ -241,7 +250,6 @@ public:
 	and_count = 0;
 	quant_count = 0;
 	equation_count = 0;
-	sum_count = 0;
 	max_bdd = 0;
     }
   
@@ -330,6 +338,7 @@ public:
 	}
     }
 
+
     tbdd bucket_reduce() {
 	std::vector<int> *buckets = new std::vector<int>[max_variable+1];
 	int tcount = 0;
@@ -348,7 +357,7 @@ public:
 		int top = bdd_var(root);
 		if (buckets[top].size() == 0)
 		    bcount++;
-		buckets[top].push_back(tp->get_term_id());
+		buckets[top].push_back(i);
 		tcount++;
 	    }
 	}
@@ -590,55 +599,71 @@ public:
 		}
 		line ++;
 		break;
-	    case '+':
+	    case 'g':
 		c = get_numbers(schedfile, numbers);
 		if (c != '\n' && c != EOF) {
-		    fprintf(stderr, "Schedule line #%d.  Sum command. Non-numeric argument '%c'\n", line, c);
+		    fprintf(stderr, "Schedule line #%d.  Gauss command. Non-numeric argument '%c'\n", line, c);
 		    exit(1);
 		}
-		if (numbers.size() != 1) {
+		if (numbers.size() < 1) {
 		    fprintf(stderr, "Schedule line #%d.  Should specify number of equations to sum\n", line);
 		    exit(1);
 		} else {
-		    int scount = numbers[0];
-		    if (scount < 1 || scount > term_stack.size()-1) {
+		    int ecount = numbers[0];
+		    if (ecount < 1 || ecount > term_stack.size()) {
 			fprintf(stderr, 
-				"Schedule line #%d.  Cannot perform %d sums.  Stack size = %d\n",
-				line, scount, (int) term_stack.size());
+				"Schedule line #%d.  Cannot perform Gaussian elimination on %d equations.  Stack size = %d\n",
+				line, ecount, (int) term_stack.size());
 			exit(1);
+		    }
+		    ilist exvars = ilist_new(numbers.size()-1);
+		    for (int i = 1; i < numbers.size(); i++)
+			ilist_push(exvars, numbers[i]);
+		    xor_set xset;
+		    for (i = 0; i < ecount; i++) {
+			int si = term_stack.size() - i - 1;
+			Term *tp = term_stack[si];
+			if (tp->get_equation() == NULL) {
+			    fprintf(stderr, "Schedule line #%d.  Term %d does not have an associated equation\n", line, tp->get_term_id());
+			    exit(1);
+			}
+			xset.add(*tp->get_equation());
+		    }
+		    xor_set nset;
+		    xset.gauss_jordan(exvars, nset);
+		    ilist_free(exvars);
+		    if (nset.is_infeasible()) {
+			if (verblevel >= 2) {
+			    std::cout << "Schedule line #" << line << ".  Generated infeasible constraint" << std::endl;
+			}
+			tbdd result = nset.xlist[0]->get_validation();
+			return result;
+		    }
+		    for (i = 0; i < ecount; i++) {
+			Term *tp = term_stack.back();
+			term_stack.pop_back();
+			dead_count += tp->deactivate();
+		    }
+		    if (nset.xlist.size() == 0) {
+			if (verblevel >= 3) {
+			    std::cout << "Schedule line #" << line << ".  G-J elim on  " << ecount << 
+				" equations gives no new terms.  Stack size = " << term_stack.size() << std::endl;
+			}
 		    } else {
-			xor_set xset;
-			for (i = 0; i < scount+1; i++) {
-			    int si = term_stack.size() - i - 1;
-			    Term *tp = term_stack[si];
-			    if (tp->get_equation() == NULL) {
-				fprintf(stderr, "Schedule line #%d.  Term %d does not have an associated equation\n", line, tp->get_term_id());
-				exit(1);
-			    }
-			    xset.add(*tp->get_equation());
+			int first_term = -1;
+			int last_term = -1;
+			for (xor_constraint *xc : nset.xlist) {
+			    Term *tpn = new Term(xc->get_validation());
+			    last_term = tpn->get_term_id();
+			    if (first_term < 0)
+				first_term = last_term;
+			    term_stack.push_back(tpn);
 			}
-			xor_constraint *sum = xset.sum();
-			sum_count += scount;
-			equation_count++;
-			if (!sum->is_feasible()) {
-			    if (verblevel >= 2) {
-				std::cout << "Schedule line #" << line << ".  Generated infeasible constraint" << std::endl;
-			    }
-			    tbdd result = sum->get_validation();
-			    return result;
-			}
-			for (i = 0; i < scount+1; i++) {
-			    Term *tp = term_stack.back();
-			    term_stack.pop_back();
-			    dead_count += tp->deactivate();
-			}
-			Term *tpn = new Term(sum->get_validation());
-			tpn->set_equation(sum);
-			add(tpn);
+			nset.clear();
 			check_gc();
 			if (verblevel >= 3) {
-			    std::cout << "Schedule line #" << line << ".  Summed " << scount+1 << 
-				" equations to get Term #" << tpn->get_term_id() << ".  Stack size = " << term_stack.size() << std::endl;
+			    std::cout << "Schedule line #" << line << ".  G-J elim on " << ecount << 
+				" equations gives Terms #" << first_term << "--#" << last_term << ".  Stack size = " << term_stack.size() << std::endl;
 			}
 		    }
 		}
@@ -650,8 +675,15 @@ public:
 	    }
 	}
 	if (term_stack.size() != 1) {
-	    fprintf(stderr, "Schedule line #%d.  Schedule ended with %d terms on stack\n", line, (int) term_stack.size());
-	    exit(1);
+	    if (verblevel >= 2)
+		std::cout << "After executing schedule, have " << term_stack.size() << " terms.  Switching to bucket elimination" << std::endl;
+	    // Hack things up to treat remaining terms as entire set
+	    reset();
+	    for (Term *tp : term_stack) {
+		add(new Term(tp->get_fun()));
+	    }
+	    return bucket_reduce();
+
 	}
 	Term *tp = term_stack.back();
 	return tp->get_fun();
@@ -661,7 +693,7 @@ public:
 	bddStat s;
 	bdd_stats(s);
 	std::cout << and_count << " conjunctions, " << quant_count << " quantifications." << std::endl;
-	std::cout << equation_count << " equations, " << sum_count << " sums." << std::endl;
+	std::cout << equation_count << " equations" << std::endl;
 	bdd_printstat();
 	std::cout << "Total BDD nodes: " << s.produced <<std::endl;
 	std::cout << "Max BDD size: " << max_bdd << std::endl;

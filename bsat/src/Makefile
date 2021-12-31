@@ -2,7 +2,7 @@ CC=gcc
 CXX=g++
 OPT=-O2
 #OPT=-O0
-CFLAGS=-g $(OPT) -Wno-nullability-completeness
+CFLAGS=-g $(OPT) -Wno-nullability-completeness -std=c++11
 INC=-I../../buddy/include
 LDIR = ../../buddy/lib
 LIB = $(LDIR)/buddy.a
