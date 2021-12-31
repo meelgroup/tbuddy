@@ -506,12 +506,31 @@ int assert_clause(ilist clause) {
  Useful BDD operations
 ============================================*/
 
-BDD BDD_build_clause(ilist clause) {
+/*
+  Build BDD representation of clause
+ */
+BDD BDD_build_clause(ilist literals) {
+    if (literals == TAUTOLOGY_CLAUSE)
+	return bdd_true();
+    BDD r = bdd_false();
+    int i, lit;
+    for (i = 0; i < ilist_length(literals); i++) {
+	bdd_addref(r);
+	lit = literals[i];
+	BDD nr = lit < 0 ? bdd_makenode(-lit, bdd_true(), r) : bdd_makenode(lit, r, bdd_true());
+	bdd_delref(r);
+	r = nr;
+    }
+    return r;
+}
+
+
+BDD BDD_build_clause_old(ilist clause) {
     int len = ilist_length(clause);
     BDD r = bdd_false();
     int i;
     if (clause == TAUTOLOGY_CLAUSE)
-	return r;
+	return bdd_true();
     for (i = 0; i < len; i++) {
 	int lit = clause[i];
 	BDD vr = bdd_addref(lit < 0 ? BDD_nithvar(-lit) : BDD_ithvar(lit));
@@ -526,7 +545,7 @@ BDD BDD_build_clause(ilist clause) {
 }
 
 
-BDD BDD_build_xor(ilist variables, int phase) {
+BDD BDD_build_xor_old(ilist variables, int phase) {
     qsort((void *) variables, ilist_length(variables), sizeof(int), int_compare_tbdd);
 
     BDD r = phase ? bdd_false() : bdd_true();
@@ -538,5 +557,31 @@ BDD BDD_build_xor(ilist variables, int phase) {
 	bdd_delref(r);
 	r = nr;
     }
+    return r;
+}
+
+/*
+  Build BDD representation of XOR (phase = 1) or XNOR (phase = 0)
+*/
+BDD BDD_build_xor(ilist vars, int phase) {
+    ilist variables = ilist_copy(vars);
+    qsort((void *) variables, ilist_length(variables), sizeof(int), int_compare_tbdd);
+    BDD even = bdd_addref(bdd_true());
+    BDD odd = bdd_addref(bdd_false());
+    int i, v;
+    for (i = ilist_length(variables)-1; i > 0; i--) {
+	v = variables[i];
+	BDD neven = bdd_addref(bdd_makenode(v, even, odd));
+	BDD nodd = bdd_addref(bdd_makenode(v, odd, even));
+	bdd_delref(even);
+	bdd_delref(odd);
+	even = neven;
+	odd = nodd;
+    }
+    v = variables[0];
+    BDD r = phase ? bdd_makenode(v, odd, even) : bdd_makenode(v, even, odd);
+    bdd_delref(even);
+    bdd_delref(odd);
+    ilist_free(variables);
     return r;
 }
