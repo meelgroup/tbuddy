@@ -13,6 +13,6 @@ xtree: xtree.cpp
 
 clean:
 	rm -f *.o *~
-	rm -f *.cnf *.drat *.dratb *.frat *.fratb *.lrat *.lratb *.temp
+	rm -f *.cnf *.drat *.dratb *.frat *.fratb *.lrat *.lratb *.temp *.schedule
 	rm -f xtree xtreeb
 
