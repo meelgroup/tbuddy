@@ -190,29 +190,10 @@ static TBDD tbdd_duplicate(TBDD tr) {
  */
 
 
-static BDD bdd_from_clause(ilist clause) {
-    int len = ilist_length(clause);
-    BDD r = bdd_false();
-    int i;
-    if (clause == TAUTOLOGY_CLAUSE)
-	return r;
-    for (i = 0; i < len; i++) {
-	int lit = clause[i];
-	BDD vr = bdd_addref(lit < 0 ? BDD_nithvar(-lit) : BDD_ithvar(lit));
-	BDD nr = bdd_or(r, vr);
-	bdd_addref(nr);
-	bdd_delref(vr);
-	bdd_delref(r);
-	r = nr;
-    }
-    bdd_delref(r);
-    return r;
-}
-
 static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     TBDD rr;
     print_proof_comment(2, "Build BDD representation of clause #%d", id);
-    BDD r = bdd_addref(bdd_from_clause(clause));
+    BDD r = bdd_addref(BDD_build_clause(clause));
     int len = ilist_length(clause);
     int nlits = 2*len+1;
     int abuf[nlits+ILIST_OVHD];
@@ -248,7 +229,7 @@ TBDD tbdd_from_clause_old(ilist clause) {
 	ilist_format(clause, ibuf, " ", BUFLEN);
 	print_proof_comment(2, "BDD representation of clause [%s]", ibuf);
     }
-    BDD r = bdd_from_clause(clause);
+    BDD r = BDD_build_clause(clause);
     return tbdd_trust(r);    
 }
 
@@ -488,8 +469,10 @@ int tbdd_validate_clause(ilist clause, TBDD tr) {
 	    ilist_format(clause, buf, " ", BUFLEN);
 	    print_proof_comment(2, "Validation of clause [%s] from N%d requires generating intermediate BDD", buf, NNAME(tr.root));
 	}
-	BDD cr = bdd_from_clause(clause);
+	BDD cr = BDD_build_clause(clause);
+	bdd_addref(cr);
 	TBDD tcr = tbdd_validate(cr, tr);
+	bdd_delref(cr);
 	int id = tbdd_validate_clause_path(clause, tcr);
 	if (id < 0) {
 	    char buf[BUFLEN];
@@ -519,3 +502,41 @@ int assert_clause(ilist clause) {
     return generate_clause(clause, ant);
 }
 
+/*============================================
+ Useful BDD operations
+============================================*/
+
+BDD BDD_build_clause(ilist clause) {
+    int len = ilist_length(clause);
+    BDD r = bdd_false();
+    int i;
+    if (clause == TAUTOLOGY_CLAUSE)
+	return r;
+    for (i = 0; i < len; i++) {
+	int lit = clause[i];
+	BDD vr = bdd_addref(lit < 0 ? BDD_nithvar(-lit) : BDD_ithvar(lit));
+	BDD nr = bdd_or(r, vr);
+	bdd_addref(nr);
+	bdd_delref(vr);
+	bdd_delref(r);
+	r = nr;
+    }
+    bdd_delref(r);
+    return r;
+}
+
+
+BDD BDD_build_xor(ilist variables, int phase) {
+    qsort((void *) variables, ilist_length(variables), sizeof(int), int_compare_tbdd);
+
+    BDD r = phase ? bdd_false() : bdd_true();
+    int i;
+    for (i = 0; i < ilist_length(variables); i++) {
+	bdd_addref(r);
+	BDD lit = bdd_addref(bdd_ithvar(variables[i]));
+	BDD nr = bdd_xor(r, lit);
+	bdd_delref(r);
+	r = nr;
+    }
+    return r;
+}

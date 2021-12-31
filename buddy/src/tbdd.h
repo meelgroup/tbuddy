@@ -207,6 +207,15 @@ extern int tbdd_validate_clause(ilist clause, TBDD tr);
  */
 extern int assert_clause(ilist clause);
 
+/*============================================
+ Useful BDD operations
+============================================*/
+
+/* Construct BDD representation of a clause */
+extern BDD BDD_build_clause(ilist literals);
+/* Construct BDD representation of XOR (phase = 1) or XNOR (phase = 0) */
+extern BDD BDD_build_xor(ilist variables, int phase);
+
 
 #ifdef CPLUSPLUS
 }
@@ -260,6 +269,9 @@ class tbdd
     friend int tbdd_validate_clause(ilist clause, tbdd &tr);
     friend tbdd tbdd_from_xor(ilist variables, int phase);
     friend int tbdd_nameid(tbdd &tr);
+    friend bdd bdd_build_clause(ilist literals);
+    friend bdd bdd_build_xor(ilist literals);
+
 
     // Convert to low-level form
     friend void tbdd_xfer(tbdd &tr, TBDD &res);
@@ -300,6 +312,13 @@ inline tbdd tbdd_from_xor(ilist variables, int phase)
 
 inline int tbdd_nameid(tbdd &tr)
 { return bdd_nameid(tr.root); }
+
+inline bdd bdd_build_clause(ilist literals)
+{ return bdd(BDD_build_clause(literals)); }
+ 
+inline bdd bdd_build_xor(ilist variables, int phase)
+{ return bdd(BDD_build_xor(variables, phase)); }
+
 
 } /* Namespace trustbdd */
 #endif /* CPLUSPLUS */

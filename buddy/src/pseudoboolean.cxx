@@ -138,21 +138,6 @@ static ilist coefficient_sum(ilist list1, ilist list2) {
 }
 
 /*
-  Build BDD representation of XOR (phase = 1) or XNOR (phase = 0)
-*/
-static bdd bdd_build_xor(ilist variables, int phase) {
-    qsort((void *) variables, ilist_length(variables), sizeof(int), int_compare);
-
-    bdd r = phase ? bdd_false() : bdd_true();
-    int i;
-    for (i = 0; i < ilist_length(variables); i++) {
-	bdd lit = bdd_ithvar(variables[i]);
-	r = bdd_xor(r, lit);
-    }
-    return r;
-}
-
-/*
   Use BDD representation of XOR constraint as canonical representation.
   Keep table of created constraints.
   Sets xfun to derived BDD
