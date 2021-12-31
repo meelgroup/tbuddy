@@ -92,6 +92,12 @@ class Xor:
         stlist = ['1.%d' % v for v in vars]
         outfile.write("=2 %d %s\n" % (phase, " ".join(stlist)))
 
+    def mapClauses(self, idlist, map):
+        for id in idlist:
+            clause = self.getClause(id)
+            for lit in clause:
+                map[abs(lit)] = True
+
     def generate(self, oname):
         if oname is None:
             outfile = sys.stdout
@@ -105,18 +111,28 @@ class Xor:
         clauseCount = 0
         xcount = 0
         otherIdList = []
+        xmap = {}
+        omap = {}
         for idlist in idlists:
             clauseCount += len(idlist)
             (xorClauses, xnorClauses, otherClauses) = self.classifyClauses(idlist)
             if len(xorClauses) > 0:
+                self.mapClauses(xorClauses, xmap)
                 self.emitX(xorClauses, 1, outfile)
                 xcount += 1
             if len(xnorClauses) > 0:
+                self.mapClauses(xnorClauses, xmap)
                 self.emitX(xnorClauses, 0, outfile)
                 xcount += 1
             otherIdList += otherClauses
+            self.mapClauses(otherClauses, omap)
         if (xcount > 0):
-            outfile.write("g\n")
+            exvars = []
+            for v in xmap.keys():
+                if v in omap:
+                    exvars.append(v)
+            slist = [str(v) for v in sorted(exvars)]
+            outfile.write("g %d %s\n" % (xcount, " ".join(slist)))
         if len(otherIdList) > 0:
             slist = [str(id) for id in sorted(otherIdList)]
             outfile.write("c %s\n" % " ".join(slist))
