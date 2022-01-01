@@ -9,6 +9,7 @@
 import getopt
 import sys
 import glob
+import datetime
 
 import exutil
 
@@ -23,6 +24,8 @@ def usage(name):
     exutil.ewrite("  -p PATH  Process all CNF files with matching path prefix\n", 0)
     exutil.ewrite("  -m MAXC  Skip files with larger number of clauses\n", 0)
 
+startTime = None
+
 
 class Xor:
     # Input clauses
@@ -30,9 +33,11 @@ class Xor:
     # Mapping from list of variables to the clauses containing exactly those variables
     varMap = {}
     msgPrefix = ""
+    variableCount = 0
 
-    def __init__(self, clauses, iname):
+    def __init__(self, clauses, iname, nvar):
         self.clauses = clauses
+        self.variableCount = nvar
         self.varMap = {}
         self.msgPrefix = "" if iname is None else "File %s: " % iname
         for idx in range(1, len(clauses)+1):
@@ -98,7 +103,7 @@ class Xor:
             for lit in clause:
                 map[abs(lit)] = True
 
-    def generate(self, oname):
+    def generate(self, oname, multiFile):
         if oname is None:
             outfile = sys.stdout
         else:
@@ -126,8 +131,8 @@ class Xor:
                 xcount += 1
             otherIdList += otherClauses
             self.mapClauses(otherClauses, omap)
+        exvars = []
         if (xcount > 0):
-            exvars = []
             for v in xmap.keys():
                 if v in omap:
                     exvars.append(v)
@@ -138,10 +143,33 @@ class Xor:
             outfile.write("c %s\n" % " ".join(slist))
         if oname is not None:
             outfile.close()
-        exutil.ewrite("%s%d equations extracted.  %d other clauses.  %d total clauses\n" % (self.msgPrefix, xcount, len(otherIdList), clauseCount), 1)
+        seconds = None
+        if startTime is not None:
+            delta = datetime.datetime.now() - startTime
+            seconds = delta.seconds + 1e-6 * delta.microseconds
+        if multiFile:
+            exutil.ewrite("%s%d equations" % (self.msgPrefix, xcount), 1)
+            exutil.ewrite(", %d clauses (%d non-xor)" % (clauseCount, len(otherIdList)), 1)
+            exutil.ewrite(", %d variables (%d external)" % (self.variableCount, len(exvars)), 1)
+            if seconds is None:
+                exutil.ewrite("\n", 1)
+            else:
+                exutil.ewrite(", %.2f seconds\n" % seconds, 1)
+        else:
+            exutil.ewrite("%s\n" % self.msgPrefix, 1)
+            exutil.ewrite("    Equations extracted: %d\n" % xcount, 1)
+            exutil.ewrite("    Total clauses: %d\n" % clauseCount, 1)
+            exutil.ewrite("    Non-xor clauses: %d\n" % len(otherIdList), 1)
+            exutil.ewrite("    Total variables: %d\n" % self.variableCount, 1)
+            exutil.ewrite("    External variables: %d\n" % len(exvars), 1)
+            if seconds is not None:
+                exutil.ewrite("    Elapsed seconds: %.2f\n" % seconds, 1)
+
         return True
         
-def extract(iname, oname, maxclause):
+def extract(iname, oname, maxclause, multiFile):
+    global startTime
+    startTime = datetime.datetime.now()
     try:
         reader = exutil.CnfReader(iname, maxclause = maxclause, rejectClause = None)
         if len(reader.clauses) == 0:
@@ -150,8 +178,10 @@ def extract(iname, oname, maxclause):
     except Exception as ex:
         exutil.ewrite("Couldn't read CNF file: %s" % str(ex), 1)
         return
-    xor = Xor(reader.clauses, iname)
-    return xor.generate(oname)
+    xor = Xor(reader.clauses, iname, reader.nvar)
+    result = xor.generate(oname, multiFile)
+    startTime = None
+    return result
 
 
 def replaceExtension(path, ext):
@@ -191,7 +221,7 @@ def run(name, args):
         usage(name)
         return
     if path is None:
-        ecode = 0 if  extract(iname, oname, maxclause) else 1
+        ecode = 0 if  extract(iname, oname, maxclause, False) else 1
         sys.exit(ecode)
     else:
         if iname is not None or oname is not None:
@@ -202,7 +232,7 @@ def run(name, args):
         flist = sorted(glob.glob(path + '*.cnf'))
         for iname in flist:
             oname = replaceExtension(iname, 'schedule')
-            if extract(iname, oname, maxclause):
+            if extract(iname, oname, maxclause, True):
                 scount += 1
         exutil.ewrite("Extracted equations for %d/%d files\n" % (scount, len(flist)), 1)
 
