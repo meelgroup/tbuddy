@@ -29,6 +29,7 @@ CFLAGS = --maxconfl $(CONFLICTS)
 TDIR = ../../bsat/src/
 TBSAT = $(TDIR)/tbsat
 TFLAGS = -b -v $(VLEVEL)
+XEXT = $(MDIR)/xor_extractor.py
 
 INTERP=python3
 GRAB = $(INTERP) ./grab_data.py
@@ -43,7 +44,7 @@ $(ROOT)-$(N).cnf:
 $(ROOT)-f-$(N).cnf:
 	$(GEN) -n $(N) -s $(SEED) -m f -r $(ROOT)-f-$(N) | tee $(ROOT)f-$(N).data
 
-.SUFFIXES: .cnf .xdata .kdata .cdata .fcdata .tdata .fdata .mfdata
+.SUFFIXES: .cnf .xdata .kdata .cdata .fcdata .tdata .tgdata .fdata .mfdata
 
 .cnf.xdata:
 	$(DRAT) $< $*.drat | tee $@
@@ -67,6 +68,14 @@ $(ROOT)-f-$(N).cnf:
 	$(LRAT) $< $*-tbsat.lrat | tee -a $@
 	ls -l $*-tbsat.lrat
 	$(RM) $*-tbsat.lrat
+
+.cnf.tgdata:
+	$(XEXT) -i $< -o $*.schedule | tee $@
+	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -o $*-tgbsat.lrat | tee -a $@
+	$(LRAT) $< $*-tgbsat.lrat | tee -a $@
+	ls -l $*-tgbsat.lrat
+	$(RM) $*-tgbsat.lrat
+
 
 .cnf.fcdata:
 	$(CMS) $(CFLAGS)  $< | tee $@
@@ -107,6 +116,9 @@ data:
 	$(GRAB) "Elapsed" *.tdata > tbsat-generation-seconds.csv
 	$(GRAB) "verification time" *.tdata > tbsat-lrat-seconds.csv	
 	$(GRAB) "Total clauses" *.tdata > tbsat-clauses.csv	
+	$(GRAB) "Elapsed" *.tgdata > tgbsat-generation-seconds.csv
+	$(GRAB) "verification time" *.tgdata > tgbsat-lrat-seconds.csv	
+	$(GRAB) "Total clauses" *.tgdata > tgbsat-clauses.csv	
 	$(GRAB) "real" *.fdata > tbuddy-frat-seconds.csv
 
 clean:

@@ -78,8 +78,10 @@ make N=500
 make xtree-500.xdata
 
 make N=600
+make xtree-600.xdata
 
 make N=700
+make xtree-700.xdata
 
 make N=800
 
@@ -101,6 +103,7 @@ make N=7000
 
 make N=8000
 
-#make N=9000
+make N=9000
 
-#make N=9999
+make N=9999
+
