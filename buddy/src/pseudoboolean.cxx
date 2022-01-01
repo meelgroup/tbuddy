@@ -371,6 +371,7 @@ public:
     }
 };
 
+
 class sum_graph {
 
 public:
@@ -379,6 +380,7 @@ public:
 	nodes = xlist;
 	real_node_count = node_count = xcount;
 	neighbors = new std::set<int> [node_count];
+	int real_variable_count = 0;
 	// Build inverse map from variables to nodes.  Use to keep track of
 	// which nodes share common variables
 	// Generate graph edges at the same time
@@ -391,10 +393,15 @@ public:
 		    if (edge_map.count(ordered_pack(n1, n2)) == 0)
 			add_edge(n1, n2);
 		}
+		if (imap[v-1].size() == 0)
+		    real_variable_count++;
 		imap[v-1].insert(n1);
 	    }
 	}
 	delete[] imap;
+	if (verbosity_level >= 1) {
+	    printf("Summing over graph with %d nodes, %d edges, %d variables\n", xcount, (int) edge_map.size(), real_variable_count);
+	}
 	if (verbosity_level >= 2)
 	    show("Initial");
     }
@@ -647,6 +654,8 @@ public:
 	equations = xlist;
 	equation_count = remaining_equation_count = xcount;
 	variable_count = vcount;
+	int real_variable_count = 0;
+	int real_exvar_count = 0;
 	for (int i = 0; i < ilist_length(exvars); i++)
 	    external_variables.insert(exvars[i]);
 	// Build inverse map
@@ -664,8 +673,15 @@ public:
 	    pivot_list[v-1] = piv;
 	    if (piv) {
 		int64_t pcost = piv->cost;
+		real_variable_count++;
+		if (external_variables.count(v) > 0)
+		    real_exvar_count ++;
 		pivot_selector[pcost] = piv;
 	    }
+	}
+	if (verbosity_level >= 1) {
+	    printf("Performing Gauss-Jordan elimination with %d equations, %d  variables (%d external)\n",
+		   xcount, real_variable_count, real_exvar_count);
 	}
     }
 
@@ -729,11 +745,17 @@ public:
 	if (infeasible) {
 	    xor_constraint *seq = saved_equations[0];
 	    nset.add(*seq);
+	    if (verbosity_level >= 1) {
+		printf("Gauss-Jordan completed.  %d steps.  System infeasible\n", step_count);
+	    }
 	} else if (saved_equations.size() > 0) {
 	    // Not degenerate
 	    jordanize();
 	    for (xor_constraint *eq : saved_equations)
 		nset.add(*eq);
+	    if (verbosity_level >= 1) {
+		printf("Gauss-Jordan completed.  %d steps.  %d final equations\n", step_count, (int) saved_equations.size());
+	    }
 	}
     }
 
