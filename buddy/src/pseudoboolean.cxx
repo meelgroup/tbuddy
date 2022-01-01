@@ -748,6 +748,7 @@ public:
 	    if (verbosity_level >= 1) {
 		printf("Gauss-Jordan completed.  %d steps.  System infeasible\n", step_count);
 	    }
+	    return;
 	} else if (saved_equations.size() > 0) {
 	    // Not degenerate
 	    jordanize();
@@ -851,8 +852,6 @@ private:
 	    xor_constraint *neq = xor_plus(peq, eq);
 	    delete eq;
 	    if (neq->is_infeasible()) {
-		if (verbosity_level >= 2)
-		    printf("Infeasible equation #%d + #%d encountered\n", peid, eid);
 		equations[eid] = NULL;
 		// Cancel any saved equations or pivots
 		for (xor_constraint *seq : saved_equations)

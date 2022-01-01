@@ -564,6 +564,8 @@ BDD BDD_build_xor_old(ilist variables, int phase) {
   Build BDD representation of XOR (phase = 1) or XNOR (phase = 0)
 */
 BDD BDD_build_xor(ilist vars, int phase) {
+    if (ilist_length(vars) == 0)
+	return phase ? bdd_false() : bdd_true();
     ilist variables = ilist_copy(vars);
     qsort((void *) variables, ilist_length(variables), sizeof(int), int_compare_tbdd);
     BDD even = bdd_addref(bdd_true());

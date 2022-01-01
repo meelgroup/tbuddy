@@ -659,7 +659,6 @@ public:
 				first_term = last_term;
 			    term_stack.push_back(tpn);
 			}
-			nset.clear();
 			check_gc();
 			if (verblevel >= 3) {
 			    std::cout << "Schedule line #" << line << ".  G-J elim on " << ecount << 
