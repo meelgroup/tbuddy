@@ -20,12 +20,12 @@
 using namespace trustbdd;
 
 void usage(const char *name) {
-    printf("Usage: %s [-h] [-g] -n N [-v VLEVEL] [-m (d|f)] [-b] [-s SEED] [-r ROOT]\n", name);
+    printf("Usage: %s [-h] [-c] [-g] -n N [-v VLEVEL] [-m (d|f|n)] [-b] [-s SEED] [-r ROOT]\n", name);
     printf("  -h         Print this information\n");
     printf("  -g         Use Gaussian elimination\n");
     printf("  -n  N      Set number of problem variables\n");
     printf("  -v VLEVEL  Set verbosity level\n");
-    printf("  -m (d|f)   Set proof type (d=DRAT, f=FRAT)\n");
+    printf("  -m (d|f|n)   Set proof type (d=DRAT, f=FRAT, n=No proof)\n");
     printf("  -n         Use binary files\n");
     printf("  -s SEED    Set random seed\n");
     printf("  -r ROOT    Root of CNF and proof files\n");
@@ -361,6 +361,9 @@ int main(int argc, char *argv[]) {
 	    case 'f':
 		ptype = PROOF_FRAT;
 		break;
+	    case 'n':
+		ptype = PROOF_NONE;
+		break;
 	    default:
 		printf("Unknown proof type '%c'\n", optarg[0]);
 		usage(argv[0]);
@@ -408,7 +411,7 @@ int main(int argc, char *argv[]) {
 	    else
 		gen_drat_proof(fnamep, n, vlevel);
 	}
-    } else {
+    } else if (ptype == PROOF_FRAT) {
 	gen_frat_proof(fnamep, n, vlevel);
     }
     printf("Elapsed seconds: %.2f\n", tod()-start);

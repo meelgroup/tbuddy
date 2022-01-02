@@ -14,6 +14,8 @@ static char ibuf[BUFLEN];
 
 // Standard seed value
 #define DEFAULT_SEED 123456
+// Amount added to pivot penalty for external variable
+#define EXTERNAL_PENALTY (1<<30)
 
 /*
   Statistics gathering
@@ -807,7 +809,7 @@ private:
 	    if (external_variables.count(var) > 0)
 		// Penalty for external variable.
 		// Will have cost > any internal variable
-		c += equation_count * variable_count;
+		c += EXTERNAL_PENALTY;
 	    int64_t cost = pack(c, new_lower());
 	    if (cost < best_cost) {
 		best_cost = cost;

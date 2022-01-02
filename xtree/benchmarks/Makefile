@@ -38,13 +38,19 @@ drat: $(ROOT)-$(N).cnf
 
 frat: $(ROOT)-f-$(N).cnf
 
+np: $(ROOT)-n-$(N).cnf
+
 $(ROOT)-$(N).cnf:
 	$(GEN) -n $(N) -s $(SEED) -m d -r $(ROOT)-$(N) | tee $(ROOT)-$(N).data
 
 $(ROOT)-f-$(N).cnf:
-	$(GEN) -n $(N) -s $(SEED) -m f -r $(ROOT)-f-$(N) | tee $(ROOT)f-$(N).data
+	$(GEN) -n $(N) -s $(SEED) -m f -r $(ROOT)-f-$(N) | tee $(ROOT)-f-$(N).data
 
-.SUFFIXES: .cnf .xdata .kdata .cdata .fcdata .tdata .tgdata .fdata .mfdata
+$(ROOT)-n-$(N).cnf:
+	$(GEN) -n $(N) -s $(SEED) -m n -r $(ROOT)-n-$(N) | tee $(ROOT)-n-$(N).data
+
+
+.SUFFIXES: .cnf .xdata .kdata .cdata .fcdata .tdata .tgdata .tnpdata .tgnpdata .fdata .mfdata
 
 .cnf.xdata:
 	$(DRAT) $< $*.drat | tee $@
@@ -76,6 +82,12 @@ $(ROOT)-f-$(N).cnf:
 	ls -l $*-tgbsat.lrat
 	$(RM) $*-tgbsat.lrat
 
+.cnf.tnpdata:
+	$(TBSAT) $(TFLAGS) -i $< | tee $@
+
+.cnf.tgnpdata:
+	$(XEXT) -i $< -o $*.schedule | tee $@
+	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule  | tee -a $@
 
 .cnf.fcdata:
 	$(CMS) $(CFLAGS)  $< | tee $@
@@ -114,9 +126,11 @@ data:
 	$(GRAB) "Total time" *.cdata > cms-generation-seconds.csv
 	$(GRAB) "Total time" *.fcdata > cms-noproof-seconds.csv
 	$(GRAB) "Elapsed" *.tdata > tbsat-generation-seconds.csv
+	$(GRAB) "Elapsed" *.tnpdata > tbsat-noproof-generation-seconds.csv
 	$(GRAB) "verification time" *.tdata > tbsat-lrat-seconds.csv	
 	$(GRAB) "Total clauses" *.tdata > tbsat-clauses.csv	
 	$(GRAB) "Elapsed" *.tgdata > tgbsat-generation-seconds.csv
+	$(GRAB) "Elapsed" *.tgnpdata > tgbsat-noproof-generation-seconds.csv
 	$(GRAB) "verification time" *.tgdata > tgbsat-lrat-seconds.csv	
 	$(GRAB) "Total clauses" *.tgdata > tgbsat-clauses.csv	
 	$(GRAB) "real" *.fdata > tbuddy-frat-seconds.csv
