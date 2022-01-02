@@ -158,7 +158,7 @@ class Xor:
         else:
             exutil.ewrite("%s\n" % self.msgPrefix, 1)
             exutil.ewrite("    Equations extracted: %d\n" % xcount, 1)
-            exutil.ewrite("    Total clauses: %d\n" % clauseCount, 1)
+            exutil.ewrite("    Input clauses: %d\n" % clauseCount, 1)
             exutil.ewrite("    Non-xor clauses: %d\n" % len(otherIdList), 1)
             exutil.ewrite("    Total variables: %d\n" % self.variableCount, 1)
             exutil.ewrite("    External variables: %d\n" % len(exvars), 1)
