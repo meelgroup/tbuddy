@@ -218,7 +218,7 @@ xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
     xor_constraint *xcp = find_constraint(nvariables, nphase, xfun);
     if (xcp == NULL) {
 	pseudo_plus_unique++;
-	tbdd nvalidation = tbdd_and(arg1->validation, arg2->validation);
+	tbdd nvalidation = proof_type == PROOF_NONE ? tbdd_tautology() : tbdd_and(arg1->validation, arg2->validation);
 	xcp = new xor_constraint(nvariables, nphase, nvalidation);
     }
     return xcp;

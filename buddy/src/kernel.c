@@ -303,33 +303,35 @@ void bdd_done(void)
    bdd_pairs_done();
    
 #if ENABLE_TBDD
-   int dbuf[4+ILIST_OVHD];
-   ilist dlist;
-   int id;
-   int n;
+   if (proof_type != PROOF_NONE) {
+       int dbuf[4+ILIST_OVHD];
+       ilist dlist;
+       int id;
+       int n;
 
-   print_proof_comment(2, "Delete clauses for all remaining nodes");
-   for (n=bddnodesize-1; n>=2 ; n--)
-   {
-       BddNode *node = &bddnodes[n];
-       if (LEVELp(node) > 0 && LOWp(node) != -1)
-       {
-	   dlist = ilist_make(dbuf, 4);
-	      /* Delete defining clauses */
-	      if ((id = bdd_dclause_p(node, DEF_HU)) != TAUTOLOGY)
-		  ilist_push(dlist, id);
-	      if ((id = bdd_dclause_p(node, DEF_LU)) != TAUTOLOGY)
-		  ilist_push(dlist, id);
-	      if ((id = bdd_dclause_p(node, DEF_HD)) != TAUTOLOGY)
-		  ilist_push(dlist, id);
-	      if ((id = bdd_dclause_p(node, DEF_LD)) != TAUTOLOGY)
-		  ilist_push(dlist, id);
+       print_proof_comment(2, "Delete clauses for all remaining nodes");
+       for (n=bddnodesize-1; n>=2 ; n--)
+	   {
+	       BddNode *node = &bddnodes[n];
+	       if (LEVELp(node) > 0 && LOWp(node) != -1)
+		   {
+		       dlist = ilist_make(dbuf, 4);
+		       /* Delete defining clauses */
+		       if ((id = bdd_dclause_p(node, DEF_HU)) != TAUTOLOGY)
+			   ilist_push(dlist, id);
+		       if ((id = bdd_dclause_p(node, DEF_LU)) != TAUTOLOGY)
+			   ilist_push(dlist, id);
+		       if ((id = bdd_dclause_p(node, DEF_HD)) != TAUTOLOGY)
+			   ilist_push(dlist, id);
+		       if ((id = bdd_dclause_p(node, DEF_LD)) != TAUTOLOGY)
+			   ilist_push(dlist, id);
 
-	      if (ilist_length(dlist) > 0)
-		  print_proof_comment(2, "Delete defining clauses for node N%d.", XVARp(node));
+		       if (ilist_length(dlist) > 0)
+			   print_proof_comment(2, "Delete defining clauses for node N%d.", XVARp(node));
 
-	      delete_clauses(dlist);
-       }
+		       delete_clauses(dlist);
+		   }
+	   }
    }
 #endif
 
@@ -1255,21 +1257,23 @@ void bdd_gbc(void)
 #if ENABLE_TBDD	  
 	  if (LOWp(node) != -1) {
 	      freed++;
-	      dlist = ilist_make(dbuf, 4);
-	      /* Delete defining clauses */
-	      if ((id = bdd_dclause_p(node, DEF_HU)) != TAUTOLOGY)
-		  ilist_push(dlist, id);
-	      if ((id = bdd_dclause_p(node, DEF_LU)) != TAUTOLOGY)
-		  ilist_push(dlist, id);
-	      if ((id = bdd_dclause_p(node, DEF_HD)) != TAUTOLOGY)
-		  ilist_push(dlist, id);
-	      if ((id = bdd_dclause_p(node, DEF_LD)) != TAUTOLOGY)
-		  ilist_push(dlist, id);
+	      if (proof_type != PROOF_NONE) {
+		  dlist = ilist_make(dbuf, 4);
+		  /* Delete defining clauses */
+		  if ((id = bdd_dclause_p(node, DEF_HU)) != TAUTOLOGY)
+		      ilist_push(dlist, id);
+		  if ((id = bdd_dclause_p(node, DEF_LU)) != TAUTOLOGY)
+		      ilist_push(dlist, id);
+		  if ((id = bdd_dclause_p(node, DEF_HD)) != TAUTOLOGY)
+		      ilist_push(dlist, id);
+		  if ((id = bdd_dclause_p(node, DEF_LD)) != TAUTOLOGY)
+		      ilist_push(dlist, id);
 
-	      if (ilist_length(dlist) > 0) {
-		  print_proof_comment(2, "Delete defining clauses for node N%d", XVARp(node));
+		  if (ilist_length(dlist) > 0) {
+		      print_proof_comment(2, "Delete defining clauses for node N%d", XVARp(node));
+		  }
+		  delete_clauses(dlist);
 	      }
-	      delete_clauses(dlist);
 	  }
 #else
 	 if (LOWp(node) != 1)
@@ -1540,28 +1544,33 @@ int bdd_makenode(unsigned int level, int low, int high)
    
    #if ENABLE_TBDD
    if (level > 0) {
-       int nid = ++(*variable_counter);
-       int vid = level;
-       int hid = XVAR(high);
-       int lid = XVAR(low);
-       int hname = NNAME(high);
-       int lname = NNAME(low);
-       int dbuf[3+ILIST_OVHD];
-       int abuf[2+ILIST_OVHD];
-       ilist dlist = ilist_make(dbuf, 3);
-       ilist alist = ilist_make(abuf, 2);
-       int huid, luid;
-       XVARp(node) = nid;
-       DCLAUSEp(node) = *clause_id_counter + 1;
-       print_proof_comment(2, "Defining clauses for node N%d = ITE(V%d, N%d, N%d)", nid, vid, hname, lname);
-       huid = generate_clause(defining_clause(dlist, DEF_HU, nid, vid, hid, lid), alist);
-       luid = generate_clause(defining_clause(dlist, DEF_LU, nid, vid, hid, lid), alist);
-       if (huid != TAUTOLOGY)
-	   ilist_push(alist, -huid);
-       if (luid != TAUTOLOGY)
-	   ilist_push(alist, -luid);
-       generate_clause(defining_clause(dlist, DEF_HD, nid, vid, hid, lid), alist);              
-       generate_clause(defining_clause(dlist, DEF_LD, nid, vid, hid, lid), alist);       
+       if (proof_type == PROOF_NONE) {
+	   XVARp(node) = res;
+	   DCLAUSEp(node) = 0;
+       } else {
+	   int nid = ++(*variable_counter);
+	   int vid = level;
+	   int hid = XVAR(high);
+	   int lid = XVAR(low);
+	   int hname = NNAME(high);
+	   int lname = NNAME(low);
+	   int dbuf[3+ILIST_OVHD];
+	   int abuf[2+ILIST_OVHD];
+	   ilist dlist = ilist_make(dbuf, 3);
+	   ilist alist = ilist_make(abuf, 2);
+	   int huid, luid;
+	   XVARp(node) = nid;
+	   DCLAUSEp(node) = *clause_id_counter + 1;
+	   print_proof_comment(2, "Defining clauses for node N%d = ITE(V%d, N%d, N%d)", nid, vid, hname, lname);
+	   huid = generate_clause(defining_clause(dlist, DEF_HU, nid, vid, hid, lid), alist);
+	   luid = generate_clause(defining_clause(dlist, DEF_LU, nid, vid, hid, lid), alist);
+	   if (huid != TAUTOLOGY)
+	       ilist_push(alist, -huid);
+	   if (luid != TAUTOLOGY)
+	       ilist_push(alist, -luid);
+	   generate_clause(defining_clause(dlist, DEF_HD, nid, vid, hid, lid), alist);              
+	   generate_clause(defining_clause(dlist, DEF_LD, nid, vid, hid, lid), alist);       
+       }
    }
    #endif
       /* Insert node */

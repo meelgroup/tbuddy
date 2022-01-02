@@ -17,7 +17,7 @@ void usage(char *name) {
     printf("  -b               Use bucket elimination\n");
     printf("  -v VERB          Set verbosity level (0-3)\n");
     printf("  -i FILE.cnf      Specify input file (otherwise use standard input)\n");
-    printf("  -o FILE.lrat(b)  Specify output proof file (otherwise use standard output)\n");
+    printf("  -o FILE.lrat(b)  Specify output proof file (otherwise no proof)\n");
     printf("  -s FILE.sched    Specify schedule file\n");
     exit(0);
 }
@@ -43,9 +43,9 @@ char *get_extension(char *name) {
 int main(int argc, char *argv[]) {
     FILE *cnf_file = stdin;
     FILE *sched_file = NULL;
-    FILE *proof_file = stdout;
+    FILE *proof_file = NULL;
     bool bucket = false;
-    proof_type_t ptype = PROOF_LRAT;
+    proof_type_t ptype = PROOF_NONE;
     bool binary = false;
     int c;
     int verb = 1;

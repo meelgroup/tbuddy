@@ -64,32 +64,39 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
 
     variable_counter = var_counter;
     input_variable_count = *variable_counter;
+
     clause_id_counter = cls_counter;
-    input_clause_count = total_clause_count = *clause_id_counter;
-    live_clause_count = max_live_clause_count = total_clause_count;
-    alloc_clause_count = input_clause_count + INITIAL_CLAUSE_COUNT;
-    all_clauses = calloc(alloc_clause_count, sizeof(ilist));
-    deferred_deletion_list = ilist_new(100);
-
-    print_proof_comment(1, "Proof of CNF file with %d variables and %d clauses", input_variable_count, input_clause_count);
-
-    if (all_clauses == NULL) {
-	return bdd_error(BDD_MEMORY);
+    if (clause_id_counter) {
+	input_clause_count = total_clause_count = *clause_id_counter;
+	live_clause_count = max_live_clause_count = total_clause_count;
     }
-    int cid;
-    if (input_clauses) {
-	for (cid = 0; cid < input_clause_count; cid++) {
-	    all_clauses[cid] = ilist_copy(input_clauses[cid]);
-	    if (print_ok(2)) {
-		fprintf(proof_file, "c Input Clause #%d: ", cid+1);
-		ilist_print(all_clauses[cid], proof_file, " ");
-		fprintf(proof_file, " 0\n");
-	    }
+    if (input_clause_count > 0) {
+    	alloc_clause_count = input_clause_count;
+	all_clauses = calloc(alloc_clause_count, sizeof(ilist));
+	if (all_clauses == NULL) {
+	    return bdd_error(BDD_MEMORY);
 	}
-    } else {
-	for (cid = 0; cid < input_clause_count; cid++)
-	    all_clauses[cid] = TAUTOLOGY_CLAUSE;
+	if (input_clauses) {
+	    int cid;
+	    for (cid = 0; cid < input_clause_count; cid++) {
+		all_clauses[cid] = ilist_copy(input_clauses[cid]);
+		if (print_ok(2)) {
+		    fprintf(proof_file, "c Input Clause #%d: ", cid+1);
+		    ilist_print(all_clauses[cid], proof_file, " ");
+		    fprintf(proof_file, " 0\n");
+		}
+	    }
+	} else {
+	    int cid;
+	    for (cid = 0; cid < input_clause_count; cid++)
+		all_clauses[cid] = TAUTOLOGY_CLAUSE;
+	}
     }
+    if (proof_type != PROOF_NONE) {
+    	deferred_deletion_list = ilist_new(100);
+	print_proof_comment(1, "Proof of CNF file with %d variables and %d clauses", input_variable_count, input_clause_count);
+    }
+
     int bnodes = input_clause_count < BUDDY_THRESHOLD ? BUDDY_NODES_SMALL : BUDDY_NODES_LARGE;
     int bcache = bnodes/BUDDY_CACHE_RATIO;
     int bincrease = bnodes/BUDDY_INCREASE_RATIO;
@@ -99,7 +106,6 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
     bdd_setmaxincrease(bincrease);
     bdd_setvarnum(input_variable_count+1);
     bdd_disable_reorder();
-
     return rval;
 }
 
@@ -108,6 +114,8 @@ void prover_done() {
     if (proof_type == PROOF_FRAT)
 	/* Do final garbage collection to delete remaining clauses */
 	bdd_gbc();
+    if (deferred_deletion_list)
+	ilist_free(deferred_deletion_list);
 }
 
 
@@ -248,6 +256,8 @@ static int ilist_byte_pack(ilist src_list, unsigned char *dest) {
 /* Return clause ID */
 /* For DRAT proof, hints can be NULL */
 int generate_clause(ilist literals, ilist hints) {
+    if (proof_type == PROOF_NONE)
+	return TAUTOLOGY;
     ilist clause = clean_clause(literals);
     int cid = ++(*clause_id_counter);
     int rval = 0;
@@ -442,7 +452,7 @@ void defer_delete_clause(int clause_id) {
 }
 
 void process_deferred_deletions() {
-    if (ilist_length(deferred_deletion_list) > 0) {
+    if (deferred_deletion_list && ilist_length(deferred_deletion_list) > 0) {
 	print_proof_comment(2, "Performing deferred deletions of %d clauses", ilist_length(deferred_deletion_list));
 	delete_clauses(deferred_deletion_list);
 	ilist_resize(deferred_deletion_list, 0);
@@ -458,6 +468,8 @@ ilist get_input_clause(int id) {
 }
 
 bool print_ok(int vlevel) {
+    if (proof_type == PROOF_NONE)
+	return false;
     if (do_binary)
 	return false;
     if (verbosity_level < vlevel+1)

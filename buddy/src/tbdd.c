@@ -80,6 +80,11 @@ int tbdd_init_frat_binary(FILE *pfile, int *variable_counter, int *clause_id_cou
     return tbdd_init(pfile, variable_counter, clause_id_counter, NULL, PROOF_FRAT, false);
 }
 
+int tbdd_init_noproof(int variable_count) {
+    last_variable = variable_count;
+    return prover_init(NULL, &last_variable, NULL, NULL, PROOF_NONE, false);
+}
+
 void tbdd_set_verbose(int level) {
     verbosity_level = level;
 }
@@ -194,6 +199,10 @@ static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     TBDD rr;
     print_proof_comment(2, "Build BDD representation of clause #%d", id);
     BDD r = bdd_addref(BDD_build_clause(clause));
+    if (proof_type == PROOF_NONE) {
+	rr.clause_id = TAUTOLOGY;
+	return rr;
+    }
     int len = ilist_length(clause);
     int nlits = 2*len+1;
     int abuf[nlits+ILIST_OVHD];
@@ -325,6 +334,11 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     TBDD rr;
     if (r == tr.root)
 	return tbdd_duplicate(tr);
+    if (proof_type == PROOF_NONE) {
+	rr.root = bdd_addref(r);
+	rr.clause_id = TAUTOLOGY;
+	return rr;
+    }
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
     int abuf[2+ILIST_OVHD];
@@ -349,6 +363,11 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
  */
 TBDD tbdd_trust(BDD r) {
     TBDD rr;
+    if (proof_type == PROOF_NONE) {
+	rr.root = bdd_addref(r);
+	rr.clause_id = TAUTOLOGY;
+	return rr;
+    }
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
     int abuf[0+ILIST_OVHD];
@@ -365,6 +384,12 @@ TBDD tbdd_trust(BDD r) {
   their conjunction implies the new one
  */
 TBDD tbdd_and(TBDD tr1, TBDD tr2) {
+    if (proof_type == PROOF_NONE) {
+	TBDD rr;
+	rr.root = bdd_addref(bdd_and(tr1.root, tr2.root));
+	rr.clause_id = TAUTOLOGY;
+	return rr;
+    }
     if (tbdd_is_true(tr1))
 	return tbdd_duplicate(tr2);
     if (tbdd_is_true(tr2))
@@ -460,6 +485,8 @@ static int tbdd_validate_clause_path(ilist clause, TBDD tr) {
 }
 
 int tbdd_validate_clause(ilist clause, TBDD tr) {
+    if (proof_type == PROOF_NONE)
+	return TAUTOLOGY;
     clause = clean_clause(clause);
     if (test_validation_path(clause, tr)) {
 	return tbdd_validate_clause_path(clause, tr);
@@ -492,6 +519,8 @@ int tbdd_validate_clause(ilist clause, TBDD tr) {
   Returns clause id.
  */
 int assert_clause(ilist clause) {
+    if (proof_type == PROOF_NONE)
+	return TAUTOLOGY;
     int abuf[1+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 1);
     if (verbosity_level >= 2) {
