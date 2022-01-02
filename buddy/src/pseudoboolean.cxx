@@ -176,12 +176,19 @@ xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
     variables = vars;
     phase = p;
     bdd xfun;
-    xor_constraint *xcp = find_constraint(variables, phase, xfun);
-    if (xcp == NULL) {
+    if (proof_type == PROOF_NONE) {
+	xfun = bdd_build_xor(vars, p);
 	validation = tbdd_validate(xfun, vfun);
-	save_constraint(this);
-    } else
-	validation = xcp->validation;
+	pseudo_xor_unique ++;
+	pseudo_total_length += ilist_length(variables);
+    } else {
+	xor_constraint *xcp = find_constraint(variables, phase, xfun);
+	if (xcp == NULL) {
+	    validation = tbdd_validate(xfun, vfun);
+	    save_constraint(this);
+	} else
+	    validation = xcp->validation;
+    }
 }
 
 // When generating DRAT proof, either reuse or generate validation
@@ -905,7 +912,7 @@ private:
 	    int pvar = saved_pivots[peid]->variable;
 	    delete saved_pivots[peid];
 	    saved_pivots[peid] = NULL;
-	    for (int eid = pvar-1; eid >= 0; eid--) {
+	    for (int eid = peid-1; eid >= 0; eid--) {
 		xor_constraint *eq = saved_equations[eid];
 		ilist vars = eq->get_variables();
 		if (ilist_is_member(vars, pvar)) {
