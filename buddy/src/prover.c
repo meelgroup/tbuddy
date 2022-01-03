@@ -70,14 +70,16 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
 	input_clause_count = total_clause_count = *clause_id_counter;
 	live_clause_count = max_live_clause_count = total_clause_count;
     }
-    if (input_clause_count > 0) {
-    	alloc_clause_count = input_clause_count;
+    if (proof_type != PROOF_NONE) {
+    	alloc_clause_count = input_clause_count + INITIAL_CLAUSE_COUNT;
 	all_clauses = calloc(alloc_clause_count, sizeof(ilist));
-	if (all_clauses == NULL) {
+	if (all_clauses == NULL)
 	    return bdd_error(BDD_MEMORY);
-	}
+	print_proof_comment(1, "Proof of CNF file with %d variables and %d clauses", input_variable_count, input_clause_count);
+	int cid;
+	for (cid = 0; cid < alloc_clause_count; cid++)
+		all_clauses[cid] = TAUTOLOGY_CLAUSE;
 	if (input_clauses) {
-	    int cid;
 	    for (cid = 0; cid < input_clause_count; cid++) {
 		all_clauses[cid] = ilist_copy(input_clauses[cid]);
 		if (print_ok(2)) {
@@ -86,16 +88,11 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
 		    fprintf(proof_file, " 0\n");
 		}
 	    }
-	} else {
-	    int cid;
-	    for (cid = 0; cid < input_clause_count; cid++)
-		all_clauses[cid] = TAUTOLOGY_CLAUSE;
 	}
     }
-    if (proof_type != PROOF_NONE) {
-    	deferred_deletion_list = ilist_new(100);
-	print_proof_comment(1, "Proof of CNF file with %d variables and %d clauses", input_variable_count, input_clause_count);
-    }
+
+    deferred_deletion_list = ilist_new(100);
+
 
     int bnodes = input_clause_count < BUDDY_THRESHOLD ? BUDDY_NODES_SMALL : BUDDY_NODES_LARGE;
     int bcache = bnodes/BUDDY_CACHE_RATIO;
@@ -114,8 +111,8 @@ void prover_done() {
     if (proof_type == PROOF_FRAT)
 	/* Do final garbage collection to delete remaining clauses */
 	bdd_gbc();
-    if (deferred_deletion_list)
-	ilist_free(deferred_deletion_list);
+    //    if (deferred_deletion_list)
+    //	ilist_free(deferred_deletion_list);
 }
 
 
@@ -455,7 +452,7 @@ void process_deferred_deletions() {
     if (deferred_deletion_list && ilist_length(deferred_deletion_list) > 0) {
 	print_proof_comment(2, "Performing deferred deletions of %d clauses", ilist_length(deferred_deletion_list));
 	delete_clauses(deferred_deletion_list);
-	ilist_resize(deferred_deletion_list, 0);
+	deferred_deletion_list = ilist_resize(deferred_deletion_list, 0);
     }
 }
 
