@@ -401,8 +401,10 @@ int main(int argc, char *argv[]) {
     double start = tod();
     gen_xors(n);
     gen_binaries(n);
-    gen_cnf(fnamec, n);
-    if (ptype == PROOF_DRAT) {
+
+    if (ptype == PROOF_NONE) {
+	gen_cnf(fnamec, n);
+    } else if (ptype == PROOF_DRAT) {
 	if (do_binary)
 	    gen_dratb_proof(fnamep, n, vlevel);
 	else {
