@@ -64,22 +64,22 @@ class xor_constraint {
     // Generate an Xor constraint as the sum of two constraints
     friend xor_constraint *xor_plus(xor_constraint *arg1, xor_constraint *arg2);
     // Compute the sum of a list of Xors.  Used by the xor_set class
-    friend xor_constraint *xor_sum_list(xor_constraint **xlist, int len);
+    friend xor_constraint *xor_sum_list(xor_constraint **xlist, int len, int maxvar);
 };
 
 // Representation of a set of Xor constraints
 class xor_set {
  private:
-    std::set<int> variables;
+    int maxvar;
 
  public:
     // Vector of constraints
     // Normally only read these
     std::vector<xor_constraint *> xlist;
 
-    xor_set() { }
+    xor_set() { maxvar = 0; }
 
-    ~xor_set( );
+    ~xor_set();
 
     // Add an xor constraint to the set.
     // The code makes a copy of the constraint, and so
