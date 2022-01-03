@@ -25,9 +25,20 @@ import re
 # Generate csv of number specified on target line
 # Extracts problem size from file name.
 
+def usage(name):
+    print("Usage: %s [nth] tphrase file ...")
+    print(" nth: Look for nth numeric field in line (count from 1)")
+
+
 # Will grep for line containing trigger phrase.
 # This should be provided as the first argument to the program.
 # If it contains a space, be sure to quote it.
+
+# Check first argument.  If it's numeric, then assume this is a number
+# to indicate the numeric field number for the triggering line.
+# (Numbered from 1)
+
+triggerField = 1
 triggerPhrase = "Total Clauses"
 
 def trim(s):
@@ -43,15 +54,20 @@ colonOrSpace = re.compile('[\s:]+')
 def lineSplit(s):
     return colonOrSpace.split(s)
 
-def firstNumber(fields):
+def nthNumber(fields, n = 1):
+    count = 0
     for field in fields:
         try:
             val = int(field)
-            return val
+            count += 1
+            if count == n:
+                return val
         except:
             try:
                 val = float(field)
-                return val
+                count += 1
+                if count == n:
+                    return val
             except:
                 continue
     return -1
@@ -61,7 +77,7 @@ def firstNumber(fields):
 def extract(fname):
     # Try to find size from file name:
     fields = ddSplit(fname)
-    n = firstNumber(fields)
+    n = nthNumber(fields)
     if n < 0:
         print("Couldn't extract problem size from file name '%s'" % fname)
         return None
@@ -70,27 +86,36 @@ def extract(fname):
     except:
         print("Couldn't open file '%s'" % fname)
         return None
+    val = None
     for line in f:
         line = trim(line)
         if triggerPhrase in line:
             fields = lineSplit(line)
-            val = firstNumber(fields)
-            f.close()
-            return (n, val)
+            val = nthNumber(fields, triggerField)
     f.close()
-    return None
+    if val is None:
+        return None
+    return (n, val)
 
 def usage(name):
     print("Usage: %s tphrase file1 file2 ..." % name)
     sys.exit(0)
 
 def run(name, args):
-    global triggerPhrase
-    vals = {}
-    if len(args) <= 1:
+    if len(args) < 2 or args[0] == '-h':
         usage(name)
-    triggerPhrase = args[0]
-    for fname in args[1:]:
+        return
+    global triggerPhrase
+    global triggerField
+    vals = {}
+    try:
+        triggerField = int(args[0])
+        triggerPhrase = args[1]
+        names = args[2:]
+    except:
+        triggerPhrase = args[0]
+        names = args[1:]
+    for fname in names:
         pair = extract(fname)
         if pair is not None:
             vals[pair[0]] = pair

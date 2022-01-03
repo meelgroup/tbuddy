@@ -40,13 +40,15 @@ drat: $(ROOT)-$(N).drat
 
 frat: $(ROOT)-$(N).frat
 
-small: $(ROOT)-$(N).cnf $(ROOT)-$(N).drat $(ROOT)-$(N).drat_check_data $(ROOT)-$(N).kissat_data $(ROOT)-$(N).cms_data medium
+small: $(ROOT)-$(N).cnf  $(ROOT)-$(N).kissat_data $(ROOT)-$(N).cms_data medium
 
-medium: $(ROOT)-$(N).cnf $(ROOT)-$(N).drat $(ROOT)-$(N).frat $(ROOT)-$(N).frat_check_data $(ROOT)-$(N).cms_noproof_data large
+medium: $(ROOT)-$(N).drat $(ROOT)-$(N).drat_check_data medlarge
 
-large: $(ROOT)-$(N).cnf $(ROOT)-$(N).tbsat_bucket_data $(ROOT)-$(N).tbsat_gaussian_data huge
+medlarge: $(ROOT)-$(N).cnf $(ROOT)-$(N).frat $(ROOT)-$(N).frat_check_data large
 
-huge: $(ROOT)-$(N).cnf $(ROOT)-$(N).tbsat_bucket_noproof_data $(ROOT)-$(N).tbsat_gaussian_noproof_data
+large: $(ROOT)-$(N).cnf $(ROOT)-$(N).cms_noproof_data $(ROOT)-$(N).tbsat_bucket_data huge
+
+huge: $(ROOT)-$(N).cnf $(ROOT)-$(N).drat $(ROOT)-$(N).tbsat_gaussian_data $(ROOT)-$(N).tbsat_bucket_noproof_data $(ROOT)-$(N).tbsat_gaussian_noproof_data
 
 
 $(ROOT)-$(N).cnf:
@@ -122,15 +124,17 @@ data:
 	$(GRAB) "proof_added" *.kissat_data > kissat-clauses.csv
 	$(GRAB) "verification time" *.kissat_data > kissat-drat-seconds.csv
 	$(GRAB) "Total time" *.cms_data > cms-generation-seconds.csv
+	$(GRAB) 2 "resolution steps" *.cms_data > cms-clauses.csv
 	$(GRAB) "Total time" *.cms_noproof_data > cms-noproof-seconds.csv
-	$(GRAB) "Elapsed" *.tbsat_bucket_data > tbsat-bucket_generation-seconds.csv
-	$(GRAB) "verification time" *.tbsat_bucket_data > tbsat-bucket_lrat-seconds.csv	
-	$(GRAB) "Total clauses" *.tbsat_bucket_data > tbsat-bucket_clauses.csv	
-	$(GRAB) "Elapsed" *.tbsat_bucket_noproof_data > tbsat-noproof-generation-seconds.csv
+	$(GRAB) "verification time" *.cms_data > cms-drat-seconds.csv
+	$(GRAB) "Elapsed" *.tbsat_bucket_data > tbsat-bucket-generation-seconds.csv
+	$(GRAB) "verification time" *.tbsat_bucket_data > tbsat-bucket-lrat-seconds.csv	
+	$(GRAB) "Total clauses" *.tbsat_bucket_data > tbsat-bucket-clauses.csv	
+	$(GRAB) "Elapsed" *.tbsat_bucket_noproof_data > tbsat-bucket-noproof-generation-seconds.csv
 	$(GRAB) "Elapsed" *.tbsat_gaussian_data > tbsat-gaussian-generation-seconds.csv
 	$(GRAB) "verification time" *.tbsat_gaussian_data > tbsat-gaussian-lrat-seconds.csv	
 	$(GRAB) "Total clauses" *.tbsat_gaussian_data > tbsat-gaussian-clauses.csv	
-	$(GRAB) "Elapsed" *.tbsat_gaussian_noproof_data > tgbsat-noproof-generation-seconds.csv
+	$(GRAB) "Elapsed" *.tbsat_gaussian_noproof_data > tbsat-gaussian-noproof-generation-seconds.csv
 
 clean:
 	rm -f *~
