@@ -163,7 +163,7 @@ class Xor:
             exutil.ewrite("    Total variables: %d\n" % self.variableCount, 1)
             exutil.ewrite("    External variables: %d\n" % len(exvars), 1)
             if seconds is not None:
-                exutil.ewrite("    Elapsed seconds: %.2f\n" % seconds, 1)
+                exutil.ewrite("    Extraction seconds: %.2f\n" % seconds, 1)
 
         return True
         
