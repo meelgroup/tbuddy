@@ -34,111 +34,112 @@ XEXT = $(MDIR)/xor_extractor.py
 INTERP=python3
 GRAB = $(INTERP) ./grab_data.py
 
-drat: $(ROOT)-$(N).cnf
+cnf: $(ROOT)-$(N).cnf
 
-frat: $(ROOT)-f-$(N).cnf
+drat: $(ROOT)-$(N).drat
 
-np: $(ROOT)-n-$(N).cnf
+frat: $(ROOT)-$(N).frat
+
+small: $(ROOT)-$(N).cnf $(ROOT)-$(N).drat $(ROOT)-$(N).drat_check_data $(ROOT)-$(N).kissat_data $(ROOT)-$(N).cms_data medium
+
+medium: $(ROOT)-$(N).cnf $(ROOT)-$(N).drat $(ROOT)-$(N).frat $(ROOT)-$(N).frat_check_data $(ROOT)-$(N).cms_noproof_data large
+
+large: $(ROOT)-$(N).cnf $(ROOT)-$(N).tbsat_bucket_data $(ROOT)-$(N).tbsat_gaussian_data huge
+
+huge: $(ROOT)-$(N).cnf $(ROOT)-$(N).tbsat_bucket_noproof_data $(ROOT)-$(N).tbsat_gaussian_noproof_data
+
 
 $(ROOT)-$(N).cnf:
-	$(GEN) -n $(N) -s $(SEED) -m d -r $(ROOT)-$(N) | tee $(ROOT)-$(N).data
+	$(GEN) -n $(N) -s $(SEED) -m n -r $(ROOT)-$(N)
 
-$(ROOT)-f-$(N).cnf:
-	$(GEN) -n $(N) -s $(SEED) -m f -r $(ROOT)-f-$(N) | tee $(ROOT)-f-$(N).data
+$(ROOT)-$(N).drat:
+	$(GEN) -n $(N) -s $(SEED) -m d -r $(ROOT)-$(N) | tee $(ROOT)-$(N).drat_gen_data
 
-$(ROOT)-n-$(N).cnf:
-	$(GEN) -n $(N) -s $(SEED) -m n -r $(ROOT)-n-$(N) | tee $(ROOT)-n-$(N).data
+$(ROOT)-$(N).frat:
+	$(GEN) -n $(N) -s $(SEED) -m f -r $(ROOT)-$(N) | tee $(ROOT)-$(N).frat_gen_data
 
 
-.SUFFIXES: .cnf .xdata .kdata .cdata .fcdata .tdata .tgdata .tnpdata .tgnpdata .fdata .mfdata
+.SUFFIXES: .cnf .drat .frat .drat_check_data .frat_check_data .kissat_data .cms_data .cms_noproof_data \
+		.tbsat_bucket_data .tbsat_gaussian_data .tbsat_bucket_noproof_data .tbsat_gaussian_noproof_data
 
-.cnf.xdata:
-	$(DRAT) $< $*.drat | tee $@
-	ls -l $*.drat | tee -a $@
-	$(RM) $*.drat
 
-.cnf.kdata:
+.drat.drat_check_data:
+	$(DRAT) $*.cnf $< | tee $@
+	ls -l $< | tee -a $@
+	$(RM) $<
+
+.frat.frat_check_data:
+	{ /usr/bin/time -lp $(FRAT) elab $*.cnf $< $*.lrat 2>&1 ; } | tee $@
+	$(LRAT) $*.cnf $*.lrat | tee -a $@
+#	$(RM) $<
+	$(RM) $*.frat.temp
+#	$(RM) $*.lrat
+
+.cnf.kissat_data:
 	$(KISSAT) $(KFLAGS) $< $*-kissat.drat | tee $@
 	$(DRAT) $< $*-kissat.drat | tee -a $@
 	ls -l $*-kissat.drat
 	$(RM) $*-kissat.drat
 
-.cnf.cdata:
+.cnf.cms_data:
 	$(CMS) $(CFLAGS)  $< $*-cms.drat | tee $@
 	$(DRAT) $< $*-cms.drat | tee -a $@
 	ls -l $*-cms.drat
 	$(RM) $*-cms.drat 
 
-.cnf.tdata:
+.cnf.cms_noproof_data:
+	$(CMS) $(CFLAGS)  --maxmatrixrows 500000 $< | tee $@
+
+.cnf.tbsat_bucket_data:
 	$(TBSAT) $(TFLAGS) -i $<  -o $*-tbsat.lrat | tee $@
 	$(LRAT) $< $*-tbsat.lrat | tee -a $@
 	ls -l $*-tbsat.lrat
 	$(RM) $*-tbsat.lrat
 
-.cnf.tgdata:
+.cnf.tbsat_gaussian_data:
 	$(XEXT) -i $< -o $*.schedule | tee $@
 	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -o $*-tgbsat.lrat | tee -a $@
 	$(LRAT) $< $*-tgbsat.lrat | tee -a $@
 	ls -l $*-tgbsat.lrat
 	$(RM) $*-tgbsat.lrat
 
-.cnf.tnpdata:
+.cnf.tbsat_bucket_noproof_data:
 	$(TBSAT) $(TFLAGS) -i $< | tee $@
 
-.cnf.tgnpdata:
+.cnf.tbsat_gaussian_noproof_data:
 	$(XEXT) -i $< -o $*.schedule | tee $@
 	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule  | tee -a $@
 
-.cnf.fcdata:
-	$(CMS) $(CFLAGS)  $< | tee $@
-
-.cnf.fdata:
-	{ /usr/bin/time -lp $(FRAT) elab $< $*.frat $*.lrat 2>&1 ; } | tee $@
-	$(LRAT) $< $*.lrat | tee -a $@
-#	$(RM) $*.frat
-	$(RM) $*.frat.temp
-#	$(RM) $*.lrat
-
-.cnf.mfdata:
-	$(MATCHER) < $*.frat > $*-matched.frat 2> $@
-	{ /usr/bin/time -lp $(FRAT) elab $< $*-matched.frat $*.lrat 2>&1 ; } | tee -a $@
-	$(LRAT) $< $*.lrat | tee -a $@
-#	$(RM) $*.frat
-	$(RM) $*-matched.frat.temp
-	$(RM) $*.lrat
-
-
-tbuddy-data:
-	rm -f tbuddy-*.csv
-	$(GRAB) "Total clauses" *.data > tbuddy-clauses.csv
-	$(GRAB) "Elapsed" *.data > tbuddy-generation-seconds.csv
-	$(GRAB) "verification time" *.xdata > tbuddy-drat-seconds.csv
 
 
 data:
 	rm -f *.csv
-	$(GRAB) "Total clauses" *.data > tbuddy-clauses.csv
-	$(GRAB) "Elapsed" *.data > tbuddy-generation-seconds.csv
-	$(GRAB) "verification time" *.xdata > tbuddy-drat-seconds.csv
-	$(GRAB) "Elapsed time" *.kdata > kissat-generation-seconds.csv
-	$(GRAB) "proof_added" *.kdata > kissat-clauses.csv
-	$(GRAB) "verification time" *.kdata > kissat-drat-seconds.csv
-	$(GRAB) "Total time" *.cdata > cms-generation-seconds.csv
-	$(GRAB) "Total time" *.fcdata > cms-noproof-seconds.csv
-	$(GRAB) "Elapsed" *.tdata > tbsat-generation-seconds.csv
-	$(GRAB) "Elapsed" *.tnpdata > tbsat-noproof-generation-seconds.csv
-	$(GRAB) "verification time" *.tdata > tbsat-lrat-seconds.csv	
-	$(GRAB) "Total clauses" *.tdata > tbsat-clauses.csv	
-	$(GRAB) "Elapsed" *.tgdata > tgbsat-generation-seconds.csv
-	$(GRAB) "Elapsed" *.tgnpdata > tgbsat-noproof-generation-seconds.csv
-	$(GRAB) "verification time" *.tgdata > tgbsat-lrat-seconds.csv	
-	$(GRAB) "Total clauses" *.tgdata > tgbsat-clauses.csv	
-	$(GRAB) "real" *.fdata > tbuddy-frat-seconds.csv
+	$(GRAB) "Total clauses" *.drat_gen_data > tbuddy-clauses.csv
+	$(GRAB) "Elapsed" *.drat_gen_data > tbuddy-generation-seconds.csv
+	$(GRAB) "verification time" *.drat_check_data > tbuddy-drat-seconds.csv
+	$(GRAB) "real" *.frat_check_data > tbuddy-frat-seconds.csv
+	$(GRAB) "Elapsed time" *.kissat_data > kissat-generation-seconds.csv
+	$(GRAB) "proof_added" *.kissat_data > kissat-clauses.csv
+	$(GRAB) "verification time" *.kissat_data > kissat-drat-seconds.csv
+	$(GRAB) "Total time" *.cms_data > cms-generation-seconds.csv
+	$(GRAB) "Total time" *.cms_noproof_data > cms-noproof-seconds.csv
+	$(GRAB) "Elapsed" *.tbsat_bucket_data > tbsat-bucket_generation-seconds.csv
+	$(GRAB) "verification time" *.tbsat_bucket_data > tbsat-bucket_lrat-seconds.csv	
+	$(GRAB) "Total clauses" *.tbsat_bucket_data > tbsat-bucket_clauses.csv	
+	$(GRAB) "Elapsed" *.tbsat_bucket_noproof_data > tbsat-noproof-generation-seconds.csv
+	$(GRAB) "Elapsed" *.tbsat_gaussian_data > tbsat-gaussian-generation-seconds.csv
+	$(GRAB) "verification time" *.tbsat_gaussian_data > tbsat-gaussian-lrat-seconds.csv	
+	$(GRAB) "Total clauses" *.tbsat_gaussian_data > tbsat-gaussian-clauses.csv	
+	$(GRAB) "Elapsed" *.tbsat_gaussian_noproof_data > tgbsat-noproof-generation-seconds.csv
 
 clean:
 	rm -f *~
-	rm -f *.cnf *.drat
+	rm -f *.drat *.frat *.lrat
 
 superclean: clean
-	rm -f *.data *.xdata *.kdata *.cdata
+	rm -f *.cnf *.drat_check_data *.frat_check_data *.kissat_data *.cms_data *.cms_noproof_data 
+	rm -f *.tbsat_bucket_data *.tbsat_gaussian_data *.tbsat_bucket_noproof_data *.tbsat_gaussian_noproof_data
+	rm -f *.drat_gen_data *.schedule 
+
+
 
