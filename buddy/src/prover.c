@@ -291,12 +291,26 @@ int generate_clause(ilist literals, ilist hints) {
 	} else
 	    ilist_print(clause, proof_file, " ");
 
-	if (proof_type == PROOF_LRAT || proof_type == PROOF_FRAT) {
+	if (proof_type == PROOF_LRAT) {
 	    if (do_binary) {
 		d += int_byte_pack(0, d);
 		d += ilist_byte_pack(hints, d);
 	    } else {
 		rval = fprintf(proof_file, " 0 ");
+		if (rval < 0) 
+		    bdd_error(BDD_FILE);
+		rval = ilist_print(hints, proof_file, " ");
+		if (rval < 0) 
+		    bdd_error(BDD_FILE);
+	    }
+	}
+	if (proof_type == PROOF_FRAT && ilist_length(hints) > 0) {
+	    if (do_binary) {
+		d += int_byte_pack(0, d);
+		*d++ = 'l';
+		d += ilist_byte_pack(hints, d);
+	    } else {
+		rval = fprintf(proof_file, " 0 l ");
 		if (rval < 0) 
 		    bdd_error(BDD_FILE);
 		rval = ilist_print(hints, proof_file, " ");
