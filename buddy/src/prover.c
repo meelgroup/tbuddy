@@ -304,7 +304,7 @@ int generate_clause(ilist literals, ilist hints) {
 		    bdd_error(BDD_FILE);
 	    }
 	}
-	if (proof_type == PROOF_FRAT && ilist_length(hints) > 0) {
+	if (proof_type == PROOF_FRAT) {
 	    if (do_binary) {
 		d += int_byte_pack(0, d);
 		*d++ = 'l';
