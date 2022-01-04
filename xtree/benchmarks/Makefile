@@ -78,10 +78,10 @@ $(ROOT)-$(N).frat:
 
 .frat.frat_check_data:
 	{ /usr/bin/time -lp $(FRAT) elab $*.cnf $< $*.lrat 2>&1 ; } | tee $@
-	$(LRAT) $*.cnf $*.lrat | tee -a $@
+	 $(LRAT) $*.cnf $*.lrat	| tee -a $@
 #	$(RM) $<
 	$(RM) $*.frat.temp
-#	$(RM) $*.lrat
+	$(RM) $*.lrat
 
 .cnf.kissat_data:
 	$(KISSAT) $(KFLAGS) $< $*-kissat.drat | tee $@
