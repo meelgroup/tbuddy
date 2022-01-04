@@ -131,7 +131,7 @@ data:
 	$(GRAB) "Total clauses" *.drat_gen_data > tbuddy-clauses.csv
 	$(GRAB) "Elapsed" *.drat_gen_data > tbuddy-generation-seconds.csv
 	$(GRAB) "verification time" *.drat_check_data > tbuddy-drat-seconds.csv
-	$(GRAB) "real" *.frat_check_data > tbuddy-frat-seconds.csv
+	$(GRAB) "real " *.frat_check_data > tbuddy-frat-seconds.csv
 	$(GRAB) "Elapsed time" *.kissat_data > kissat-generation-seconds.csv
 	$(GRAB) "proof_added" *.kissat_data > kissat-clauses.csv
 	$(GRAB) "verification time" *.kissat_data > kissat-drat-seconds.csv
