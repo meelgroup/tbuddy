@@ -20,7 +20,7 @@ def usage(name):
     exutil.ewrite("  -v VERB  Set verbosity level (1-4)\n", 0)
     exutil.ewrite("  -c       Careful checking of CNF\n", 0)
     exutil.ewrite("  -i IFILE Single input file\n", 0)
-    exutil.ewrite("  -i OFILE Single output file\n", 0)
+    exutil.ewrite("  -o OFILE Single output file\n", 0)
     exutil.ewrite("  -p PATH  Process all CNF files with matching path prefix\n", 0)
     exutil.ewrite("  -m MAXC  Skip files with larger number of clauses\n", 0)
 
