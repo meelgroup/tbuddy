@@ -26,6 +26,10 @@ CDIR = ~/repos/cryptominisat/
 CMS = $(CDIR)/cryptominisat5
 CFLAGS = --maxconfl $(CONFLICTS)
 
+CXDIR = ~/repos/cms-dev/cryptominisat/build
+CMSX = $(CXDIR)/cryptominisat5
+CXFLAGS = --presimp 1 --maxmatrixrows 500000
+
 TDIR = ../../bsat/src/
 TBSAT = $(TDIR)/tbsat
 TFLAGS = -b -v $(VLEVEL)
@@ -50,6 +54,8 @@ large: $(ROOT)-$(N).cnf $(ROOT)-$(N).cms_noproof_data $(ROOT)-$(N).tbsat_bucket_
 
 huge: $(ROOT)-$(N).cnf $(ROOT)-$(N).drat $(ROOT)-$(N).tbsat_gaussian_data $(ROOT)-$(N).tbsat_bucket_noproof_data $(ROOT)-$(N).tbsat_gaussian_noproof_data
 
+fratc: $(ROOT)-$(N).cnf $(ROOT)-$(N).frat $(ROOT)-$(N).frat_check_data 
+
 
 $(ROOT)-$(N).cnf:
 	$(GEN) -n $(N) -s $(SEED) -m n -r $(ROOT)-$(N)
@@ -61,7 +67,7 @@ $(ROOT)-$(N).frat:
 	$(GEN) -n $(N) -s $(SEED) -m f -r $(ROOT)-$(N) | tee $(ROOT)-$(N).frat_gen_data
 
 
-.SUFFIXES: .cnf .drat .frat .drat_check_data .frat_check_data .kissat_data .cms_data .cms_noproof_data \
+.SUFFIXES: .cnf .drat .frat .drat_check_data .frat_check_data .kissat_data .cms_data .cmsx_data .cms_noproof_data \
 		.tbsat_bucket_data .tbsat_gaussian_data .tbsat_bucket_noproof_data .tbsat_gaussian_noproof_data
 
 
@@ -88,6 +94,12 @@ $(ROOT)-$(N).frat:
 	$(DRAT) $< $*-cms.drat | tee -a $@
 	ls -l $*-cms.drat
 	$(RM) $*-cms.drat 
+
+.cnf.cmsx_data:
+	$(CMSX) $(CXFLAGS)  $< $*-cmsx.drat | tee $@
+	$(DRAT) $< $*-cmsx.drat | tee -a $@
+	ls -l $*-cmsx.drat
+	$(RM) $*-cmsx.drat 
 
 .cnf.cms_noproof_data:
 	$(CMS) $(CFLAGS)  --maxmatrixrows 500000 $< | tee $@
