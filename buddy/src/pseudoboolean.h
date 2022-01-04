@@ -67,6 +67,12 @@ class xor_constraint {
     friend xor_constraint *xor_sum_list(xor_constraint **xlist, int len, int maxvar);
 };
 
+// Generate an Xor constraint as the sum of two constraints
+xor_constraint *xor_plus(xor_constraint *arg1, xor_constraint *arg2);
+// Compute the sum of a list of Xors.  Used by the xor_set class
+xor_constraint *xor_sum_list(xor_constraint **xlist, int len, int maxvar);
+
+
 // Representation of a set of Xor constraints
 class xor_set {
  private:
