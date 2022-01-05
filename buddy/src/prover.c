@@ -41,7 +41,8 @@ static size_t dest_buf_len = 0;
 //#define BUDDY_NODES_LARGE (1000)
 #define BUDDY_NODES_SMALL (2* 100*1000)
 #define BUDDY_CACHE_RATIO 8
-#define BUDDY_INCREASE_RATIO 20
+#define BUDDY_INCREASE_LARGE (1*1000*1000)
+#define BUDDY_INCREASE_SMALL (1* 100*1000)
 
 // How many clauses should allocated for clauses
 #define INITIAL_CLAUSE_COUNT 1000
@@ -100,7 +101,7 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
 
     int bnodes = input_clause_count < BUDDY_THRESHOLD ? BUDDY_NODES_SMALL : BUDDY_NODES_LARGE;
     int bcache = bnodes/BUDDY_CACHE_RATIO;
-    int bincrease = bnodes/BUDDY_INCREASE_RATIO;
+    int bincrease = input_clause_count < BUDDY_THRESHOLD ? BUDDY_INCREASE_SMALL : BUDDY_INCREASE_LARGE;
     int rval = bdd_init(bnodes, bcache);
 
     bdd_setcacheratio(BUDDY_CACHE_RATIO);
