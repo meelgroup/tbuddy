@@ -706,7 +706,6 @@ int bdd_getnodenum(void)
     return bddnodesize - CHECKRANGE(bddfreenum);
 }
 
-
 /*
 NAME    {* bdd\_getallocnum *}
 SECTION {* kernel *}
@@ -790,11 +789,6 @@ void bdd_stats(bddStat *s)
    s->varnum = bddvarnum;
    s->cachesize = cachesize;
    s->gbcnum = gbcollectnum;
-#if ENABLE_TBDD
-   s->clausenum = total_clause_count;
-   s->maxclausenum = max_live_clause_count;
-   s->variablenum = *variable_counter;
-#endif
 
 }
 

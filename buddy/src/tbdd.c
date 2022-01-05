@@ -22,7 +22,6 @@ static int dfun_count = 0;
 static int last_variable = 0;
 static int last_clause_id = 0;
 
-
 /*============================================
   Package setup.
 ============================================*/
@@ -98,15 +97,22 @@ void tbdd_done() {
 	bddStat s;
 	bdd_stats(&s);
 	bdd_printstat();
-	printf("Total BDD nodes: %ld\n", s.produced);
-	printf("Total clauses: %d\n", s.clausenum);
-	printf("Max live clauses: %d\n", s.maxclausenum);
-	printf("Total variables: %d\n", s.variablenum);
+	printf("Total BDD nodes produced: %ld\n", s.produced);
+    }
+    bdd_done();
+    if (verbosity_level >= 1) {
+	printf("Input variables: %d\n", input_variable_count);
+	printf("Input clauses: %d\n", input_clause_count);
+	printf("Total clauses: %d\n", total_clause_count);
+	printf("Maximum live clauses: %d\n", max_live_clause_count);
+	printf("Deleted clauses: %d\n", deleted_clause_count);
+	printf("Final live clauses: %d\n", total_clause_count-deleted_clause_count);
+	if (variable_counter)
+	    printf("Total variables: %d\n", *variable_counter);
     }
     for (i = 0; i < ifun_count; i++) {
 	ifuns[i](verbosity_level);
     }
-    bdd_done();
 }
 
 void tbdd_add_info_fun(tbdd_info_fun f) {

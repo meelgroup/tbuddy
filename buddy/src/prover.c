@@ -13,6 +13,7 @@ int total_clause_count = 0;
 int input_clause_count = 0;
 int input_variable_count = 0;
 int max_live_clause_count = 0;
+int deleted_clause_count = 0;
 
 /* Global variables used by prover */
 static FILE *proof_file = NULL;
@@ -70,6 +71,9 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
 	input_clause_count = total_clause_count = *clause_id_counter;
 	live_clause_count = max_live_clause_count = total_clause_count;
     }
+
+    deleted_clause_count = 0;
+
     if (proof_type != PROOF_NONE) {
     	alloc_clause_count = input_clause_count + INITIAL_CLAUSE_COUNT;
 	all_clauses = calloc(alloc_clause_count, sizeof(ilist));
@@ -384,9 +388,15 @@ extern void insert_frat_clause(FILE *pfile, char cmd, int clause_id, ilist liter
 void delete_clauses(ilist clause_ids) {
     int rval;
     unsigned char *d = dest_buf;
+
+    clause_ids = clean_hints(clause_ids);
+
+    int dlen = ilist_length(clause_ids);
+    live_clause_count -= dlen;
+    deleted_clause_count += dlen;
+
     if (empty_clause_detected && proof_type != PROOF_FRAT)
 	return;
-    clause_ids = clean_hints(clause_ids);
 
 #if DO_TRACE
     trace_list(clause_ids, *clause_id_counter, "Deleted clauses");
@@ -397,7 +407,6 @@ void delete_clauses(ilist clause_ids) {
 	    check_buffer(ilist_length(clause_ids) + 3);
 	    d = dest_buf;
 	    *d++ = 'd';
-	    //	    d += int_byte_pack(*clause_counter, d);
 	    d += ilist_byte_pack(clause_ids, d);
 	    d += int_byte_pack(0, d);
 	    rval = fwrite(dest_buf, 1, d - dest_buf, proof_file);
@@ -454,7 +463,6 @@ void delete_clauses(ilist clause_ids) {
 	    all_clauses[cid-1] = TAUTOLOGY_CLAUSE;
 	}
     }
-    live_clause_count -= ilist_length(clause_ids);
 }
 
 /* Some deletions must be deferred until top-level apply completes */
@@ -850,40 +858,3 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
     }
     return jid;
 }
-
-
-#if 0
-/* Initialize set of hints with TAUTOLOGY, and the hint clauses to empty clauses  */
-void fill_hints(jtype_t hint_id[HINT_COUNT], int hint_buf[HINT_COUNT][3+ILIST_OVHD], ilist hint_clause[HINT_COUNT]) {
-    jtype_t i;
-    for (i = (jtype_t) 0; i < HINT_COUNT; i++) {
-	hint_id[i] = TAUTOLOGY;
-	hint_clause[i] = ilist_make(hint_buf[i], 3);
-    }
-}
-
-
-/* Justify results of apply operation.  Return clause ID */
-int justify_apply(ilist target_clause, int split_variable, jtype_t hint_id[HINT_COUNT], ilist hint_clause[HINT_COUNT]) {
-    int abuf[HINT_COUNT+1+ILIST_OVHD];
-    ilist ant = ilist_make(abuf, HINT_COUNT);
-    target_clause = clean_clause(target_clause);
-    if (target_clause == TAUTOLOGY_CLAUSE)
-	return TAUTOLOGY;
-    jtype_t i;
-    for (i = (jtype_t) 0; i < HINT_COUNT; i++) {
-	if (hint_id[i] == TAUTOLOGY)
-	    hint_clause[i] = TAUTOLOGY_CLAUSE;
-	else {
-	    hint_clause[i] = clean_clause(hint_clause[i]);
-	    if (hint_clause[i] == TAUTOLOGY_CLAUSE)
-		hint_id[i] = TAUTOLOGY;
-	    else
-		ilist_push(ant, hint_id[i]);
-	}
-    }
-    return generate_clause(target_clause, ant);
-}
-#endif
-
-
