@@ -98,9 +98,15 @@ void BddCache_clause_evict(BddCacheData *entry) {
     int id;
     if (entry->a != -1 &&
 	(entry->c == bddop_andj || entry->c == bddop_imptstj)) {
+
 	id = entry->r.jclause;
 	if (id == TAUTOLOGY)
 	    return;
+#if DO_TRACE
+	if (NNAME(entry->r.res) == TRACE_NNAME) {
+	    printf("TRACE: Evicting node N%d.  Deleting clause %d\n", TRACE_NNAME, entry->r.jclause);
+	}
+#endif	
 	defer_delete_clause(id);
     }
 }

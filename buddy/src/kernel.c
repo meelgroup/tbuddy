@@ -1200,6 +1200,10 @@ void bdd_gbc(void)
    int dbuf[4+ILIST_OVHD];
    ilist dlist;
    int id;
+
+#if DO_TRACE
+   printf("Starting GC\n");
+#endif   
 #endif
 
 
@@ -1268,9 +1272,14 @@ void bdd_gbc(void)
 		  }
 		  delete_clauses(dlist);
 	      }
+#if DO_TRACE && ENABLE_TBDD
+	      if (XVARp(node) == TRACE_NNAME)
+		  printf("TRACE: Deleted node N%d from unique table\n", TRACE_NNAME);
+#endif 	 
+
 	  }
 #else
-	 if (LOWp(node) != 1)
+	 if (LOWp(node) != -1)
 	     freed++;
 #endif
 	 LOWp(node) = -1;
@@ -1280,11 +1289,20 @@ void bdd_gbc(void)
       }
    }
 
+#if DO_TRACE
+   printf("Flushing caches\n");
+#endif   
+
+
    bdd_operator_reset();
 
    c2 = clock();
    gbcclock += c2-c1;
    gbcollectnum++;
+
+#if DO_TRACE
+   printf("Completed GC\n");
+#endif   
 
    if (gbc_handler != NULL)
    {
@@ -1482,6 +1500,10 @@ int bdd_makenode(unsigned int level, int low, int high)
 	 bddcachestats.uniqueHit++;
 #endif
 	 return res;
+#if DO_TRACE && ENABLE_TBDD
+	 if (NNAME(res) == TRACE_NNAME)
+	     printf("Found node N%d in unique table\n", TRACE_NNAME);
+#endif 	 
       }
 
       res = CHECKNODE(bddnodes[res].next);
@@ -1570,6 +1592,11 @@ int bdd_makenode(unsigned int level, int low, int high)
       /* Insert node */
    node->next = bddnodes[hash].hash;
    bddnodes[hash].hash = res;
+
+#if DO_TRACE && ENABLE_TBDD
+	 if (NNAME(res) == TRACE_NNAME)
+	     printf("TRACE: Added node N%d to unique table\n", TRACE_NNAME);
+#endif 	 
    return res;
 }
 
@@ -1621,7 +1648,6 @@ int bdd_noderesize(int doRehash)
       bdd_gbc_rehash();
 
    bddresized = 1;
-   
    return 0;
 }
 

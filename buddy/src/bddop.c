@@ -261,6 +261,9 @@ static void bdd_operator_noderesize(void)
    {
       int newcachesize = bddnodesize / cacheratio;
       
+#if ENABLE_TBDD
+      BddCache_clear_clauses(&applycache);
+#endif
       BddCache_resize(&applycache, newcachesize);
       BddCache_resize(&itecache, newcachesize);
       BddCache_resize(&quantcache, newcachesize);
@@ -794,7 +797,6 @@ static TBDD bdd_applyj(BDD l, BDD r, int op)
    }
    
    checkresize();
-   process_deferred_deletions();
    return res;
 }
 
@@ -849,6 +851,9 @@ static TBDD applyj_rec(BDD l, BDD r)
 #if DO_TRACE
 	 if (tres.clause_id == TRACE_CLAUSE) {
 	     printf("TRACE: Retrieving clause #%d from cache in apply_rec.  Operands = N%d, N%d\n", TRACE_CLAUSE, NNAME(l), NNAME(r));
+	 }
+	 if (NNAME(tres.root) == TRACE_NNAME) {
+	     printf("TRACE: Retrieving node N%d from cache in apply_rec.  Operands = N%d, N%d\n", TRACE_NNAME, NNAME(l), NNAME(r));
 	 }
 #endif /* DO_TRACE */
 
@@ -914,6 +919,9 @@ static TBDD applyj_rec(BDD l, BDD r)
 #if DO_TRACE
       if (tres.clause_id == TRACE_CLAUSE) {
 	  printf("TRACE: Adding clause #%d to cache.  Operands = N%d, N%d\n", TRACE_CLAUSE, NNAME(l), NNAME(r));
+      }
+      if (NNAME(tres.root) == TRACE_NNAME) {
+	  printf("TRACE: Adding operation with result node N%d to cache.  Operands = N%d, N%d\n", TRACE_NNAME, NNAME(l), NNAME(r));
       }
 #endif /* DO_TRACE */
    }

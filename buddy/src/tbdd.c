@@ -359,6 +359,8 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     ilist_fill2(ant, t.clause_id, tr.clause_id);
     rr.clause_id = generate_clause(clause, ant);
     rr.root = r;
+    /* Now we can handle any deletions caused by GC */
+    process_deferred_deletions();
     return rr;
 }
 
@@ -410,6 +412,8 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     ilist_fill3(ant, tr1.clause_id, tr2.clause_id, t.clause_id);
     /* Insert proof of unit clause into t's justification */
     t.clause_id = generate_clause(clause, ant);
+    /* Now we can handle any deletions caused by GC */
+    process_deferred_deletions();
     return t;
 }
 

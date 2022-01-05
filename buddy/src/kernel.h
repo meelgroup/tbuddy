@@ -64,7 +64,9 @@
 
 #if DO_TRACE
 /* Track activity of specified clause */
-#define TRACE_CLAUSE  238148214
+#define TRACE_CLAUSE  17379
+/* Track activity of specified node xvar */
+#define TRACE_NNAME 2881
 #endif /* DO_TRACE */
 #endif /* TBDD */
 
