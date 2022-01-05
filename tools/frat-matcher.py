@@ -48,13 +48,18 @@ for line in sys.stdin:
         clause_count += 1
         clause = []
         hints = []
-        foundz = False
+        foundl = False
+        zcount = 0
         for field in fields[2:-1]:
-            lit = int(field)
-            if lit == 0:
-                foundz = True
+            if field == 'l':
+                if zcount != 1:
+                    err_message("Line %d (%s).  Found 'l' before 0" % (line_count, line))
+                foundl = True
+            elif int(field) == 0:
+                zcount += 1
             else:
-                if foundz:
+                lit = int(field)
+                if foundl:
                     hints.append(lit)
                 else:
                     clause.append(lit)
@@ -63,7 +68,7 @@ for line in sys.stdin:
             if key in input_clauses:
                 hints = [input_clauses[key]]                
                 new_hint_count += 1
-                sfields = fields[0:2] + [str(lit) for lit in clause] + ['0'] + [str(hint) for hint in hints] + ['0']
+                sfields = fields[0:2] + [str(lit) for lit in clause] + ['0'] + ['l'] + [str(hint) for hint in hints] + ['0']
                 line = " ".join(fields)
             else:
                 no_hint_count += 1
