@@ -696,9 +696,11 @@ public:
 	bdd_printstat();
 	std::cout << "Total BDD nodes: " << s.produced <<std::endl;
 	std::cout << "Max BDD size: " << max_bdd << std::endl;
+#if 0
 	std::cout << "Total clauses: " << s.clausenum << std::endl;
 	std::cout << "Max live clauses: " << s.maxclausenum << std::endl;
 	std::cout << "Total variables: " << s.variablenum << std::endl;
+#endif
     }
 
 };
@@ -733,11 +735,9 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int 
 	if (verblevel >= 3)
 	    std::cout << "BDD: " << r << std::endl;
     }
-    if (verblevel >= 1)
-	tset.show_statistics();
-    //  std::cout << "Running garbage collector" << std::endl;
-    //  bdd_gbc();
-    bdd_done();
+    //    if (verblevel >= 1)
+    //	tset.show_statistics();
+    tbdd_done();
     return true;
 }
 
