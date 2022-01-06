@@ -22,6 +22,8 @@ public:
 
     Sequencer(void) { seed = default_seed; }
 
+    Sequencer(Sequencer &s) { seed = s.seed; }
+
     void set_seed(uint64_t s) { seed = s == 0 ? 1 : s; next() ; next(); }
 
     uint32_t next() { seed = (seed * mval) % groupsize; return seed; }
