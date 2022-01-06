@@ -74,8 +74,14 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
     }
 
     deleted_clause_count = 0;
-
-    if (proof_type != PROOF_NONE) {
+    if (proof_type == PROOF_NONE && input_clauses) {
+	all_clauses = calloc(input_clause_count, sizeof(ilist));
+	if (all_clauses == NULL)
+	    return bdd_error(BDD_MEMORY);
+	int cid;
+	for (cid = 0; cid < input_clause_count; cid++)
+	    all_clauses[cid] = ilist_copy(input_clauses[cid]);
+    } else if (proof_type != PROOF_NONE) {
     	alloc_clause_count = input_clause_count + INITIAL_CLAUSE_COUNT;
 	all_clauses = calloc(alloc_clause_count, sizeof(ilist));
 	if (all_clauses == NULL)
