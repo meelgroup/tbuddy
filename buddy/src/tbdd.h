@@ -213,6 +213,9 @@ extern BDD BDD_build_clause(ilist literals);
 /* Construct BDD representation of XOR (phase = 1) or XNOR (phase = 0) */
 extern BDD BDD_build_xor(ilist variables, int phase);
 
+/* Represent conjunction of literals (a "cube") as a BDD or an ilist */
+extern BDD BDD_build_cube(ilist literals);
+extern ilist BDD_decode_cube(BDD r);
 
 #ifdef CPLUSPLUS
 }
@@ -266,9 +269,10 @@ class tbdd
     friend int tbdd_validate_clause(ilist clause, tbdd &tr);
     friend tbdd tbdd_from_xor(ilist variables, int phase);
     friend int tbdd_nameid(tbdd &tr);
-    friend bdd bdd_build_clause(ilist literals);
     friend bdd bdd_build_xor(ilist literals);
-
+    friend bdd bdd_build_clause(ilist literals);
+    friend bdd bdd_build_cube(ilist literals);
+    friend ilist bdd_decode_cube(bdd &r);
 
     // Convert to low-level form
     friend void tbdd_xfer(tbdd &tr, TBDD &res);
@@ -310,11 +314,18 @@ inline tbdd tbdd_from_xor(ilist variables, int phase)
 inline int tbdd_nameid(tbdd &tr)
 { return bdd_nameid(tr.root); }
 
-inline bdd bdd_build_clause(ilist literals)
-{ return bdd(BDD_build_clause(literals)); }
- 
 inline bdd bdd_build_xor(ilist variables, int phase)
 { return bdd(BDD_build_xor(variables, phase)); }
+
+inline bdd bdd_build_clause(ilist literals)
+{ return bdd(BDD_build_clause(literals)); }
+
+inline bdd bdd_build_cube(ilist literals)
+{ return bdd(BDD_build_cube(literals)); }
+
+inline ilist bdd_decode_cube(bdd &r)
+{ return BDD_decode_cube(r.get_BDD()); }
+
 
 
 } /* Namespace trustbdd */

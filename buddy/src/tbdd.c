@@ -306,7 +306,7 @@ int int_compare_tbdd(const void *i1p, const void *i2p) {
 */
 
 TBDD TBDD_from_xor(ilist vars, int phase) {
-    qsort((void *) vars, ilist_length(vars), sizeof(int), int_compare_tbdd);
+    ilist_sort(vars);
     int len = ilist_length(vars);
     int bits;
     int elen = 1 << len;
@@ -553,67 +553,13 @@ int assert_clause(ilist clause) {
 ============================================*/
 
 /*
-  Build BDD representation of clause
- */
-BDD BDD_build_clause(ilist literals) {
-    if (literals == TAUTOLOGY_CLAUSE)
-	return bdd_true();
-    BDD r = bdd_false();
-    int i, lit;
-    for (i = 0; i < ilist_length(literals); i++) {
-	bdd_addref(r);
-	lit = literals[i];
-	BDD nr = lit < 0 ? bdd_makenode(-lit, bdd_true(), r) : bdd_makenode(lit, r, bdd_true());
-	bdd_delref(r);
-	r = nr;
-    }
-    return r;
-}
-
-
-BDD BDD_build_clause_old(ilist clause) {
-    int len = ilist_length(clause);
-    BDD r = bdd_false();
-    int i;
-    if (clause == TAUTOLOGY_CLAUSE)
-	return bdd_true();
-    for (i = 0; i < len; i++) {
-	int lit = clause[i];
-	BDD vr = bdd_addref(lit < 0 ? BDD_nithvar(-lit) : BDD_ithvar(lit));
-	BDD nr = bdd_or(r, vr);
-	bdd_addref(nr);
-	bdd_delref(vr);
-	bdd_delref(r);
-	r = nr;
-    }
-    bdd_delref(r);
-    return r;
-}
-
-
-BDD BDD_build_xor_old(ilist variables, int phase) {
-    qsort((void *) variables, ilist_length(variables), sizeof(int), int_compare_tbdd);
-
-    BDD r = phase ? bdd_false() : bdd_true();
-    int i;
-    for (i = 0; i < ilist_length(variables); i++) {
-	bdd_addref(r);
-	BDD lit = bdd_addref(bdd_ithvar(variables[i]));
-	BDD nr = bdd_xor(r, lit);
-	bdd_delref(r);
-	r = nr;
-    }
-    return r;
-}
-
-/*
   Build BDD representation of XOR (phase = 1) or XNOR (phase = 0)
 */
 BDD BDD_build_xor(ilist vars, int phase) {
     if (ilist_length(vars) == 0)
 	return phase ? bdd_false() : bdd_true();
     ilist variables = ilist_copy(vars);
-    qsort((void *) variables, ilist_length(variables), sizeof(int), int_compare_tbdd);
+    ilist_sort(variables);
     BDD even = bdd_addref(bdd_true());
     BDD odd = bdd_addref(bdd_false());
     int i, v;
@@ -632,4 +578,57 @@ BDD BDD_build_xor(ilist vars, int phase) {
     bdd_delref(odd);
     ilist_free(variables);
     return r;
+}
+
+/*
+  Build BDD representation of clause
+ */
+BDD BDD_build_clause(ilist literals) {
+    if (literals == TAUTOLOGY_CLAUSE)
+	return bdd_true();
+    BDD r = bdd_false();
+    int i, lit;
+    for (i = 0; i < ilist_length(literals); i++) {
+	bdd_addref(r);
+	lit = literals[i];
+	BDD nr = lit < 0 ? bdd_makenode(-lit, bdd_true(), r) : bdd_makenode(lit, r, bdd_true());
+	bdd_delref(r);
+	r = nr;
+    }
+    return r;
+}
+
+/*
+  Build BDD representation of conjunction of literals (a "cube")
+ */
+BDD BDD_build_cube(ilist literals) {
+    if (literals == FALSE_CUBE)
+	return bdd_false();
+    BDD r = bdd_true();
+    int i, lit;
+    for (i = 0; i < ilist_length(literals); i++) {
+	bdd_addref(r);
+	lit = literals[i];
+	BDD nr = lit < 0 ? bdd_makenode(-lit, r, bdd_false()) : bdd_makenode(lit, bdd_false(), r);
+	bdd_delref(r);
+	r = nr;
+    }
+    return r;
+}
+
+ilist BDD_decode_cube(BDD r) {
+    ilist literals = ilist_new(1);
+    if (r == bdd_false())
+	return FALSE_CUBE;
+    while (r != bdd_true()) {
+	int var = bdd_var(r);
+	if (bdd_high(r) == bdd_false()) {
+	    ilist_push(literals, -var);
+	    r = bdd_low(r);
+	} else {
+	    ilist_push(literals, var);
+	    r = bdd_high(r);
+	}
+    }
+    return literals;
 }
