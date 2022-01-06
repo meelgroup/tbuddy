@@ -40,6 +40,11 @@ typedef int *ilist;
  */
 #define TAUTOLOGY_CLAUSE ((ilist) INT_MAX)
 
+/*
+  Pseudo-cube representing falsehood
+ */
+#define FALSE_CUBE ((ilist) INT_MIN)
+
 /* 
    Convert an array of ints to an ilist.  Don't call free_ilist on
    this one!  The size of the array should be max_length + ILIST_OVHD
@@ -96,6 +101,11 @@ extern ilist ilist_copy_list(int *ls, int length);
   Reverse elements in ilist
  */
 extern void ilist_reverse(int *ls);
+
+/*
+  Put elements of ilist into ascending order
+ */
+extern void ilist_sort(int *ls);
 
 /*
   Print elements of an ilist separated by sep.  Return value < 0 if error

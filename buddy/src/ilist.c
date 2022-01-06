@@ -209,6 +209,27 @@ void ilist_reverse(int *ils) {
     }
 }
 
+/*
+  Sort integers in ascending order
+ */
+int int_compare_ilist(const void *i1p, const void *i2p) {
+    int i1 = *(int *) i1p;
+    int i2 = *(int *) i2p;
+    if (i1 < i2)
+	return -1;
+    if (i1 > i2)
+	return 1;
+    return 0;
+}
+
+
+/*
+  Put elements of ilist into ascending order
+ */
+void ilist_sort(int *ils) {
+    qsort((void *) ils, ilist_length(ils), sizeof(int), int_compare_ilist);
+}
+
 
 /*
   Print elements of an ilist separated by sep
