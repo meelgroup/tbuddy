@@ -1143,7 +1143,7 @@ static TBDD applyj_rec(BDD l, BDD r)
 #endif 
 
 /*
-NAME    {* bdd\_andj *}
+NAME    {* bdd\_and_justify *}
 SECTION {* operator *}
 SHORT   {* The logical 'and' of two BDDs, with proof generation *}
 PROTO   {* TBDD tbdd_and(BDD l, BDD r) *}
@@ -1151,14 +1151,14 @@ DESCR   {* This a wrapper that calls {\tt bdd\_applyj(l,r,bddop\_andj)}. *}
 RETURN  {* The logical 'and' of {\tt l} and {\tt r} plus a proof. *}
 ALSO    {* tbdd\_and *}
 */
-TBDD bdd_andj(BDD l, BDD r)
+TBDD bdd_and_justify(BDD l, BDD r)
 {
    TBDD res= bdd_applyj(l,r,bddop_andj);
    return res;
 }
 
 /*
-NAME    {* bdd\_imptstj *}
+NAME    {* bdd\_imptst_justify *}
 SECTION {* operator *}
 SHORT   {* Confirm the logical 'implication' between two BDDs and generate the proof *}
 PROTO   {* TBDD bdd_imptstj(TBDD l, TBDD r) *}
@@ -1166,7 +1166,7 @@ DESCR   {* This a wrapper that calls {\tt bdd\_applyj(l,r,bddop\_imptstj)}. *}
 RETURN  {* BDD 1 if the implication holds, 0 if it does not, plus a proof. *}
 ALSO    {* tbdd\_imp *}
 */
-TBDD bdd_imptstj(BDD l, BDD r)
+TBDD bdd_imptst_justify(BDD l, BDD r)
 {
    return bdd_applyj(l,r,bddop_imptstj);
 }

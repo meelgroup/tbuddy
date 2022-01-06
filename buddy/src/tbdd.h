@@ -163,10 +163,6 @@ extern TBDD TBDD_from_xor(ilist variables, int phase);
 /* Operations on TBDDs */
 extern TBDD      tbdd_and(TBDD, TBDD);
 
-/* Low-level functions to implement operations on TBDDs */
-extern TBDD      bdd_andj(BDD, BDD);    
-extern TBDD      bdd_imptstj(BDD, BDD);    
-
 /*
   Upgrade ordinary BDD to TBDD by proving
   implication from another TBDD

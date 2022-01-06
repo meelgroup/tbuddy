@@ -4,6 +4,13 @@
 #include "tbdd.h"
 #include "kernel.h"
 
+/* Function prototypes from bddop.c */
+/* Low-level functions to implement operations on TBDDs */
+TBDD      bdd_and_justify(BDD, BDD);    
+TBDD      bdd_imptst_justify(BDD, BDD);    
+
+
+
 /*============================================
   Local data
 ============================================*/
@@ -349,7 +356,7 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     ilist clause = ilist_make(cbuf, 1);
     int abuf[2+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 2);
-    TBDD t = bdd_imptstj(tr.root, bdd_addref(r));
+    TBDD t = bdd_imptst_justify(tr.root, bdd_addref(r));
     if (t.root != bdd_true()) {
 	fprintf(stderr, "Failed to prove implication N%d --> N%d\n", NNAME(tr.root), NNAME(r));
 	exit(1);
@@ -402,7 +409,7 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
 	return tbdd_duplicate(tr2);
     if (tbdd_is_true(tr2))
 	return tbdd_duplicate(tr1);
-    TBDD t = tbdd_addref(bdd_andj(tr1.root, tr2.root));
+    TBDD t = tbdd_addref(bdd_and_justify(tr1.root, tr2.root));
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
     int abuf[3+ILIST_OVHD];
