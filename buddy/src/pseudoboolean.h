@@ -10,6 +10,31 @@
 
 namespace trustbdd{
 
+// A handy class for generating random numbers with own seed
+// Pseudo-random number generator based on the Lehmer MINSTD RNG
+// Use to both randomize selection and to provide a unique value
+// for each cost.
+
+class Sequencer {
+
+public:
+    Sequencer(int s) { seed = s; }
+
+    Sequencer(void) { seed = default_seed; }
+
+    void set_seed(uint64_t s) { seed = s == 0 ? 1 : s; next() ; next(); }
+
+    uint32_t next() { seed = (seed * mval) % groupsize; return seed; }
+
+private:
+    uint64_t seed;
+    const uint64_t mval = 48271;
+    const uint64_t groupsize = 2147483647LL;
+    const uint64_t default_seed = 123456;
+
+};
+
+
 // An Xor constraint is represented by a set of variables and a phase
 // It also contains a TBDD validation 
 class xor_constraint {

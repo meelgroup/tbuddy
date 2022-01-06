@@ -14,6 +14,7 @@ static char ibuf[BUFLEN];
 
 // Standard seed value
 #define DEFAULT_SEED 123456
+
 // Amount added to pivot penalty for external variable
 #define EXTERNAL_PENALTY (1<<30)
 
@@ -339,26 +340,6 @@ static int64_t xcost(xor_constraint *xcp1, xor_constraint *xcp2, int lower) {
 }
 
 
-// Pseudo-random number generator based on the Lehmer MINSTD RNG
-// Use to both randomize selection and to provide a unique value
-// for each cost.
-
-class sequencer {
-
-public:
-    sequencer(void) { set_seed(DEFAULT_SEED); }
-
-    void set_seed(uint64_t s) { seed = s == 0 ? 1 : s; next() ; next(); }
-
-    uint32_t next() { seed = (seed * mval) % groupsize; return seed; }
-
-private:
-    uint64_t seed;
-    const uint64_t mval = 48271;
-    const uint64_t groupsize = 2147483647LL;
-
-};
-
 // Data structure for list edge
 class sgraph_edge {
 public:
@@ -502,7 +483,7 @@ private:
     std::unordered_map<int64_t,sgraph_edge*> edge_map;
 
     // For assigning unique values to cost
-    sequencer seq;
+    Sequencer seq;
 
     // Assign new unique ID
     int new_lower() {
@@ -791,7 +772,7 @@ private:
     // Mapping from cost function to pivot
     std::map<int64_t,pivot*> pivot_selector;
     // Pseudo RNG to both randomize pivot selection and to generate unique IDs for pivots
-    sequencer seq;
+    Sequencer seq;
 
     // Assign new unique ID
     int new_lower() {
