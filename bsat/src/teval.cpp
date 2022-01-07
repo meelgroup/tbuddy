@@ -10,8 +10,10 @@
 
 using namespace trustbdd;
 
-// GC Parameters
+#define DEFAULT_SEED 123456
+#define SOLUTION_COUNT 20
 
+// GC Parameters
 // Minimum number of dead nodes to trigger GC
 #define COLLECT_MIN_LRAT 150000
 #define COLLECT_MIN_DRAT  20000
@@ -19,6 +21,7 @@ using namespace trustbdd;
 #define COLLECT_FRACTION 0.20
 
 // Functions to aid parsing of schedule lines
+
 
 // Skip line.  Return either \n or EOF
 static int skip_line(FILE *infile) {
@@ -120,6 +123,168 @@ static int get_number_pairs(FILE *infile, std::vector<int> &numbers1, std::vecto
     return c;
 }
 
+/*
+  Generator for phase selection when generating solutions
+ */
+typedef enum { GENERATE_LOW, GENERATE_HIGH, GENERATE_RANDOM } generator_t;
+
+class PhaseGenerator {
+public:
+
+    PhaseGenerator(generator_t gtype, int seed) 
+    {
+	if (gtype == GENERATE_RANDOM)
+	    seq = new Sequencer(seed);
+	else
+	    seq = NULL;
+    }
+
+    PhaseGenerator(PhaseGenerator &pg) {
+	gtype = pg.gtype;
+	seq = new Sequencer(*(pg.seq));
+    }
+
+    ~PhaseGenerator() { if (seq) delete seq; }
+
+    int phase() {
+	switch (gtype) {
+	case GENERATE_LOW:
+	    return 0;
+	case GENERATE_HIGH:
+	    return 1;
+	default:
+	    return seq->next() & 0x1;
+	}
+    }
+
+private:
+    Sequencer *seq;
+    generator_t gtype;
+    
+};
+
+
+/*
+  Represent one step in solution generation following sequence of
+  existential quantifications. Solution represented as cube BDD
+ */
+class Quantification {
+    
+public:
+    Quantification(ilist vars, bdd lconstraint) {
+	variables = ilist_copy(vars);
+	ilist_sort(variables);
+	local_constraint = lconstraint;
+    }
+
+    Quantification(std::vector<int> &vars, bdd lconstraint) {
+	variables = ilist_copy_list(vars.data(), vars.size());
+	local_constraint = lconstraint;
+    }
+
+
+    ~Quantification() { ilist_free(variables); }
+
+    // Extend partial solution BDD with assignments to quantified variables
+    bdd solve_step(bdd solution, PhaseGenerator *pg) {
+	// Only need to consider part of local constraint consistent with partial solution
+	bdd constraint = bdd_restrict(local_constraint, solution);
+	for (int i = ilist_length(variables)-1; i >= 0; i--) {
+	    int var = variables[i];
+	    int p = pg->phase();
+	    bdd litbdd = p ? bdd_ithvar(var) : bdd_nithvar(var);
+	    bdd nconstraint = bdd_restrict(constraint, litbdd);
+	    if (nconstraint == bdd_false()) {
+		p = !p;
+		litbdd = p ? bdd_ithvar(var) : bdd_nithvar(var);
+		nconstraint = bdd_restrict(constraint, litbdd);
+	    }
+	    constraint = nconstraint;
+	    solution = bdd_and(litbdd, solution);
+	    if (verbosity_level >= 3) {
+		std::cout << "Assigned value " << p << " to variable V" << var << std::endl;
+	    }
+	}
+	return solution;
+    }
+
+    // Impose top-level constraint on this level.  Return resulting existential quantification
+    bdd exclude_step(bdd upper_constraint) {
+	bdd nlocal_constraint = bdd_and(local_constraint, upper_constraint);
+	if (nlocal_constraint == local_constraint)
+	    return bdd_true();
+	if (verbosity_level >= 3) {
+	    printf("Imposing new constraint on variables V"); ilist_print(variables, stdout, " V"); printf("\n");
+	}
+	local_constraint = nlocal_constraint;
+	bdd varbdd = bdd_makeset(variables, ilist_length(variables));
+	bdd down_constraint = bdd_exist(local_constraint, varbdd);
+	return down_constraint;
+    }
+
+    // Variables used in quantification
+    ilist variables;
+    // Local constraint before quantification
+    bdd local_constraint;
+
+};
+
+class Solver {
+public:
+
+    Solver(PhaseGenerator *pg) {
+	phase_gen = pg;
+	constraint_function = bdd_true();
+    }
+
+    ~Solver() { 
+	constraint_function = bdd_true();
+	for (Quantification *qs : qsteps) delete qs;
+    }
+
+    void set_constraint(bdd bfun) {
+	constraint_function = bfun;
+    }
+
+    void add_step(ilist vars, bdd fun) {
+	qsteps.push_back(new Quantification(vars, fun));
+    }
+
+    void add_step(std::vector<int> &vars, bdd fun) {
+	qsteps.push_back(new Quantification(vars, fun));
+    }
+
+
+
+    // Generate another solution BDD 
+    // TODO: Is there some way to enumerate unique solutions?
+    bdd next_solution() {
+	if (constraint_function == bdd_false())
+	    return bdd_false();
+	bdd solution = bdd_true();
+	bdd constraint = bdd_true();
+	for (int i = qsteps.size()-1; i >= 0; i--)
+	    solution = qsteps[i]->solve_step(solution, phase_gen);
+	// Now exclude this solution from future enumerations.
+	bdd new_constraint = bdd_not(solution);
+	for (int i = 0; i < qsteps.size(); i++) {
+	    new_constraint = qsteps[i]->exclude_step(new_constraint);
+	    if (new_constraint == bdd_true())
+		break;
+	}
+	constraint_function = bdd_and(constraint_function, new_constraint);
+	return solution;
+    }
+
+private:
+    PhaseGenerator *phase_gen;
+    bdd constraint_function;
+    std::vector<Quantification*> qsteps;
+
+};
+
+
+
 static int next_term_id = 1;
 
 class Term {
@@ -190,6 +355,10 @@ private:
     int variable_count;
     int last_clause_id;
   
+    // For generating solutions
+    bool generate_solution;
+    Solver *solver;
+
     // Statistics
     int and_count;
     int quant_count;
@@ -219,7 +388,7 @@ private:
 
 public:
 
-    TermSet(CNF &cnf, FILE *proof_file, int verb, proof_type_t ptype, bool binary) {
+    TermSet(CNF &cnf, FILE *proof_file, int verb, proof_type_t ptype, bool binary, Solver *sol) {
 	verblevel = verb;
 	proof_type = ptype;
 	tbdd_set_verbose(verb);
@@ -228,6 +397,7 @@ public:
 	max_variable = cnf.max_variable();
 	last_clause_id = clause_count;
 	variable_count = max_variable;
+	solver = sol;
 
 	ilist *clauses = new ilist[clause_count];
 	for (int i = 0; i < clause_count; i++) {
@@ -279,6 +449,8 @@ public:
 	bdd varbdd = bdd_makeset(varset, vars.size());
 	bdd nroot = bdd_exist(tp->get_root(), varbdd);
 	tbdd tfun = tbdd_validate(nroot, tp->get_fun());
+	if (solver)
+	    solver->add_step(vars, tp->get_root());
 	add(new Term(tfun));
 	dead_count += tp->deactivate();
 	check_gc();
@@ -287,14 +459,9 @@ public:
     }
 
     Term *equantify(Term *tp, int32_t var) {
-	bdd varbdd = bdd_ithvar(var);
-	bdd nroot = bdd_exist(tp->get_root(), varbdd);
-	tbdd tfun = tbdd_validate(nroot, tp->get_fun());
-	add(new Term(tfun));
-	dead_count += tp->deactivate();
-	check_gc();
-	quant_count++;
-	return terms.back();
+	std::vector<int> vars;
+	vars.push_back(var);
+	return equantify(tp, vars);
     }
 
     Term *xor_constrain(Term *tp, std::vector<int> &vars, int constant) {
@@ -367,6 +534,13 @@ public:
 	for (int bvar = 1 ; bvar <= max_variable; bvar++) {
 	    int next_idx = 0;
 	    if (buckets[bvar].size() == 0) {
+		if (solver) {
+		    // Insert step so that solver will assign value to bvar
+		    int vbuf[ILIST_OVHD+1];
+		    ilist vlist = ilist_make(vbuf, 1);
+		    ilist_fill1(vlist, bvar);
+		    solver->add_step(vlist, bdd_true());
+		}
 		if (verblevel >= 3)
 		    std::cout << "Bucket " << bvar << " empty.  Skipping" << std::endl;
 		continue;
@@ -410,6 +584,16 @@ public:
 		    }
 
 		}
+	    } else {
+		if (solver) {
+		    // Insert step so that solver will assign value to bvar
+		    int vbuf[ILIST_OVHD+1];
+		    ilist vlist = ilist_make(vbuf, 1);
+		    ilist_fill1(vlist, bvar);
+		    solver->add_step(vlist, bdd_true());
+		}
+		if (verblevel >= 3)
+		    std::cout << "Bucket " << bvar << " cleared before quantifying." << std::endl;
 	    }
 	}
 	// If get here, formula must be satisfiable
@@ -717,26 +901,46 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int 
 	if (verblevel >= 1)
 	    std::cout << "Read " << cset.clause_count() << " clauses.  " 
 		      << cset.max_variable() << " variables" << std::endl;
-    TermSet tset = TermSet(cset, proof_file, verblevel, ptype, binary);
+    PhaseGenerator pg(GENERATE_RANDOM, DEFAULT_SEED);
+    Solver solver(&pg);
+    TermSet tset(cset, proof_file, verblevel, ptype, binary, &solver);
     tbdd tr = tbdd_tautology();
     if (sched_file != NULL)
 	tr = tset.schedule_reduce(sched_file);
     else if (bucket)
 	tr = tset.bucket_reduce();
-    else
-	tr = tset.tree_reduce();
-    bdd r = tr.get_root();
-    if (r == bdd_true())
-	std::cout << "TAUTOLOGY" << std::endl;
-    else if (r == bdd_false())
-	std::cout << "UNSATISFIABLE" << std::endl;
     else {
-	std::cout << "Satisfiable.  BDD size = " << bdd_nodecount(r) << std::endl;
-	if (verblevel >= 3)
-	    std::cout << "BDD: " << r << std::endl;
+	tr = tset.tree_reduce();
+	bdd r = tr.get_root();
+	if (r != bdd_false()) {
+	    // Enable solution generation
+	    ilist vlist = ilist_new(1);
+	    for (int v = 1; v <= cset.max_variable(); v++)
+		vlist = ilist_push(vlist, v);
+	    solver.add_step(vlist, r);
+	    tr = tbdd_tautology();
+	    ilist_free(vlist);
+	}
     }
-    //    if (verblevel >= 1)
-    //	tset.show_statistics();
+    bdd r = tr.get_root();
+    if (r == bdd_false())
+	std::cout << "s UNSATISFIABLE" << std::endl;
+    else {
+	std::cout << "s SATISFIABLE" << std::endl;
+	std::cout << "c BDD size = " << bdd_nodecount(r) << std::endl;
+	if (verblevel >= 3)
+	    std::cout << "c BDD: " << bdd_nameid(r) << std::endl;
+	// Generate solutions
+	solver.set_constraint(r);
+	for (int i = 0; i < SOLUTION_COUNT; i++) {
+	    bdd s = solver.next_solution();
+	    if (s == bdd_false())
+		break;
+	    ilist slist = bdd_decode_cube(s);
+	    printf("v "); ilist_print(slist, stdout, " "); printf(" 0\n");
+	    ilist_free(slist);
+	}
+    }
     tbdd_done();
     return true;
 }
