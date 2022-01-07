@@ -623,12 +623,13 @@ ilist BDD_decode_cube(BDD r) {
     while (r != bdd_true()) {
 	int var = bdd_var(r);
 	if (bdd_high(r) == bdd_false()) {
-	    ilist_push(literals, -var);
+	    literals = ilist_push(literals, -var);
 	    r = bdd_low(r);
 	} else {
-	    ilist_push(literals, var);
+	    literals = ilist_push(literals, var);
 	    r = bdd_high(r);
 	}
     }
     return literals;
+
 }
