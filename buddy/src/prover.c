@@ -678,15 +678,15 @@ static bool rup_check(ilist target_clause, jtype_t *horder, int hcount) {
 		    }
 		    if (lit == ulist[ui]) {
 			if (print_ok(5))
-			    fprintf(proof_file, "Unit %d Found.  Creates tautology\n", -lit);
+			    fprintf(proof_file, "c Unit %d Found.  Creates tautology\n", -lit);
 			return false;
 		    }
 		}
 		if (found) { 
 		    if (print_ok(5))
-			fprintf(proof_file, "Unit %d found.  Deleting %d\n", -lit, lit);
+			fprintf(proof_file, "c Unit %d found.  Deleting %d\n", -lit, lit);
 		    if (ilist_length(cclause) == 1) {
-			print_proof_comment(4, "   Conflict detected");
+			print_proof_comment(4, "c   Conflict detected");
 			/* Conflict detected */
 			hint_used[hi] = true;
 			return true;
@@ -698,7 +698,7 @@ static bool rup_check(ilist target_clause, jtype_t *horder, int hcount) {
 		    }
 		} else {
 		    if (print_ok(5))
-			fprintf(proof_file, "Unit %d NOT found.  Keeping %d\n", -lit, lit);
+			fprintf(proof_file, "c Unit %d NOT found.  Keeping %d\n", -lit, lit);
 		    li++;
 		}
 	    }

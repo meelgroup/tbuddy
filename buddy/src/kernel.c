@@ -832,22 +832,22 @@ void bdd_fprintstat(FILE *ofile)
    bddCacheStat s;
    bdd_cachestats(&s);
    
-   fprintf(ofile, "\nCache statistics\n");
-   fprintf(ofile, "----------------\n");
+   fprintf(ofile, "\nc Cache statistics\n");
+   fprintf(ofile, "c ----------------\n");
    
-   fprintf(ofile, "Unique Access:  %ld\n", s.uniqueAccess);
-   fprintf(ofile, "Unique Chain:   %ld\n", s.uniqueChain);
-   fprintf(ofile, "Unique Hit:     %ld\n", s.uniqueHit);
-   fprintf(ofile, "Unique Miss:    %ld\n", s.uniqueMiss);
-   fprintf(ofile, "=> Hit rate =   %.2f\n",
+   fprintf(ofile, "c Unique Access:  %ld\n", s.uniqueAccess);
+   fprintf(ofile, "c Unique Chain:   %ld\n", s.uniqueChain);
+   fprintf(ofile, "c Unique Hit:     %ld\n", s.uniqueHit);
+   fprintf(ofile, "c Unique Miss:    %ld\n", s.uniqueMiss);
+   fprintf(ofile, "c => Hit rate =   %.2f\n",
 	   (s.uniqueHit+s.uniqueMiss > 0) ? 
 	   ((float)s.uniqueHit)/((float)s.uniqueHit+s.uniqueMiss) : 0);
-   fprintf(ofile, "Operator Hits:  %ld\n", s.opHit);
-   fprintf(ofile, "Operator Miss:  %ld\n", s.opMiss);
-   fprintf(ofile, "=> Hit rate =   %.2f\n",
+   fprintf(ofile, "c Operator Hits:  %ld\n", s.opHit);
+   fprintf(ofile, "c Operator Miss:  %ld\n", s.opMiss);
+   fprintf(ofile, "c => Hit rate =   %.2f\n",
 	   (s.opHit+s.opMiss > 0) ? 
 	   ((float)s.opHit)/((float)s.opHit+s.opMiss) : 0);
-   fprintf(ofile, "Swap count =    %ld\n", s.swapCount);
+   fprintf(ofile, "c Swap count =    %ld\n", s.swapCount);
 }
 
 
@@ -1151,7 +1151,7 @@ void bdd_default_gbchandler(int pre, bddGbcStat *s)
 {
    if (!pre)
    {
-      printf("Garbage collection #%d: %d nodes / %d free / %d previously freed ",
+      printf("c Garbage collection #%d: %d nodes / %d free / %d previously freed ",
 	     s->num, s->nodes, s->freenodes, s->prevfreednodes);
       printf(" / %.1fs / %.1fs total\n",
 	     (float)s->time/(float)(CLOCKS_PER_SEC),

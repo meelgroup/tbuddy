@@ -50,13 +50,15 @@ static void pseudo_init() {
 static void pseudo_info_fun(int vlevel) {
     if (vlevel < 1)
 	return;
-    printf("Number of XOR constraints used: %d\n", pseudo_xor_created);
-    printf("Number of unique XOR constraints: %d\n", pseudo_xor_unique);
+    printf("\nc PseudoBoolean statistics:\n");
+    printf("c ----------------\n");
+    printf("c Number of XOR constraints used: %d\n", pseudo_xor_created);
+    printf("c Number of unique XOR constraints: %d\n", pseudo_xor_unique);
     if (pseudo_xor_unique > 0)
-	printf("Average (unique) constraint size: %.2f\n", (double) pseudo_total_length / pseudo_xor_unique);
-    printf("Number of XOR additions performed: %d\n", pseudo_plus_computed);
-    printf("Number of unique XOR additions: %d\n", pseudo_plus_unique);
-    printf("Number of clauses generated from arguments: %d\n", pseudo_arg_clause_count);
+	printf("c Average (unique) constraint size: %.2f\n", (double) pseudo_total_length / pseudo_xor_unique);
+    printf("c Number of XOR additions performed: %d\n", pseudo_plus_computed);
+    printf("c Number of unique XOR additions: %d\n", pseudo_plus_unique);
+    printf("c Number of clauses generated from arguments: %d\n", pseudo_arg_clause_count);
 }
 
 
@@ -357,7 +359,7 @@ public:
     int64_t cost;
 
     void show(const char *prefix) {
-	printf("%s: Edge %d <--> %d.  Cost = %d/%d\n", prefix, node1, node2, upper(cost), lower(cost));
+	printf("c %s: Edge %d <--> %d.  Cost = %d/%d\n", prefix, node1, node2, upper(cost), lower(cost));
     }
 };
 
@@ -390,7 +392,7 @@ public:
 	}
 	delete[] imap;
 	if (verbosity_level >= 1) {
-	    printf("Summing over graph with %d nodes, %d edges, %d variables\n", xcount, (int) edge_map.size(), real_variable_count);
+	    printf("c Summing over graph with %d nodes, %d edges, %d variables\n", xcount, (int) edge_map.size(), real_variable_count);
 	}
 	if (verbosity_level >= 2)
 	    show("Initial");
@@ -450,11 +452,11 @@ public:
 
 
     void show(const char *prefix) {
-	printf("%s: %d nodes, %d edges\n", prefix, real_node_count, (int) edges.size());
+	printf("c %s: %d nodes, %d edges\n", prefix, real_node_count, (int) edges.size());
 	for (int n1 = 0; n1 < node_count; n1++) {
 	    if (nodes[n1] == NULL)
 		continue;
-	    printf("    Node %d.  Constraint ", n1);
+	    printf("c     Node %d.  Constraint ", n1);
 	    nodes[n1]->show(stdout);
 	    printf("\n");
 	    for (int n2 : neighbors[n1]) {
@@ -632,7 +634,7 @@ public:
     int64_t cost;
 
     void show(const char *prefix) {
-	printf("%s: Pivot Eid = %d.  Var = %d.  Cost = %d/%d\n", prefix, equation_id, variable, upper(cost), lower(cost));
+	printf("c %s: Pivot Eid = %d.  Var = %d.  Cost = %d/%d\n", prefix, equation_id, variable, upper(cost), lower(cost));
     }
 };
 
@@ -670,7 +672,7 @@ public:
 	    }
 	}
 	if (verbosity_level >= 1) {
-	    printf("Performing Gauss-Jordan elimination with %d equations, %d  variables (%d external)\n",
+	    printf("c Performing Gauss-Jordan elimination with %d equations, %d  variables (%d external)\n",
 		   xcount, real_variable_count, real_exvar_count);
 	}
     }
@@ -693,21 +695,21 @@ public:
 
 
     void show(const char *prefix) {
-	printf("%s status\n", prefix);
-	printf("  %d remaining equations, %d variables\n", remaining_equation_count, (int) pivot_selector.size());
+	printf("c %s status\n", prefix);
+	printf("c   %d remaining equations, %d variables\n", remaining_equation_count, (int) pivot_selector.size());
 	if (remaining_equation_count > 0) {
 	    for (int eid= 0; eid < equation_count; eid++) {
 		if (equations[eid] == NULL)
 		    continue;
-		printf("    Equation #%d: ", eid);
+		printf("c     Equation #%d: ", eid);
 		equations[eid]->show(stdout);
 		printf("\n");
 	    }
 	}
 	if (saved_equations.size() > 0) {
-	    printf("  %d saved equations\n", (int) saved_equations.size());
+	    printf("c   %d saved equations\n", (int) saved_equations.size());
 	    for (int eid = 0; eid < saved_equations.size(); eid++) {
-		printf("    Pivot variable %d.  Equation: ", saved_pivots[eid]->variable);
+		printf("c     Pivot variable %d.  Equation: ", saved_pivots[eid]->variable);
 		saved_equations[eid]->show(stdout);
 		printf("\n");
 	    }
@@ -736,7 +738,7 @@ public:
 	    xor_constraint *seq = saved_equations[0];
 	    nset.add(*seq);
 	    if (verbosity_level >= 1) {
-		printf("Gauss-Jordan completed.  %d steps.  System infeasible\n", step_count);
+		printf("c Gauss-Jordan completed.  %d steps.  System infeasible\n", step_count);
 	    }
 	    return;
 	} else if (saved_equations.size() > 0) {
@@ -745,7 +747,7 @@ public:
 	    for (xor_constraint *eq : saved_equations)
 		nset.add(*eq);
 	    if (verbosity_level >= 1) {
-		printf("Gauss-Jordan completed.  %d steps.  %d final equations\n", step_count, (int) saved_equations.size());
+		printf("c Gauss-Jordan completed.  %d steps.  %d final equations\n", step_count, (int) saved_equations.size());
 	    }
 	}
     }

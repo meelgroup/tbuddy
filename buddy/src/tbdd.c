@@ -104,18 +104,20 @@ void tbdd_done() {
 	bddStat s;
 	bdd_stats(&s);
 	bdd_printstat();
-	printf("Total BDD nodes produced: %ld\n", s.produced);
+	printf("\nc BDD statistics\n");
+	printf("c ----------------\n");
+	printf("c Total BDD nodes produced: %ld\n", s.produced);
     }
     bdd_done();
     if (verbosity_level >= 1) {
-	printf("Input variables: %d\n", input_variable_count);
-	printf("Input clauses: %d\n", input_clause_count);
-	printf("Total clauses: %d\n", total_clause_count);
-	printf("Maximum live clauses: %d\n", max_live_clause_count);
-	printf("Deleted clauses: %d\n", deleted_clause_count);
-	printf("Final live clauses: %d\n", total_clause_count-deleted_clause_count);
+	printf("c Input variables: %d\n", input_variable_count);
+	printf("c Input clauses: %d\n", input_clause_count);
+	printf("c Total clauses: %d\n", total_clause_count);
+	printf("c Maximum live clauses: %d\n", max_live_clause_count);
+	printf("c Deleted clauses: %d\n", deleted_clause_count);
+	printf("c Final live clauses: %d\n", total_clause_count-deleted_clause_count);
 	if (variable_counter)
-	    printf("Total variables: %d\n", *variable_counter);
+	    printf("c Total variables: %d\n", *variable_counter);
     }
     for (i = 0; i < ifun_count; i++) {
 	ifuns[i](verbosity_level);
