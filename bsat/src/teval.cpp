@@ -210,6 +210,10 @@ public:
 
     // Impose top-level constraint on this level.  Return resulting existential quantification
     bdd exclude_step(bdd upper_constraint) {
+	int bottom_var = variables[ilist_length(variables)-1];
+	// Should skip this level if constraint independent of these variables
+	if (upper_constraint == bdd_true() || upper_constraint == bdd_false() || bdd_var(upper_constraint) > bottom_var)
+	    return upper_constraint;
 	bdd nlocal_constraint = bdd_and(local_constraint, upper_constraint);
 	if (nlocal_constraint == local_constraint)
 	    return bdd_true();
@@ -257,7 +261,6 @@ public:
 
 
     // Generate another solution BDD 
-    // TODO: Is there some way to enumerate unique solutions?
     bdd next_solution() {
 	if (constraint_function == bdd_false())
 	    return bdd_false();
