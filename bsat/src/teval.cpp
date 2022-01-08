@@ -202,7 +202,7 @@ public:
 	    constraint = nconstraint;
 	    solution = bdd_and(litbdd, solution);
 	    if (verbosity_level >= 3) {
-		std::cout << "Assigned value " << p << " to variable V" << var << std::endl;
+		std::cout << "c Assigned value " << p << " to variable V" << var << std::endl;
 	    }
 	}
 	return solution;
@@ -214,7 +214,7 @@ public:
 	if (nlocal_constraint == local_constraint)
 	    return bdd_true();
 	if (verbosity_level >= 3) {
-	    printf("Imposing new constraint on variables V"); ilist_print(variables, stdout, " V"); printf("\n");
+	    printf("c Imposing new constraint on variables V"); ilist_print(variables, stdout, " V"); printf("\n");
 	}
 	local_constraint = nlocal_constraint;
 	bdd varbdd = bdd_makeset(variables, ilist_length(variables));
@@ -369,7 +369,7 @@ private:
 	int collect_min = proof_type == PROOF_LRAT ? COLLECT_MIN_LRAT : COLLECT_MIN_DRAT;
 	if (dead_count >= collect_min && (double) dead_count / total_count >= COLLECT_FRACTION) {
 	    if (verbosity_level >= 2) {
-		std::cout << "Initiating GC.  Estimated total nodes = " << total_count << ".  Estimated dead nodes = " << dead_count << std::endl;
+		std::cout << "c Initiating GC.  Estimated total nodes = " << total_count << ".  Estimated dead nodes = " << dead_count << std::endl;
 	    }
 	    bdd_gbc();
 	    total_count -= dead_count;
@@ -407,7 +407,7 @@ public:
 	int rcode;
 	tbdd_set_verbose(verblevel);
 	if ((rcode = tbdd_init(proof_file, &variable_count, &last_clause_id, clauses, ptype, binary)) != 0) {
-	    fprintf(stderr, "Initialization failed.  Return code = %d\n", rcode);
+	    fprintf(stderr, "c Initialization failed.  Return code = %d\n", rcode);
 	    exit(1);
 	}
 	// Want to number terms starting at 1
@@ -428,7 +428,7 @@ public:
 	max_bdd = std::max(max_bdd, bdd_nodecount(tp->get_root()));
 	terms.push_back(tp);
 	//    if (verblevel >= 3) 
-	//      std::cout << "Adding term #" << tp->get_term_id() << std::endl;
+	//      std::cout << "c Adding term #" << tp->get_term_id() << std::endl;
 	total_count += tp->get_node_count();
     }
 
@@ -529,7 +529,7 @@ public:
 	    }
 	}
 	if (verblevel >= 1)
-	    std::cout << "Placed " << tcount << " terms into " << bcount << " buckets." << std::endl;
+	    std::cout << "c Placed " << tcount << " terms into " << bcount << " buckets." << std::endl;
 
 	for (int bvar = 1 ; bvar <= max_variable; bvar++) {
 	    int next_idx = 0;
@@ -542,7 +542,7 @@ public:
 		    solver->add_step(vlist, bdd_true());
 		}
 		if (verblevel >= 3)
-		    std::cout << "Bucket " << bvar << " empty.  Skipping" << std::endl;
+		    std::cout << "c Bucket " << bvar << " empty.  Skipping" << std::endl;
 		continue;
 	    }
 	    while (next_idx < buckets[bvar].size() - 1) {
@@ -552,14 +552,14 @@ public:
 		bdd root = tpn->get_root();
 		if (root == bdd_false()) {
 		    if (verblevel >= 3)
-			std::cout << "Bucket " << bvar << " Conjunction of terms " 
+			std::cout << "c Bucket " << bvar << " Conjunction of terms " 
 				  << tp1->get_term_id() << " and " << tp2->get_term_id() << " yields FALSE" << std::endl;
 		    tbdd result = tpn->get_fun();
 		    return result;
 		}
 		int top = bdd_var(root);
 		if (verblevel >= 3)
-		    std::cout << "Bucket " << bvar << " Conjunction of terms " 
+		    std::cout << "c Bucket " << bvar << " Conjunction of terms " 
 			      << tp1->get_term_id() << " and " << tp2->get_term_id() << " yields term " 
 			      << tpn->get_term_id() << " with top variable " << top << std::endl;
 		buckets[top].push_back(tpn->get_term_id());
@@ -569,16 +569,16 @@ public:
 		Term *tpn = equantify(tp, bvar);
 		bdd root = tpn->get_root();
 		if (verblevel >= 1 && bvar % 100 == 0)
-		    std::cout << "Bucket " << bvar << " Reduced to term with " << tpn->get_node_count() << " nodes" << std::endl;
+		    std::cout << "c Bucket " << bvar << " Reduced to term with " << tpn->get_node_count() << " nodes" << std::endl;
 		if (root == bdd_true()) {
 		    if (verblevel >= 3)
-			std::cout << "Bucket " << bvar << " Quantification of term " 
+			std::cout << "c Bucket " << bvar << " Quantification of term " 
 				  << tp->get_term_id() << " yields TRUE" << std::endl;
 		} else {
 		    int top = bdd_var(root);
 		    buckets[top].push_back(tpn->get_term_id());
 		    if (verblevel >= 3) {
-			std::cout << "Bucket " << bvar << " Quantification of term " 
+			std::cout << "c Bucket " << bvar << " Quantification of term " 
 				  << tp->get_term_id() << " yields term " << tpn->get_term_id() 
 				  << " with top variable " << top << std::endl;
 		    }
@@ -593,12 +593,12 @@ public:
 		    solver->add_step(vlist, bdd_true());
 		}
 		if (verblevel >= 3)
-		    std::cout << "Bucket " << bvar << " cleared before quantifying." << std::endl;
+		    std::cout << "c Bucket " << bvar << " cleared before quantifying." << std::endl;
 	    }
 	}
 	// If get here, formula must be satisfiable
 	if (verblevel >= 1) {
-	    std::cout << "Tautology" << std::endl;
+	    std::cout << "c Tautology" << std::endl;
 	}
 	return tbdd_tautology();
     }
@@ -630,29 +630,29 @@ public:
 		    Term *tp = term_stack.back();
 		    int term_id = tp->get_term_id();
 		    bdd root = tp->get_root();
-		    std::cout << "Term #" << term_id << ". Nodes = " << bdd_nodecount(root) << ". " << buf << std::endl;
+		    std::cout << "c Term #" << term_id << ". Nodes = " << bdd_nodecount(root) << ". " << buf << std::endl;
 		}
 		break;
 	    case 'c':
 		c = get_numbers(schedfile, numbers);
 		if (c != '\n' && c != EOF) {
-		    fprintf(stderr, "Schedule line #%d.  Clause command. Non-numeric argument '%c'\n", line, c);
+		    fprintf(stderr, "c Schedule line #%d.  Clause command. Non-numeric argument '%c'\n", line, c);
 		    exit(1);
 		}
 		for (int i = 0; i < numbers.size(); i++) {
 		    int ci = numbers[i];
 		    if (ci < 1 || ci > clause_count) {
-			fprintf(stderr, "Schedule line #%d.  Invalid clause number %d\n", line, ci);
+			fprintf(stderr, "c Schedule line #%d.  Invalid clause number %d\n", line, ci);
 			exit(1);
 		    }
 		    if (ci >= terms.size()) {
-			fprintf(stderr, "Schedule line #%d.  Internal error.  Attempting to get clause #%d, but only have %d terms\n", line, ci, (int) terms.size()-1);
+			fprintf(stderr, "c Schedule line #%d.  Internal error.  Attempting to get clause #%d, but only have %d terms\n", line, ci, (int) terms.size()-1);
 			exit(1);
 		    }
 		    term_stack.push_back(terms[ci]);
 		}
 		if (verblevel >= 3) {
-		    std::cout << "Schedule line #" << line << ".  Pushed " << numbers.size() 
+		    std::cout << "c Schedule line #" << line << ".  Pushed " << numbers.size() 
 			      << " clauses.  Stack size = " << term_stack.size() << std::endl;
 		}
 		line ++;
@@ -660,11 +660,11 @@ public:
 	    case 'a':
 		c = get_numbers(schedfile, numbers);
 		if (c != '\n' && c != EOF) {
-		    fprintf(stderr, "Schedule line #%d.  And command. Non-numeric argument '%c'\n", line, c);
+		    fprintf(stderr, "c Schedule line #%d.  And command. Non-numeric argument '%c'\n", line, c);
 		    exit(1);
 		}
 		if (numbers.size() != 1) {
-		    fprintf(stderr, "Schedule line #%d.  Should specify number of conjunctions\n", line);
+		    fprintf(stderr, "c Schedule line #%d.  Should specify number of conjunctions\n", line);
 		    exit(1);
 		} else {
 		    int ccount = numbers[0];
@@ -677,20 +677,20 @@ public:
 		    Term *product = term_stack.back();
 		    term_stack.pop_back();
 		    if (!product->active()) {
-			fprintf(stderr, "Schedule line #%d.  Attempting to reuse clause #%d\n", line, product->get_term_id());
+			fprintf(stderr, "c Schedule line #%d.  Attempting to reuse clause #%d\n", line, product->get_term_id());
 			exit(1);
 		    }
 		    while (ccount-- > 0) {
 			Term *tp = term_stack.back();
 			term_stack.pop_back();
 			if (!tp->active()) {
-			    fprintf(stderr, "Schedule line #%d.  Attempting to reuse clause #%d\n", line, tp->get_term_id());
+			    fprintf(stderr, "c Schedule line #%d.  Attempting to reuse clause #%d\n", line, tp->get_term_id());
 			    exit(1);
 			}
 			product = conjunct(product, tp);
 			if (product->get_root() == bdd_false()) {
 			    if (verblevel >= 2) {
-				std::cout << "Schedule line #" << line << ".  Generated BDD 0" << std::endl;
+				std::cout << "c Schedule line #" << line << ".  Generated BDD 0" << std::endl;
 			    }
 			    tbdd result = product->get_fun();
 			    return result;
@@ -698,7 +698,7 @@ public:
 		    }
 		    term_stack.push_back(product);
 		    if (verblevel >= 3) {
-			std::cout << "Schedule line #" << line << ".  Performed " << numbers[0]
+			std::cout << "c Schedule line #" << line << ".  Performed " << numbers[0]
 				  << " conjunctions to get term #" << product->get_term_id() << ".  Stack size = " << term_stack.size() << std::endl;
 		    }
 		}
@@ -707,18 +707,18 @@ public:
 	    case 'q':
 		c = get_numbers(schedfile, numbers);
 		if (c != '\n' && c != EOF) {
-		    fprintf(stderr, "Schedule line #%d.  Quantify command. Non-numeric argument '%c'\n", line, c);
+		    fprintf(stderr, "c Schedule line #%d.  Quantify command. Non-numeric argument '%c'\n", line, c);
 		    exit(1);
 		}
 		for (int i = 0; i < numbers.size(); i++) {
 		    int vi = numbers[i];
 		    if (vi < 1 || vi > max_variable) {
-			fprintf(stderr, "Schedule line #%d.  Invalid variable %d\n", line, vi);
+			fprintf(stderr, "c Schedule line #%d.  Invalid variable %d\n", line, vi);
 			exit(1);
 		    }
 		}
 		if (term_stack.size() < 1) {
-		    fprintf(stderr, "Schedule line #%d.  Cannot quantify.  Stack is empty\n", line);
+		    fprintf(stderr, "c Schedule line #%d.  Cannot quantify.  Stack is empty\n", line);
 		    exit(1);
 		} else {
 		    Term *tp = term_stack.back();
@@ -726,7 +726,7 @@ public:
 		    Term *tpn = equantify(tp, numbers);
 		    term_stack.push_back(tpn);
 		    if (verblevel >= 3) {
-			std::cout << "Schedule line #" << line << ".  Quantified " << numbers.size()
+			std::cout << "c Schedule line #" << line << ".  Quantified " << numbers.size()
 				  << " variables to get Term #" << tpn->get_term_id() << ".  Stack size = " << term_stack.size() << std::endl;
 		    }
 		}
@@ -738,38 +738,38 @@ public:
 		if (isdigit(c)) {
 		    ungetc(c, schedfile);
 		    if (fscanf(schedfile, "%d", &modulus) != 1) {
-			fprintf(stderr, "Schedule line #%d.  Invalid modulus\n", line);
+			fprintf(stderr, "c Schedule line #%d.  Invalid modulus\n", line);
 			exit(1);
 		    } else if (modulus != 2) {
-			fprintf(stderr, "Schedule line #%d.  Only support modulus 2\n", line);
+			fprintf(stderr, "c Schedule line #%d.  Only support modulus 2\n", line);
 			exit(1);
 		    }
 		} else {
-		    fprintf(stderr, "Schedule line #%d.  Modulus required\n", line);
+		    fprintf(stderr, "c Schedule line #%d.  Modulus required\n", line);
 		    exit(1);
 		}
 		if (fscanf(schedfile, "%d", &constant) != 1) {
-		    fprintf(stderr, "Schedule line #%d.  Constant term required\n", line);
+		    fprintf(stderr, "c Schedule line #%d.  Constant term required\n", line);
 		    exit(1);
 		}
 		if (constant < 0 || constant >= modulus) {
-		    fprintf(stderr, "Schedule line #%d.  Constant term %d invalid.  Must be between 0 and %d\n", line, constant, modulus-1);
+		    fprintf(stderr, "c Schedule line #%d.  Constant term %d invalid.  Must be between 0 and %d\n", line, constant, modulus-1);
 		    exit(1);
 		}
 		c = get_number_pairs(schedfile, numbers2, numbers, '.');
 		if (c != '\n' && c != EOF) {
-		    fprintf(stderr, "Schedule line #%d.  Could not parse equation terms\n", line);
+		    fprintf(stderr, "c Schedule line #%d.  Could not parse equation terms\n", line);
 		    exit(1);
 		}
 		for (i = 0; i < numbers2.size(); i++) {
 		    int coeff = numbers2[i];
 		    if (coeff != 1) {
-			fprintf(stderr, "Schedule line #%d.  Invalid coefficient %d\n", line, coeff);
+			fprintf(stderr, "c Schedule line #%d.  Invalid coefficient %d\n", line, coeff);
 			exit(1);
 		    }
 		}
 		if (term_stack.size() < 1) {
-		    fprintf(stderr, "Schedule line #%d.  Cannot extract equation.  Stack is empty\n", line);
+		    fprintf(stderr, "c Schedule line #%d.  Cannot extract equation.  Stack is empty\n", line);
 		    exit(1);
 		} else {
 		    Term *tp = term_stack.back();
@@ -777,7 +777,7 @@ public:
 		    Term *tpn = xor_constrain(tp, numbers, constant);
 		    term_stack.push_back(tpn);
 		    if (verblevel >= 3) {
-			std::cout << "Schedule line #" << line << ".  Xor constraint with " << numbers.size()
+			std::cout << "c Schedule line #" << line << ".  Xor constraint with " << numbers.size()
 				  << " variables to get Term #" << tpn->get_term_id() <<  ".  Stack size = " << term_stack.size() << std::endl;
 		    }
 		}
@@ -786,11 +786,11 @@ public:
 	    case 'g':
 		c = get_numbers(schedfile, numbers);
 		if (c != '\n' && c != EOF) {
-		    fprintf(stderr, "Schedule line #%d.  Gauss command. Non-numeric argument '%c'\n", line, c);
+		    fprintf(stderr, "c Schedule line #%d.  Gauss command. Non-numeric argument '%c'\n", line, c);
 		    exit(1);
 		}
 		if (numbers.size() < 1) {
-		    fprintf(stderr, "Schedule line #%d.  Should specify number of equations to sum\n", line);
+		    fprintf(stderr, "c Schedule line #%d.  Should specify number of equations to sum\n", line);
 		    exit(1);
 		} else {
 		    int ecount = numbers[0];
@@ -808,7 +808,7 @@ public:
 			int si = term_stack.size() - i - 1;
 			Term *tp = term_stack[si];
 			if (tp->get_equation() == NULL) {
-			    fprintf(stderr, "Schedule line #%d.  Term %d does not have an associated equation\n", line, tp->get_term_id());
+			    fprintf(stderr, "c Schedule line #%d.  Term %d does not have an associated equation\n", line, tp->get_term_id());
 			    exit(1);
 			}
 			xset.add(*tp->get_equation());
@@ -818,7 +818,7 @@ public:
 		    ilist_free(exvars);
 		    if (nset.is_infeasible()) {
 			if (verblevel >= 2) {
-			    std::cout << "Schedule line #" << line << ".  Generated infeasible constraint" << std::endl;
+			    std::cout << "c Schedule line #" << line << ".  Generated infeasible constraint" << std::endl;
 			}
 			tbdd result = nset.xlist[0]->get_validation();
 			return result;
@@ -830,7 +830,7 @@ public:
 		    }
 		    if (nset.xlist.size() == 0) {
 			if (verblevel >= 3) {
-			    std::cout << "Schedule line #" << line << ".  G-J elim on  " << ecount << 
+			    std::cout << "c Schedule line #" << line << ".  G-J elim on  " << ecount << 
 				" equations gives no new terms.  Stack size = " << term_stack.size() << std::endl;
 			}
 		    } else {
@@ -845,7 +845,7 @@ public:
 			}
 			check_gc();
 			if (verblevel >= 3) {
-			    std::cout << "Schedule line #" << line << ".  G-J elim on " << ecount << 
+			    std::cout << "c Schedule line #" << line << ".  G-J elim on " << ecount << 
 				" equations gives Terms #" << first_term << "--#" << last_term << ".  Stack size = " << term_stack.size() << std::endl;
 			}
 		    }
@@ -853,13 +853,13 @@ public:
 		line++;
 		break;
 	    default:
-		fprintf(stderr, "Schedule line #%d.  Unknown command '%c'\n", line, c);
+		fprintf(stderr, "c Schedule line #%d.  Unknown command '%c'\n", line, c);
 		break;
 	    }
 	}
 	if (term_stack.size() != 1) {
 	    if (verblevel >= 2)
-		std::cout << "After executing schedule, have " << term_stack.size() << " terms.  Switching to bucket elimination" << std::endl;
+		std::cout << "c After executing schedule, have " << term_stack.size() << " terms.  Switching to bucket elimination" << std::endl;
 	    // Hack things up to treat remaining terms as entire set
 	    reset();
 	    for (Term *tp : term_stack) {
@@ -878,12 +878,12 @@ public:
 	std::cout << and_count << " conjunctions, " << quant_count << " quantifications." << std::endl;
 	std::cout << equation_count << " equations" << std::endl;
 	bdd_printstat();
-	std::cout << "Total BDD nodes: " << s.produced <<std::endl;
-	std::cout << "Max BDD size: " << max_bdd << std::endl;
+	std::cout << "c Total BDD nodes: " << s.produced <<std::endl;
+	std::cout << "c Max BDD size: " << max_bdd << std::endl;
 #if 0
-	std::cout << "Total clauses: " << s.clausenum << std::endl;
-	std::cout << "Max live clauses: " << s.maxclausenum << std::endl;
-	std::cout << "Total variables: " << s.variablenum << std::endl;
+	std::cout << "c Total clauses: " << s.clausenum << std::endl;
+	std::cout << "c Max live clauses: " << s.maxclausenum << std::endl;
+	std::cout << "c Total variables: " << s.variablenum << std::endl;
 #endif
     }
 
@@ -894,12 +894,12 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int 
     fclose(cnf_file);
     if (cset.failed()) {
 	if (verblevel >= 1)
-	    std::cout << "Aborted" << std::endl;
+	    std::cout << "c Aborted" << std::endl;
 	return false;
     }
     if (verblevel >= 1)
 	if (verblevel >= 1)
-	    std::cout << "Read " << cset.clause_count() << " clauses.  " 
+	    std::cout << "c Read " << cset.clause_count() << " clauses.  " 
 		      << cset.max_variable() << " variables" << std::endl;
     PhaseGenerator pg(GENERATE_RANDOM, DEFAULT_SEED);
     Solver solver(&pg);
@@ -912,6 +912,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int 
     else {
 	tr = tset.tree_reduce();
 	bdd r = tr.get_root();
+	std::cout << "c Final BDD size = " << bdd_nodecount(r) << std::endl;
 	if (r != bdd_false()) {
 	    // Enable solution generation
 	    ilist vlist = ilist_new(1);
@@ -927,9 +928,6 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int 
 	std::cout << "s UNSATISFIABLE" << std::endl;
     else {
 	std::cout << "s SATISFIABLE" << std::endl;
-	std::cout << "c BDD size = " << bdd_nodecount(r) << std::endl;
-	if (verblevel >= 3)
-	    std::cout << "c BDD: " << bdd_nameid(r) << std::endl;
 	// Generate solutions
 	solver.set_constraint(r);
 	for (int i = 0; i < SOLUTION_COUNT; i++) {

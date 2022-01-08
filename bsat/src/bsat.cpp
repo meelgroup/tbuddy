@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
     double start = tod();
     if (solve(cnf_file, proof_file, sched_file, bucket, verb, ptype, binary)) {
 	if (verb >= 1) {
-	    printf("Elapsed seconds: %.2f\n", tod()-start);
+	    printf("c Elapsed seconds: %.2f\n", tod()-start);
 	}
     }
     if (proof_file != NULL)
