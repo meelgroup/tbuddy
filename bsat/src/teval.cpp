@@ -269,14 +269,18 @@ public:
 	for (int i = qsteps.size()-1; i >= 0; i--)
 	    solution = qsteps[i]->solve_step(solution, phase_gen);
 	// Now exclude this solution from future enumerations.
-	bdd new_constraint = bdd_not(solution);
+	impose_constraint(bdd_not(solution));
+	return solution;
+    }
+
+    // Impose additional constraint on set of solutions
+    void impose_constraint(bdd constraint) {
 	for (int i = 0; i < qsteps.size(); i++) {
-	    new_constraint = qsteps[i]->exclude_step(new_constraint);
-	    if (new_constraint == bdd_true())
+	    constraint = qsteps[i]->exclude_step(constraint);
+	    if (constraint == bdd_true())
 		break;
 	}
-	constraint_function = bdd_and(constraint_function, new_constraint);
-	return solution;
+	constraint_function = bdd_and(constraint_function, constraint);
     }
 
 private:
