@@ -131,12 +131,12 @@ class Xor:
                 xcount += 1
             otherIdList += otherClauses
             self.mapClauses(otherClauses, omap)
-        exvars = []
+        ivars = []
         if (xcount > 0):
             for v in xmap.keys():
-                if v in omap:
-                    exvars.append(v)
-            slist = [str(v) for v in sorted(exvars)]
+                if v not in omap:
+                    ivars.append(v)
+            slist = [str(v) for v in sorted(ivars)]
             outfile.write("g %d %s\n" % (xcount, " ".join(slist)))
         if len(otherIdList) > 0:
             slist = [str(id) for id in sorted(otherIdList)]
@@ -150,7 +150,7 @@ class Xor:
         if multiFile:
             exutil.ewrite("%s%d equations" % (self.msgPrefix, xcount), 1)
             exutil.ewrite(", %d clauses (%d non-xor)" % (clauseCount, len(otherIdList)), 1)
-            exutil.ewrite(", %d variables (%d external)" % (self.variableCount, len(exvars)), 1)
+            exutil.ewrite(", %d variables (%d internal)" % (self.variableCount, len(ivars)), 1)
             if seconds is None:
                 exutil.ewrite("\n", 1)
             else:
@@ -161,7 +161,7 @@ class Xor:
             exutil.ewrite("    Input clauses: %d\n" % clauseCount, 1)
             exutil.ewrite("    Non-xor clauses: %d\n" % len(otherIdList), 1)
             exutil.ewrite("    Total variables: %d\n" % self.variableCount, 1)
-            exutil.ewrite("    External variables: %d\n" % len(exvars), 1)
+            exutil.ewrite("    Internal variables: %d\n" % len(ivars), 1)
             if seconds is not None:
                 exutil.ewrite("    Extraction seconds: %.2f\n" % seconds, 1)
 
