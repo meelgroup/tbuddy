@@ -45,6 +45,10 @@ class Clause {
 
     int& operator[](int);
 
+    // Given array mapping (decremented) variable to 0/1
+    // determine if clause satisfied
+    bool satisfied(char *assignment);
+
 };
 
 // CNF is a collection of clauses.  Can read from a DIMACS format CNF file
@@ -75,6 +79,11 @@ class CNF {
     size_t clause_count();
     // Return ID of maximum variable encountered
     int max_variable();
+
+    // Given array mapping (decremented) variable to 0/1
+    // determine if every clause satisfied.
+    // If not, return ID of first offending clause.  Otherwise return 0
+    int satisfied(char *assignment);
 
     Clause * operator[](int);    
 };

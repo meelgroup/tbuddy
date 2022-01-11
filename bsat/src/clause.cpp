@@ -92,6 +92,15 @@ int& Clause::operator[](int i) {
   return contents[i];
 }
 
+bool Clause::satisfied(char *assignment) {
+    bool found = !is_tautology;
+    for (int i = 0; !found && i < ilist_length(contents); i++) {
+	int lit = contents[i];
+	found = (lit < 0 && assignment[-lit-1] == 0) || (lit > 0 && assignment[lit-1] == 1);
+    }
+    return found;
+}
+
 void Clause::canonize() {
   std::sort(contents, contents + length(), abs_less);
   int last_lit = 0;
@@ -250,3 +259,11 @@ int CNF::max_variable() {
   return maxVar;
 }
 
+int CNF::satisfied(char *assignment) {
+    for (int cid = 1; cid <= clauses.size(); cid++) {
+	Clause *cp = clauses[cid-1];
+	if (!cp->satisfied(assignment))
+	    return cid;
+    }
+    return 0;
+}
