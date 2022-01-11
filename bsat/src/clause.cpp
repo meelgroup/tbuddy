@@ -93,7 +93,7 @@ int& Clause::operator[](int i) {
 }
 
 bool Clause::satisfied(char *assignment) {
-    bool found = !is_tautology;
+    bool found = is_tautology;
     for (int i = 0; !found && i < ilist_length(contents); i++) {
 	int lit = contents[i];
 	found = (lit < 0 && assignment[-lit-1] == 0) || (lit > 0 && assignment[lit-1] == 1);

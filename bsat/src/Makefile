@@ -8,7 +8,7 @@ LDIR = ../../buddy/lib
 LIB = $(LDIR)/buddy.a
 TLIB = $(LDIR)/tbuddy.a
 
-all: tbsat
+all: tbsat sat_check
 
 bsat: clause.cpp clause.h eval.cpp bsat.cpp 
 	$(CXX) $(CFLAGS) $(INC) -o bsat clause.cpp eval.cpp bsat.cpp $(LIB)
