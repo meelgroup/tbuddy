@@ -5,23 +5,18 @@ GENERATOR = $(GDIR)/chess.py
 BSAT = ../../../src/bsat
 TBSAT = ../../../src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
+CHECK = ../../../src/sat_check
 VLEVEL=1
 RM = rm -f
 
 chess-$(N): $(GENERATOR)
 	$(INTERP) $(GENERATOR) -n $(N) -r chess-$(N)
 
-128:
-	make N=128
-	make chess-128.sdata RM=ls
+chess-sat-$(N): $(GENERATOR)
+	$(INTERP) $(GENERATOR) -c -n $(N) -r chess-sat-$(N)
 
 
-512:
-	make N=512
-	make chess-512.sdata RM=ls
-
-
-.SUFFIXES: .cnf .ldata .bdata .sdata .fldata .fbdata .fsdata
+.SUFFIXES: .cnf .ldata .bdata .bsdata .sdata .ssdata .fldata .fbdata .fsdata
 
 .cnf.ldata:
 	$(TBSAT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
@@ -30,16 +25,25 @@ chess-$(N): $(GENERATOR)
 	$(RM) $*.lrat
 
 .cnf.bdata:
-	$(TBSAT) -v $(VLEVEL) -b -i $< -o $*.lrat | tee $@
+	$(TBSAT) -v $(VLEVEL) -b -i $< -o $*.lrat | tee $@ 
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
+
+.cnf.bsdata:
+	$(TBSAT) -v $(VLEVEL) -b -i $< | tee $*.solve  tee $@ 
+	$(CHECK) -v $(VLEVEL) -i $< -s $*.solve | tee -a $@
 
 .cnf.sdata:
 	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
+
+.cnf.ssdata:
+	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule | tee $*.solve  tee $@ 
+	$(CHECK) -v $(VLEVEL) -i $< -s $*.solve | tee -a $@
+
 
 .cnf.fldata:
 	$(BSAT) -v $(VLEVEL) -i $< | tee $@
