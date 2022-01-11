@@ -210,10 +210,6 @@ public:
 
     // Impose top-level constraint on this level.  Return resulting existential quantification
     bdd exclude_step(bdd upper_constraint) {
-	int bottom_var = variables[ilist_length(variables)-1];
-	// Should skip this level if constraint independent of these variables
-	if (upper_constraint == bdd_true() || upper_constraint == bdd_false() || bdd_var(upper_constraint) > bottom_var)
-	    return upper_constraint;
 	bdd nlocal_constraint = bdd_and(local_constraint, upper_constraint);
 	if (nlocal_constraint == local_constraint)
 	    return bdd_true();
@@ -366,6 +362,10 @@ private:
     bool generate_solution;
     Solver *solver;
 
+    // For managing bucket elimination
+    // Track which variables have been assigned to a bucket
+    std::unordered_set<int> eliminated_variables;
+
     // Statistics
     int and_count;
     int quant_count;
@@ -384,14 +384,13 @@ private:
 	}
     }
 
-    // Load new set of terms
+    // Prepare to load with new set of terms
     void reset() {
 	next_term_id = 1;
 	min_active = 1;
-	// Want to number terms starting at 1
+	// Will number terms starting at 1
 	terms.resize(1, NULL);
     }
-
 
 public:
 
@@ -434,8 +433,8 @@ public:
 	tp->set_term_id(terms.size());
 	max_bdd = std::max(max_bdd, bdd_nodecount(tp->get_root()));
 	terms.push_back(tp);
-	//    if (verblevel >= 3) 
-	//      std::cout << "c Adding term #" << tp->get_term_id() << std::endl;
+	if (verblevel >= 4) 
+	    std::cout << "c Adding term #" << tp->get_term_id() << std::endl;
 	total_count += tp->get_node_count();
     }
 
@@ -456,6 +455,9 @@ public:
 	bdd varbdd = bdd_makeset(varset, vars.size());
 	bdd nroot = bdd_exist(tp->get_root(), varbdd);
 	tbdd tfun = tbdd_validate(nroot, tp->get_fun());
+	for (int var : vars) {
+	    eliminated_variables.insert(var);
+	}
 	if (solver)
 	    solver->add_step(vars, tp->get_root());
 	add(new Term(tfun));
@@ -541,7 +543,7 @@ public:
 	for (int bvar = 1 ; bvar <= max_variable; bvar++) {
 	    int next_idx = 0;
 	    if (buckets[bvar].size() == 0) {
-		if (solver) {
+		if (solver && eliminated_variables.count(bvar) == 0) {
 		    // Insert step so that solver will assign value to bvar
 		    int vbuf[ILIST_OVHD+1];
 		    ilist vlist = ilist_make(vbuf, 1);
@@ -575,7 +577,7 @@ public:
 		Term *tp = terms[buckets[bvar][next_idx]];
 		Term *tpn = equantify(tp, bvar);
 		bdd root = tpn->get_root();
-		if (verblevel >= 1 && bvar % 100 == 0)
+		if (verblevel >= 1 && (bvar % 100 == 0 || verblevel >= 3))
 		    std::cout << "c Bucket " << bvar << " Reduced to term with " << tpn->get_node_count() << " nodes" << std::endl;
 		if (root == bdd_true()) {
 		    if (verblevel >= 3)
@@ -807,9 +809,9 @@ public:
 				line, ecount, (int) term_stack.size());
 			exit(1);
 		    }
-		    ilist exvars = ilist_new(numbers.size()-1);
+		    std::unordered_set<int> ivars;
 		    for (int i = 1; i < numbers.size(); i++)
-			ilist_push(exvars, numbers[i]);
+			ivars.insert(numbers[i]);
 		    xor_set xset;
 		    for (i = 0; i < ecount; i++) {
 			int si = term_stack.size() - i - 1;
@@ -820,30 +822,36 @@ public:
 			}
 			xset.add(*tp->get_equation());
 		    }
-		    xor_set nset;
-		    xset.gauss_jordan(exvars, nset);
-		    ilist_free(exvars);
-		    if (nset.is_infeasible()) {
+		    xor_set eset, iset;
+		    ilist pivot_sequence = xset.gauss_jordan(ivars, eset, iset);
+		    if (eset.is_infeasible()) {
 			if (verblevel >= 2) {
 			    std::cout << "c Schedule line #" << line << ".  Generated infeasible constraint" << std::endl;
 			}
-			tbdd result = nset.xlist[0]->get_validation();
+			tbdd result = eset.xlist[0]->get_validation();
+			ilist_free(pivot_sequence);
 			return result;
-		    }
-		    for (i = 0; i < ecount; i++) {
-			Term *tp = term_stack.back();
-			term_stack.pop_back();
-			dead_count += tp->deactivate();
-		    }
-		    if (nset.xlist.size() == 0) {
-			if (verblevel >= 3) {
-			    std::cout << "c Schedule line #" << line << ".  G-J elim on  " << ecount << 
-				" equations gives no new terms.  Stack size = " << term_stack.size() << std::endl;
-			}
 		    } else {
+			for (i = 0; i < ecount; i++) {
+			    Term *tp = term_stack.back();
+			    term_stack.pop_back();
+			    dead_count += tp->deactivate();
+			}
+			// Equations over internal variables have already been eliminated
+			// but they should be added to solver infrastructure
+			for (int pid = 0; pid < iset.xlist.size(); pid++) {
+			    xor_constraint *xc = iset.xlist[pid];
+			    int pvar = pivot_sequence[pid];
+			    int vbuf[ILIST_OVHD+1];
+			    ilist vlist = ilist_make(vbuf, 1);
+			    ilist_fill1(vlist, pvar);
+			    solver->add_step(vlist, xc->get_validation().get_root());
+			    eliminated_variables.insert(pvar);
+			}
 			int first_term = -1;
 			int last_term = -1;
-			for (xor_constraint *xc : nset.xlist) {
+			// Set up equations over external variables for bucket elimination
+			for (xor_constraint *xc : eset.xlist) {
 			    Term *tpn = new Term(xc->get_validation());
 			    last_term = tpn->get_term_id();
 			    if (first_term < 0)
