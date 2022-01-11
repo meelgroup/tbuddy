@@ -5,6 +5,7 @@
 #define _PSEUDOBOOLEAN_H
 
 #include <vector>
+#include <unordered_set>
 #include <cstdint>
 #include "tbdd.h"
 
@@ -123,15 +124,18 @@ class xor_set {
     // All constraints in the set are deleted
     xor_constraint *sum();
 
-    // Perform Gauss - Jordan elimination to set of equations
-    // to reduce it to a set of equations over only the external variables
-    // nset updated to contain the new equations
-    // May be degenerate, infeasible, or with real equations
-    void gauss_jordan(ilist external_variables, xor_set &nset);
+    // Perform Gauss - Jordan elimination on set of equations
+    // to reduce it to two sets of equations:
+    //    iset over internal + external variables with internal pivots
+    //       This set is only needed when generating multiple solutions
+    //    eset over external variables with external pivots
+    //       This set can be used to determine whether the formula is sat/unsat
+    //       It is put in Jordan from
+    // Return list of pivots in elimination order
+    ilist gauss_jordan(std::unordered_set<int> &internal_variables, xor_set &eset, xor_set &iset);
 
-    // Testing properties of reduced set
-    bool is_degenerate();  // Does not impose any constraints on external variables
-    bool is_infeasible();  // Has not solutions
+    // Testing properties of eset
+    bool is_infeasible();  // Has no solution
 
     size_t size() { return xlist.size(); }
 

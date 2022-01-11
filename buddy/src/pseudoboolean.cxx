@@ -641,15 +641,15 @@ public:
 class gauss {
 public:
 
-    gauss (xor_constraint **xlist, int xcount, ilist exvars, int vcount, unsigned seed) {
+    gauss (xor_constraint **xlist, int xcount, std::unordered_set<int> ivars, int vcount, unsigned seed) {
 	seq.set_seed(seed);
 	equations = xlist;
 	equation_count = remaining_equation_count = xcount;
 	variable_count = vcount;
+	pivot_sequence = ilist_new(variable_count);
 	int real_variable_count = 0;
 	int real_exvar_count = 0;
-	for (int i = 0; i < ilist_length(exvars); i++)
-	    external_variables.insert(exvars[i]);
+	internal_variables = ivars;
 	// Build inverse map
 	imap = new std::set<int>[variable_count];
 	for (int eid = 0; eid < equation_count; eid++) {
@@ -666,7 +666,7 @@ public:
 	    if (piv) {
 		int64_t pcost = piv->cost;
 		real_variable_count++;
-		if (external_variables.count(v) > 0)
+		if (internal_variables.count(v) == 0)
 		    real_exvar_count ++;
 		pivot_selector[pcost] = piv;
 	    }
@@ -682,10 +682,8 @@ public:
 	    xor_constraint *eq = equations[eid];
 	    if (eq) delete eq;
 	}
-	for (xor_constraint *eq : saved_equations)
+	for (xor_constraint *eq : external_equations)
 	    if (eq) delete eq;
-	for (pivot *piv : saved_pivots)
-	    if (piv) delete piv;
 	for (int v = 1; v <= variable_count; v++) {
 	    pivot *piv = pivot_list[v-1];
 	    if (piv) delete piv;
@@ -706,17 +704,18 @@ public:
 		printf("\n");
 	    }
 	}
-	if (saved_equations.size() > 0) {
-	    printf("c   %d saved equations\n", (int) saved_equations.size());
-	    for (int eid = 0; eid < saved_equations.size(); eid++) {
-		printf("c     Pivot variable %d.  Equation: ", saved_pivots[eid]->variable);
-		saved_equations[eid]->show(stdout);
+	if (external_equations.size() > 0) {
+	    printf("c   %d saved equations\n", (int) external_equations.size());
+	    for (int eid = 0; eid < external_equations.size(); eid++) {
+		int tid = eid + internal_equations.size();
+		printf("c     Pivot variable %d.  Equation: ", pivot_sequence[tid]);
+		external_equations[eid]->show(stdout);
 		printf("\n");
 	    }
 	}
     }
 
-    void gauss_jordan(xor_set &nset) {
+    ilist gauss_jordan(xor_set &eset, xor_set &iset) {
 	// Gaussian elimination
 	bool infeasible = false;
 	if (verbosity_level >= 2) {
@@ -733,43 +732,47 @@ public:
 	    }
 	}
 	// Fix up the final result
-	nset.clear();
+	eset.clear();
+	iset.clear();
 	if (infeasible) {
-	    xor_constraint *seq = saved_equations[0];
-	    nset.add(*seq);
+	    xor_constraint *seq = external_equations[0];
+	    eset.add(*seq);
 	    if (verbosity_level >= 1) {
 		printf("c Gauss-Jordan completed.  %d steps.  System infeasible\n", step_count);
 	    }
-	    return;
-	} else if (saved_equations.size() > 0) {
-	    // Not degenerate
+	} else {
 	    jordanize();
-	    for (xor_constraint *eq : saved_equations)
-		nset.add(*eq);
+	    for (xor_constraint *eq : internal_equations)
+		iset.add(*eq);
+	    for (xor_constraint *eq : external_equations)
+		eset.add(*eq);
 	    if (verbosity_level >= 1) {
-		printf("c Gauss-Jordan completed.  %d steps.  %d final equations\n", step_count, (int) saved_equations.size());
+		printf("c Gauss-Jordan completed.  %d steps.  %d final equations\n", step_count, (int) external_equations.size());
 	    }
 	}
+	return pivot_sequence;
     }
 
 private:
-    // The set of external variables
-    std::unordered_set<int> external_variables;
-    // The set of equations.  Get set to NULL as eliminated
+    // The set of internal variables.  Passed as a parameter
+    std::unordered_set<int> internal_variables;
+    // The set of equations.  Passed as parameter and then modified.  Get set to NULL as eliminated
     xor_constraint **equations;
     // The number of original equations
     int equation_count;
     // The number of active equations
     int remaining_equation_count;
-    // Equations saved after elimination
-    std::vector<xor_constraint*> saved_equations;
-    // Ordered list of pivots having external variables that were used
-    std::vector<pivot *>saved_pivots;
+    // Ordered list of pivots
+    ilist pivot_sequence;
+    // External equations after elimination
+    std::vector<xor_constraint*> external_equations;
+    // Internal equations after elimination
+    std::vector<xor_constraint*> internal_equations;
     // Number of variables.  Numbered from 1 .. variable_count
     int variable_count;
     // Mapping for (decremented) variable to equation IDs
     std::set<int> *imap;
-    // Chosen pivot for each variable
+    // Preferred pivot for each variable
     pivot **pivot_list;
     // Mapping from cost function to pivot
     std::map<int64_t,pivot*> pivot_selector;
@@ -789,7 +792,7 @@ private:
 	for (int eid : imap[var-1]) {
 	    ilist row = equations[eid]->get_variables();
 	    int c = (cols-1)*(ilist_length(row)-1);
-	    if (external_variables.count(var) > 0)
+	    if (internal_variables.count(var) == 0)
 		// Penalty for external variable.
 		// Will have cost > any internal variable
 		c += EXTERNAL_PENALTY;
@@ -810,13 +813,15 @@ private:
     bool gauss_step() {
 	std::set<int> touched;  // Track variables that are involved
 	pivot *piv = pivot_selector.begin()->second;
-	pivot_selector.erase(piv->cost);
 	if (verbosity_level >= 2) {
 	    piv->show("Using");
 	}
 	int peid = piv->equation_id;
 	int pvar = piv->variable;
+	pivot_selector.erase(piv->cost);
 	pivot_list[pvar-1] = NULL;
+	delete piv;
+	pivot_sequence = ilist_push(pivot_sequence, pvar);
 	xor_constraint *peq = equations[peid];
 	equations[peid] = NULL;
 	remaining_equation_count--;
@@ -846,19 +851,16 @@ private:
 	    if (neq->is_infeasible()) {
 		equations[eid] = NULL;
 		// Cancel any saved equations or pivots
-		for (xor_constraint *seq : saved_equations)
-		    delete seq;
-		for (pivot *spiv : saved_pivots)
-		    delete spiv;
-		saved_equations.clear();
-		saved_pivots.clear();
-		saved_equations.push_back(neq);
-		saved_pivots.push_back(piv);
+		for (xor_constraint *ieq : internal_equations)
+		    delete ieq;
+		internal_equations.clear();
+		for (xor_constraint *eeq : external_equations)
+		    delete eeq;
+		external_equations.clear();
+		external_equations.push_back(neq);
+		ilist_resize(pivot_sequence, 0);
+		pivot_sequence = ilist_push(pivot_sequence, pvar);
 		return true;
-	    } else if (neq->is_degenerate()) {
-		equations[eid] = NULL;
-		remaining_equation_count--;
-		delete neq;
 	    } else {
 		equations[eid] = neq;
 		// Update inverse map
@@ -870,13 +872,10 @@ private:
 	    }
 	}
 	imap[pvar-1].clear();
-	if (external_variables.count(pvar) > 0) {
-	    saved_equations.push_back(peq);
-	    saved_pivots.push_back(piv);
-	} else {
-	    delete peq;
-	    delete piv;
-	}
+	if (internal_variables.count(pvar) == 0)
+	    external_equations.push_back(peq);
+	else
+	    internal_equations.push_back(peq);
 	// Update pivots for variables that were touched
 	for (int tv : touched) {
 	    pivot *opiv = pivot_list[tv-1];
@@ -890,20 +889,19 @@ private:
 	return false;
     }
 
-    // Convert saved equations into Jordan form
+    // Convert external equations into Jordan form
     void jordanize() {
-	for (int peid = saved_equations.size()-1; peid > 0; peid--) {
-	    xor_constraint *peq = saved_equations[peid];
-	    int pvar = saved_pivots[peid]->variable;
-	    delete saved_pivots[peid];
-	    saved_pivots[peid] = NULL;
+	for (int peid = external_equations.size()-1; peid > 0; peid--) {
+	    xor_constraint *peq = external_equations[peid];
+	    int tid = peid + internal_equations.size();
+	    int pvar = pivot_sequence[tid];
 	    for (int eid = peid-1; eid >= 0; eid--) {
-		xor_constraint *eq = saved_equations[eid];
+		xor_constraint *eq = external_equations[eid];
 		ilist vars = eq->get_variables();
 		if (ilist_is_member(vars, pvar)) {
 		    xor_constraint *neq = xor_plus(eq, peq);
 		    delete eq;
-		    saved_equations[eid] = neq;
+		    external_equations[eid] = neq;
 		}
 	    }
 	}
@@ -942,10 +940,6 @@ xor_constraint *xor_set::sum() {
     return xsum;
 }
 
-bool xor_set::is_degenerate() {
-    return xlist.size() == 0;
-}
-
 bool xor_set::is_infeasible() {
     if (xlist.size() != 1)
 	return false;
@@ -961,7 +955,7 @@ void xor_set::clear() {
     maxvar = 0;
 }
 
-void xor_set::gauss_jordan(ilist external_variables, xor_set &nset) {
-    gauss g(xlist.data(), xlist.size(), external_variables, maxvar, 1);
-    g.gauss_jordan(nset);
+ilist xor_set::gauss_jordan(std::unordered_set<int> &internal_variables, xor_set &eset, xor_set &iset) {
+    gauss g(xlist.data(), xlist.size(), internal_variables, maxvar, 1);
+    return g.gauss_jordan(eset, iset);
 }
