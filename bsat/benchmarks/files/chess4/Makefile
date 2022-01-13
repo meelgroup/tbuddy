@@ -8,10 +8,16 @@ CHECK = ../../../src/sat_check
 VLEVEL=1
 RM = rm -f
 
+EXDIR = ~/repos/pgbdd/extractor
+EXTRACT = $(EXDIR)/constraint_extractor.py
+PGDIR = ~/repos/pgbdd/prototype
+PGPBS = $(PGDIR)/solver.py
+
+
 chess4-$(N): $(GENERATOR)
 	$(INTERP) $(GENERATOR) -n $(N) -r chess4-$(N)
 
-.SUFFIXES: .cnf .ldata .bdata .bsdata .sdata .ssdata 
+.SUFFIXES: .cnf .ldata .bdata .bsdata .sdata .ssdata .edata
 
 .cnf.ldata:
 	$(TBSAT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
@@ -39,10 +45,17 @@ chess4-$(N): $(GENERATOR)
 	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule | tee $*.solve | tee $@ 
 	$(CHECK) -v $(VLEVEL) -i $< -s $*.solve | tee -a $@
 
+.cnf.edata:
+	$(INTERP) $(EXTRACT) -v $(VLEVEL) -i $< -o $*.cschedule | tee $@
+	$(INTERP) $(PGPBS) -i $< -s $*.cschedule -o $*.lrat 2>&1 | tee -a $@
+	ls -l $*.lrat | tee -a $@
+	$(LRAT) $< $*.lrat | tee -a $@
+	$(RM) $*.lrat
+
 clean:
 	rm -f chess4-*.{cnf,schedule,order}
 	rm -f *.lrat *~
 
 superclean: clean
-	rm -f *.ldata *.bdata *.sdata *.bsdata *.ssdata
+	rm -f *.ldata *.bdata *.sdata *.bsdata *.ssdata .edata
 
