@@ -9,15 +9,17 @@ VLEVEL=1
 RM = rm -f
 
 EXDIR = ~/repos/pgbdd/extractor
+XHACK = ./xhack.py
 EXTRACT = $(EXDIR)/constraint_extractor.py
 PGDIR = ~/repos/pgbdd/prototype
 PGPBS = $(PGDIR)/solver.py
 
 
+
 chess4-$(N): $(GENERATOR)
 	$(INTERP) $(GENERATOR) -n $(N) -r chess4-$(N)
 
-.SUFFIXES: .cnf .ldata .bdata .bsdata .sdata .ssdata .edata
+.SUFFIXES: .cnf .ldata .bdata .bsdata .sdata .ssdata .edata .tedata
 
 .cnf.ldata:
 	$(TBSAT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
@@ -48,6 +50,14 @@ chess4-$(N): $(GENERATOR)
 .cnf.edata:
 	$(INTERP) $(EXTRACT) -v $(VLEVEL) -i $< -o $*.cschedule | tee $@
 	$(INTERP) $(PGPBS) -i $< -s $*.cschedule -o $*.lrat 2>&1 | tee -a $@
+	ls -l $*.lrat | tee -a $@
+	$(LRAT) $< $*.lrat | tee -a $@
+	$(RM) $*.lrat
+
+.cnf.tedata:
+	$(INTERP) $(EXTRACT) -v $(VLEVEL) -i $< -o $*.cschedule | tee $@
+	$(INTERP) $(XHACK) < $*.cschedule > $*.xschedule
+	$(TBSAT) -v $(VLEVEL) -i $< -s $*.xschedule -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
