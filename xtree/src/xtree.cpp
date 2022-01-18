@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <vector>
+#include <unordered_set>
 
 #include "pseudoboolean.h"
 #include "prover.h"
@@ -20,13 +21,13 @@
 using namespace trustbdd;
 
 void usage(const char *name) {
-    printf("Usage: %s [-h] [-c] [-g] -n N [-v VLEVEL] [-m (d|f|n)] [-b] [-s SEED] [-r ROOT]\n", name);
+    printf("Usage: %s [-h] [-g] -n N [-v VLEVEL] [-m (d|f|n)] [-b] [-s SEED] [-r ROOT]\n", name);
     printf("  -h         Print this information\n");
     printf("  -g         Use Gaussian elimination\n");
     printf("  -n  N      Set number of problem variables\n");
     printf("  -v VLEVEL  Set verbosity level\n");
     printf("  -m (d|f|n)   Set proof type (d=DRAT, f=FRAT, n=No proof)\n");
-    printf("  -n         Use binary files\n");
+    printf("  -b         Use binary files\n");
     printf("  -s SEED    Set random seed\n");
     printf("  -r ROOT    Root of CNF and proof files\n");
     exit(0);
@@ -195,13 +196,14 @@ void gen_drat_proof(char *fname, int n, int vlevel) {
 // $begin xtree-drat-gauss
 void gen_drat_gauss_proof(char *fname, int n, int vlevel) {
     ilist lits = ilist_new(2); // For adding clauses directly to proof
-    ilist externals = ilist_new(2);
+    std::unordered_set<int> internals; // Variables internal to set of equations
+    int vcount = 3*n;  // Total number of variables
     FILE *proof_file = fopen(fname, "w");
     if (!proof_file) {
 	std::cerr << "Couldn't open file " << fname << std::endl;
 	exit(1);
     }
-    int vcount = 3*n;  // Total number of variables
+
     // TBDD initialization
     tbdd_set_verbose(vlevel);
     tbdd_init_drat(proof_file, vcount);  ///line:drat-gauss:initialize
@@ -211,9 +213,11 @@ void gen_drat_gauss_proof(char *fname, int n, int vlevel) {
 	xor_constraint xc(xor_variables[x], xor_phases[x]);
 	xset.add(xc);
     } ///line:drat-gauss:xset:end
-    ilist_fill2(externals, R1(n), R2(n));
-    xor_set reduced;
-    xset.gauss_jordan(externals, reduced); ///line:drat-gauss:xset:gauss
+    for (int v = 1; v <= vcount; v++)
+	if (v != R1(n) && v != R2(n))
+	    internals.insert(v);
+    xor_set eset, iset;
+    xset.gauss_jordan(internals, eset, iset); ///line:drat-gauss:xset:gauss
     // Assert inequivalence of R1 and R2, as is implied by XOR sum
     assert_clause(ilist_fill2(lits, R1(n), R2(n)));  ///line:drat-gauss:xor:start
     assert_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:drat-gauss:xor:end
@@ -222,11 +226,11 @@ void gen_drat_gauss_proof(char *fname, int n, int vlevel) {
     // Assert empty clause
     assert_clause(ilist_resize(lits, 0)); ///line:drat-gauss:empty
     // Finish up
-    reduced.clear(); // Free underlying BDDs.  Delete clauses
+    eset.clear(); // Free underlying BDDs.  Delete clauses
+    iset.clear();
     tbdd_done();
     fclose(proof_file);
     ilist_free(lits);
-    ilist_free(externals);
     std::cout << "File " << fname << " written" << std::endl << std::endl;
 }
 // $end xtree-drat-gauss
