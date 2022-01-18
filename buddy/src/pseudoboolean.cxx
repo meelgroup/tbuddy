@@ -18,6 +18,17 @@ static char ibuf[BUFLEN];
 // Amount added to pivot penalty for external variable
 #define EXTERNAL_PENALTY (1<<30)
 
+// Compile-time options
+
+// Only save constraints as option.  Saving reduces the need to
+// recreate multiple times, but it also requires more space, and
+// increases the number of live clauses.
+
+// 2022-01-18.  Found that turning off this feature greatly reduced
+// the maximum number of live clauses and had minimal effect on
+// runtime.
+#define SAVE_CONSTRAINTS 0
+
 /*
   Statistics gathering
  */
@@ -160,15 +171,20 @@ static xor_constraint* find_constraint(ilist variables, int phase, bdd &xfun) {
 }
 
 static void save_constraint(xor_constraint *xcp) {
-    int id = xcp->get_nameid();
+    pseudo_xor_unique ++;
     ilist variables = xcp->get_variables();
+    pseudo_total_length += ilist_length(variables);
+#if SAVE_CONSTRAINTS
+    // Only save constraints as option.  Saving reduces the need to
+    // recreate multiple times, but it also requires more space,
+    // and increases the number of live clauses.
+    int id = xcp->get_nameid();
     int phase = xcp->get_phase();
     xor_map[id] = new xor_constraint(*xcp);
     if (verbosity_level >= 2) {
 	show_xor_buf(ibuf, variables, phase, BUFLEN);
     }
-    pseudo_xor_unique ++;
-    pseudo_total_length += ilist_length(variables);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////
