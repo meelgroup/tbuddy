@@ -743,7 +743,7 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	return TAUTOLOGY;
     }
     if (print_ok(3)) {
-	fprintf(proof_file, "Target clause = [");
+	fprintf(proof_file, "c Target clause = [");
 	ilist_print(targ, proof_file, " ");
 	fprintf(proof_file, "]\n");
     }
