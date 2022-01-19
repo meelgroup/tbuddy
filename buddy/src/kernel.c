@@ -239,6 +239,7 @@ int bdd_init(int initnodesize, int cs)
    bddnodes[bddnodesize-1].next = 0;
 
    bddnodes[0].refcou = bddnodes[1].refcou = MAXREF;
+   LEVEL(0) = LEVEL(1) = MAXVAR;
    LOW(0) = HIGH(0) = 0;
    LOW(1) = HIGH(1) = 1;
 #if ENABLE_TBDD
