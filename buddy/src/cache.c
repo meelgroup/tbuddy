@@ -94,10 +94,10 @@ void BddCache_reset(BddCache *cache)
 }
 
 #if ENABLE_TBDD
-void BddCache_clause_evict(BddCacheData *entry) {
+void BddCache_clause_evict(BddCacheData *entry, bool is_aij) {
     int id;
     if (entry->a != -1 &&
-	(entry->c == bddop_andj || entry->c == bddop_imptstj)) {
+	(is_aij || entry->c == bddop_andj || entry->c == bddop_imptstj)) {
 
 	id = entry->r.jclause;
 	if (id == TAUTOLOGY)
@@ -111,13 +111,13 @@ void BddCache_clause_evict(BddCacheData *entry) {
     }
 }
 
-void BddCache_clear_clauses(BddCache *cache)
+void BddCache_clear_clauses(BddCache *cache, bool is_aij)
 {
    register int n;
    print_proof_comment(2, "Deleting justifying clauses for cached operations");
    for (n=0 ; n<cache->tablesize ; n++) {
        BddCacheData *entry = &cache->table[n];
-       BddCache_clause_evict(entry);
+       BddCache_clause_evict(entry, is_aij);
    }
 }
 #endif

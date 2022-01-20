@@ -106,6 +106,7 @@ static int supportMax;              /* Max. used level in support calc. */
 static int* supportSet;             /* The found support set */
 static BddCache applycache;         /* Cache for apply results */
 static BddCache itecache;           /* Cache for ITE results */
+static BddCache aijcache;            /* Cache for and-imply-justify results */
 static BddCache quantcache;         /* Cache for exist/forall results */
 static BddCache appexcache;         /* Cache for appex/appall results */
 static BddCache replacecache;       /* Cache for replace results */
@@ -185,6 +186,9 @@ int bdd_operator_init(int cachesize)
    
    if (BddCache_init(&itecache,cachesize) < 0)
       return bdd_error(BDD_MEMORY);
+
+   if (BddCache_init(&aijcache,cachesize) < 0)
+      return bdd_error(BDD_MEMORY);
    
    if (BddCache_init(&quantcache,cachesize) < 0)
       return bdd_error(BDD_MEMORY);
@@ -213,11 +217,13 @@ void bdd_operator_done(void)
       free(quantvarset);
    
 #if ENABLE_TBDD
-   BddCache_clear_clauses(&applycache);
+   BddCache_clear_clauses(&applycache, false);
+   BddCache_clear_clauses(&aijcache, true);
    process_deferred_deletions();
 #endif
    BddCache_done(&applycache);
    BddCache_done(&itecache);
+   BddCache_done(&aijcache);
    BddCache_done(&quantcache);
    BddCache_done(&appexcache);
    BddCache_done(&replacecache);
@@ -231,10 +237,12 @@ void bdd_operator_done(void)
 void bdd_operator_reset(void)
 {
 #if ENABLE_TBDD
-   BddCache_clear_clauses(&applycache);
+   BddCache_clear_clauses(&applycache, false);
+   BddCache_clear_clauses(&aijcache, true);
 #endif
    BddCache_reset(&applycache);
    BddCache_reset(&itecache);
+   BddCache_reset(&aijcache);
    BddCache_reset(&quantcache);
    BddCache_reset(&appexcache);
    BddCache_reset(&replacecache);
@@ -262,10 +270,12 @@ static void bdd_operator_noderesize(void)
       int newcachesize = bddnodesize / cacheratio;
       
 #if ENABLE_TBDD
-      BddCache_clear_clauses(&applycache);
+      BddCache_clear_clauses(&applycache, false);
+      BddCache_clear_clauses(&aijcache, true);
 #endif
       BddCache_resize(&applycache, newcachesize);
       BddCache_resize(&itecache, newcachesize);
+      BddCache_resize(&aijcache, newcachesize);
       BddCache_resize(&quantcache, newcachesize);
       BddCache_resize(&appexcache, newcachesize);
       BddCache_resize(&replacecache, newcachesize);
@@ -646,7 +656,7 @@ static BDD apply_rec(BDD l, BDD r)
       POPREF(2);
 
 #if ENABLE_TBDD
-      BddCache_clause_evict(entry);
+      BddCache_clause_evict(entry, false);
 #endif      
 
       entry->a = l;
@@ -910,7 +920,7 @@ static TBDD applyj_rec(BDD l, BDD r)
 
       POPREF(2);
 
-      BddCache_clause_evict(entry);
+      BddCache_clause_evict(entry, false);
       entry->a = l;
       entry->b = r;
       entry->c = applyop;
