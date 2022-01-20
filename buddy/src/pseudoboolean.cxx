@@ -212,6 +212,26 @@ xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
     }
 }
 
+xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun1, tbdd &vfun2) {
+    pseudo_xor_created ++;
+    variables = vars;
+    phase = p;
+    bdd xfun;
+    if (proof_type == PROOF_NONE) {
+	xfun = bdd_build_xor(vars, p);
+	validation = tbdd_validate_with_and(xfun, vfun1, vfun2);
+	pseudo_xor_unique ++;
+	pseudo_total_length += ilist_length(variables);
+    } else {
+	xor_constraint *xcp = find_constraint(variables, phase, xfun);
+	if (xcp == NULL) {
+	    validation = tbdd_validate_with_and(xfun, vfun1, vfun2);
+	    save_constraint(this);
+	} else
+	    validation = xcp->validation;
+    }
+}
+
 // When generating DRAT proof, either reuse or generate validation
 xor_constraint::xor_constraint(ilist vars, int p) {
     pseudo_xor_created ++;
@@ -246,8 +266,9 @@ xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
     xor_constraint *xcp = find_constraint(nvariables, nphase, xfun);
     if (xcp == NULL) {
 	pseudo_plus_unique++;
-	tbdd nvalidation = proof_type == PROOF_NONE ? tbdd_tautology() : tbdd_and(arg1->validation, arg2->validation);
-	xcp = new xor_constraint(nvariables, nphase, nvalidation);
+	//	tbdd nvalidation = proof_type == PROOF_NONE ? tbdd_tautology() : tbdd_and(arg1->validation, arg2->validation);
+	//	xcp = new xor_constraint(nvariables, nphase, nvalidation);
+	xcp = new xor_constraint(nvariables, nphase, arg1->validation, arg2->validation);
     }
     return xcp;
 }

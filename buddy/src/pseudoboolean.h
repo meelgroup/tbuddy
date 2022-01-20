@@ -56,6 +56,13 @@ class xor_constraint {
     // The list of variables is used within the constraint and deleted by the Xor constraint destructor
     xor_constraint(ilist vars, int p, trustbdd::tbdd &vfun);
 
+    // Construct Xor constraint validated by product of two tbdds
+    // vfun1, vfun2 indicates TBDD representations of validations
+    // For use when generating LRAT proofs
+    // The list of variables is used within the constraint and deleted by the Xor constraint destructor
+    xor_constraint(ilist vars, int p, trustbdd::tbdd &vfun1, trustbdd::tbdd &vfun2);
+
+
     // Assert that Xor constraint is implied by the clauses
     // For use when generating DRAT proofs
     xor_constraint(ilist vars, int p);
