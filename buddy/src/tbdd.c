@@ -8,7 +8,7 @@
 /* Low-level functions to implement operations on TBDDs */
 TBDD      bdd_and_justify(BDD, BDD);    
 TBDD      bdd_imptst_justify(BDD, BDD);    
-
+TBDD      bdd_and_imptst_justify(BDD, BDD, BDD);    
 
 
 /*============================================
@@ -426,17 +426,45 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     return t;
 }
 
+#define OLD 0
+
 /*
-  Form conjunction of TBDDs tl & tr.  Use to validate
+  Form conjunction of TBDDs tr1 & tr2.  Use to validate
   BDD r
  */
-TBDD tbdd_validate_with_and(BDD r, TBDD tl, TBDD tr) {
-    TBDD ta = tbdd_and(tl, tr);
-    TBDD tres = tbdd_validate(r, ta);
-    tbdd_delref(ta);
+TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
+    TBDD rr;
+#if OLD
+    TBDD ta = tbdd_and(tr1, tr2);
+    rr = tbdd_validate(r, ta);
     return tres;
+#else
+    if (proof_type == PROOF_NONE)
+	return tbdd_trust(r);
+    if (tbdd_is_true(tr1))
+	return tbdd_validate(r, tr2);
+    if (tbdd_is_true(tr2))
+	return tbdd_validate(r, tr1);
+    TBDD t = bdd_and_imptst_justify(tr1.root, tr2.root, bdd_addref(r));
+    if (t.root != bdd_true()) {
+	fprintf(stderr, "Failed to prove implication N%d & N%d --> N%d\n", NNAME(tr1.root), NNAME(tr2.root), NNAME(r));
+	exit(1);
+    }
+    int cbuf[1+ILIST_OVHD];
+    ilist clause = ilist_make(cbuf, 1);
+    int abuf[3+ILIST_OVHD];
+    ilist ant = ilist_make(abuf, 3);
+    print_proof_comment(2, "Validate unit clause for node N%d, based on N%d & N%d", NNAME(r), NNAME(tr1.root), NNAME(tr2.root));
+    ilist_fill1(clause, XVAR(r));
+    ilist_fill3(ant, tr1.clause_id, tr2.clause_id, t.clause_id);
+    /* Insert proof of unit clause into rr's justification */
+    rr.root = r;
+    rr.clause_id = generate_clause(clause, ant);
+    /* Now we can handle any deletions caused by GC */
+    process_deferred_deletions();
+#endif
+    return rr;
 }
-
 
 /*
   Validate that a clause is implied by a TBDD.

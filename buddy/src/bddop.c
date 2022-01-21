@@ -149,7 +149,9 @@ static int    varset2svartable(BDD);
 
 #if ENABLE_TBDD
 static TBDD    bdd_applyj(BDD, BDD, int op);
+static TBDD    bdd_apply_aij(BDD, BDD, BDD);
 static TBDD    applyj_rec(BDD, BDD);
+static TBDD    apply_aij_rec(BDD, BDD, BDD);
 #endif
 
    /* Hashvalues */
@@ -810,6 +812,58 @@ static TBDD bdd_applyj(BDD l, BDD r, int op)
    return res;
 }
 
+/*
+NAME    {* tbdd\_apply\_aij *}
+SECTION {* operator *}
+SHORT   {* basic bdd operations, with proof generation  *}
+PROTO   {* TBDD tbdd_apply_aij(TBDD left, TBDD right, TBDD test) *}
+DESCR   {* The {\tt tbdd\_apply\_aij} function generates a proof
+           that the conjunction of the first two arguments implies
+	   the third without actually performing the conjunction.
+   *}
+   RETURN  {* The result of the operation. *}
+   ALSO    {* bdd\_applyj *}
+*/
+static TBDD bdd_apply_aij(BDD l, BDD r, BDD t)
+{
+   TBDD res;
+
+   firstReorder = 1;
+   
+   CHECKa(l, tbdd_null());
+   CHECKa(r, tbdd_null());
+   CHECKa(t, tbdd_null());
+
+ again:
+   if (setjmp(bddexception) == 0)
+   {
+      INITREF;
+      /* Some of the cases degenerate to implication checks */
+      applyop = bddop_imptstj; 
+      
+      if (!firstReorder)
+	 bdd_disable_reorder();
+
+      res = apply_aij_rec(l, r, t);
+
+      if (!firstReorder)
+	 bdd_enable_reorder();
+   }
+   else
+   {
+      bdd_checkreorder();
+
+      if (firstReorder-- == 1)
+	 goto again;
+      res = tbdd_tautology();
+   }
+   
+   checkresize();
+
+   return res;
+}
+
+
 static TBDD applyj_rec(BDD l, BDD r)
 {
    BddCacheData *entry;
@@ -939,218 +993,159 @@ static TBDD applyj_rec(BDD l, BDD r)
    return tres;
 }
 
-
-
-# if 0
-static TBDD applyj_rec(BDD l, BDD r)
+static TBDD apply_aij_rec(BDD l, BDD r, BDD t)
 {
    BddCacheData *entry;
-   TBDD res;
+   TBDD tres;
+   
+   //   printf("apply_aij_rec called with l=%d (N%d), r=%d (N%d), t = %d (N%d)\n", (int) l, NNAME(l), (int) r, NNAME(r), int(t), NNAME(t));
 
-   //   printf("applyj_rec called with l=%d (N%d), r=%d (N%d), op = %d\n", (int) l, NNAME(l), (int) r, NNAME(r), applyop);
+   tres.root = BDDONE;
+   tres.clause_id = TAUTOLOGY;
 
-   res.root = 0;
-   res.clause_id = TAUTOLOGY;
-   switch (applyop)
+   /* Terminal cases */
+   if (ISZERO(l)  ||  ISZERO(r))
+       return tres;
+   if (ISONE(l))
+       /* Implication */
+       return applyj_rec(r, t);
+   if (ISONE(r))
+       /* Implication */
+       return applyj_rec(l, t);
+   if (l == r)
+       /* Implication */
+       return applyj_rec(l, t);
+   if (ISONE(t))
+       return tres;
    {
-    case bddop_andj:
-       if (l == r)
-	   { res.root = l ; return res; }
-       if (ISZERO(l)  ||  ISZERO(r))
-	   { res.root = 0; return res; }
-       if (ISONE(l))
-	   { res.root = r; return res; }
-       if (ISONE(r))
-	   { res.root = l; return res; }
-       break;
-   case bddop_imptstj:
-       if (l == r)
-	   { res.root = BDDONE ; return res; }
-       if (ISZERO(l))
-	   { res.root = BDDONE; return res; }
-       if (ISONE(r))
-	   { res.root = BDDONE; return res; }
-       if (ISONE(l))
-	   /* Implication cannot hold for all arguments */
-	   { res.root = BDDZERO; return res; }
-       if (ISZERO(r))
-	   /* Implication cannot hold for all arguments */
-	   { res.root = BDDZERO; return res; }
-       break;
-   }
-
-
-   {
-       int tbuf[3+ILIST_OVHD];
-       ilist tlist = ilist_make(tbuf, 3);
-       int splitVariable = 0;
-       jtype_t hint_id[HINT_COUNT];
-       int     hint_buf[HINT_COUNT][3+ILIST_OVHD];
-       ilist   hint_clause[HINT_COUNT];
-
-       switch (applyop) {
-       case bddop_andj:
-	   ilist_fill2(tlist, -XVAR(l), -XVAR(r));
-	   break;
-       case bddop_imptstj:
-	   ilist_fill2(tlist, XVAR(r), -XVAR(l));
-	   break;
-       }
-
-      entry = BddCache_lookup(&applycache, APPLYHASH(l,r,applyop));
-      
-      if (entry->a == l  &&  entry->b == r  &&  entry->c == applyop)
+      entry = BddCache_lookup(&aijcache, APPLYHASH(l,r,t));
+      if (entry->a == l  &&  entry->b == r  &&  entry->c == t)
       {
 #ifdef CACHESTATS
 	 bddcachestats.opHit++;
 #endif
-	 res.root = entry->r.res;
-	 res.clause_id = entry->r.jclause;
-	 return res;
+	 tres.root = entry->r.res;
+	 tres.clause_id = entry->r.jclause;
+#if DO_TRACE
+	 if (tres.clause_id == TRACE_CLAUSE) {
+	     printf("TRACE: Retrieving clause #%d from cache in apply_aij_rec.  Operands = N%d, N%d, N%d\n", TRACE_CLAUSE, NNAME(l), NNAME(r), NNAME(t));
+	 }
+	 if (NNAME(tres.root) == TRACE_NNAME) {
+	     printf("TRACE: Retrieving node N%d from cache in apply_aij_rec.  Operands = N%d, N%d\n", N%d, TRACE_NNAME, NNAME(l), NNAME(r), NNAME(t));
+	 }
+#endif /* DO_TRACE */
+
+	 return tres;
       }
 #ifdef CACHESTATS
       bddcachestats.opMiss++;
 #endif
       
-
-      fill_hints(hint_id, hint_buf, hint_clause);
-      int lnid = XVAR(l);
-      int rnid = XVAR(r);
-      int lhid = XVAR(HIGH(l));
-      int rhid = XVAR(HIGH(r));
-      int llid = XVAR(LOW(l));
-      int rlid = XVAR(LOW(r));
-      int resl;
-      int resh;
+      TBDD tresh;
+      TBDD tresl;
+      int splitVar;
 
       if (LEVEL(l) == LEVEL(r))
       {
-	  splitVariable = LEVEL(l);
-	  hint_id[HINT_ARG1HD] = bdd_dclause(l, DEF_HD);
-	  hint_id[HINT_ARG1LD] = bdd_dclause(l, DEF_LD);
-	  hint_id[HINT_ARG2HD] = bdd_dclause(r, DEF_HD);
-	  hint_id[HINT_ARG2LD] = bdd_dclause(r, DEF_LD);
-	  hint_clause[HINT_ARG1HD] = defining_clause(hint_clause[HINT_ARG1HD], DEF_HD, lnid, splitVariable, lhid, llid);
-	  hint_clause[HINT_ARG1LD] = defining_clause(hint_clause[HINT_ARG1LD], DEF_LD, lnid, splitVariable, lhid, llid);
-	  hint_clause[HINT_ARG2HD] = defining_clause(hint_clause[HINT_ARG2HD], DEF_HD, rnid, splitVariable, rhid, rlid);
-	  hint_clause[HINT_ARG2LD] = defining_clause(hint_clause[HINT_ARG2LD], DEF_LD, rnid, splitVariable, rhid, rlid);
-	  TBDD lres = applyj_rec(LOW(l), LOW(r));
-	  BDD lroot = lres.root;
-	  PUSHREF(lroot);
-	  hint_id[HINT_OPL] = lres.clause_id;
-	  if (apply_op == bddop_imptstj)
-	      hint_clause[HINT_OPL] = ilist_fill2(hint_clause[HINT_OPL], -llid, rlid);
-	  else 
-	      hint_clause[HINT_OPL] = ilist_fill3(hint_clause[HINT_OPL], -llid, -rlid, XVAR(lres));
-	  
-
-	  TBDD hres = applyj_rec(HIGH(l), HIGH(r));
-	  BDD hroot = hres.root;
-	  PUSHREF(hroot);
-	  hint_id[HINT_OPH] = hres.clause_id);
-	  if (apply_op == bddop_imptstj)
-	      hint_clause[HINT_OPH] = ilist_fill2(hint_clause[HINT_OPH], -lhid, rhid);
-	  else 
-	      hint_clause[HINT_OPH] = ilist_fill3(hint_clause[HINT_OPH], -lhid, -rhid, XVAR(hres));
-	  resl = READREF(2);
-	  resh = READREF(1);
-	  res.root = bdd_makenode(splitVariable, READREF(2), READREF(1));
-      }
-      else
-      if (LEVEL(l) < LEVEL(r))
-      {
-	  splitVariable = LEVEL(l);
-	  hint_id[HINT_ARG1HD] = bdd_dclause(l, DEF_HD);
-	  hint_id[HINT_ARG1LD] = bdd_dclause(l, DEF_LD);
-	  hint_clause[HINT_ARG1HD] = defining_clause(hint_clause[HINT_ARG1HD], DEF_HD, lnid, splitVariable, lhid, llid);
-	  hint_clause[HINT_ARG1LD] = defining_clause(hint_clause[HINT_ARG1LD], DEF_LD, lnid, splitVariable, lhid, llid);
-	  TBDD lres = applyj_rec(LOW(l), r);
-	  BDD lroot = lres.root;
-	  PUSHREF(lroot);
-	  hint_id[HINT_OPL] = lres.clause_id;
-	  if (apply_op == bddop_imptstj)
-	      hint_clause[HINT_OPL] = ilist_fill2(hint_clause[HINT_OPL], -llid, rlid);
-	  else 
-	      hint_clause[HINT_OPL] = ilist_fill3(hint_clause[HINT_OPL], -llid, -rlid, XVAR(lres));
-	  
-
-	  hint_clause[HINT_OPL] = bdd_dclause(lroot, DEF_LU);
-	  TBDD hres = applyj_rec(HIGH(l), r);
-	  BDD hroot = hres.root;
-	  PUSHREF(hroot);
-	  hint_id[HINT_OPH] = hres.clause_id;
-	  hint_clause[HINT_OPH] = bdd_dclause(hroot, DEF_HU);
-	  resl = READREF(2);
-	  resh = READREF(1);
-	  res.root = bdd_makenode(splitVariable, READREF(2), READREF(1));
-      }
-      else
-      {
-	  splitVariable = LEVEL(r);
-	  hints[HINT_ARG2HD] = bdd_dclause(r, DEF_HD);
-	  hints[HINT_ARG2LD] = bdd_dclause(r, DEF_LD);
-	  hint_clause[HINT_ARG2HD] = defining_clause(hint_clause[HINT_ARG2HD], DEF_HD, rnid, splitVariable, rhid, rlid);
-	  hint_clause[HINT_ARG2LD] = defining_clause(hint_clause[HINT_ARG2LD], DEF_LD, rnid, splitVariable, rhid, rlid);
-	  TBDD lres = applyj_rec(l, LOW(r));
-	  BDD lroot = lres.root;
-	  PUSHREF(lroot);
-	  hint_id[HINT_OPL] = lres.clause_id;
-	  hint_id[HINT_OPH] = hres.clause_id;
-	  if (apply_op == bddop_imptstj)
-	      hint_clause[HINT_OPH] = ilist_fill2(hint_clause[HINT_OPH], -lhid, rhid);
-	  else 
-	      hint_clause[HINT_OPH] = ilist_fill3(hint_clause[HINT_OPH], -lhid, -rhid, XVAR(hres));
-	  TBDD hres = applyj_rec(l, HIGH(r));
-	  BDD hroot = hres.root;
-	  PUSHREF(hroot);
-	  hint_id[HINT_OPH] = hres.clause_id;
-	  if (apply_op == bddop_imptstj)
-	      hint_clause[HINT_OPH] = ilist_fill2(hint_clause[HINT_OPH], -lhid, rhid);
-	  else 
-	      hint_clause[HINT_OPH] = ilist_fill3(hint_clause[HINT_OPH], -lhid, -rhid, XVAR(hres));
-	  resl = READREF(2);
-	  resh = READREF(1);
-	  if (applyop == bddop_imptstj) {
-	      res.root = (ISONE(READREF(2)) && ISONE(READREF(1))) ? BDDONE : BDDZERO;
+	  if (LEVEL(t) < LEVEL(l)) {
+	      splitVar = LEVEL(t);
+	      tresl = apply_aij_rec(l, r, LOW(t));
+	      PUSHREF( tresl.root );
+	      tresh = apply_aij_rec(l, r, HIGH(t));
+	      PUSHREF( tresh.root );
+	  } else if (LEVEL(t) == LEVEL(l)) {
+	      splitVar = LEVEL(l);
+	      tresl = apply_aij_rec(LOW(l), LOW(r), LOW(t));
+	      PUSHREF( tresl.root );
+	      tresh = apply_aij_rec(HIGH(l), HIGH(r), HIGH(t));
+	      PUSHREF( tresh.root );
 	  } else {
-	      res.root = bdd_makenode(splitVariable, READREF(2), READREF(1));
+	      splitVar = LEVEL(l);
+	      tresl = apply_aij_rec(LOW(l), LOW(r), t);
+	      PUSHREF( tresl.root );
+	      tresh = apply_aij_rec(HIGH(l), HIGH(r), t);
+	      PUSHREF( tresh.root );
 	  }
-	  if (resl != resh) {
-	      int nid = XVAR(res);
-	      int lid = XVAR(LOW(res));
-	      int hid = XVAR(HIGH(res));
-	      hints[HINT_RESHU] = bdd_dclause(res, DEF_HU);
-	      hints[HINT_RESLU] = bdd_cclause(res, DEF_LU);
-	      hint_clauses[HINT_RESHU] = defining_clause(int_clause[HINT_RESHU], DEF_HU, nid, splitVariable, hid, lid);
-	      hint_clauses[HINT_RESLU] = defining_clause(int_clause[HINT_RESLU], DEF_LU, nid, splitVariable, hid, lid);						      
+      } else if (LEVEL(l) < LEVEL(r))
+      {
+	  if (LEVEL(t) < LEVEL(l)) {
+	      splitVar = LEVEL(t);
+	      tresl = apply_aij_rec(l, r, LOW(t));
+	      PUSHREF( tresl.root );
+	      tresh = apply_aij_rec(l, r, HIGH(t));
+	      PUSHREF( tresh.root );
+	  } else if (LEVEL(t) == LEVEL(l)) {
+	      splitVar = LEVEL(l);
+	      tresl = apply_aij_rec(LOW(l), r, LOW(t));
+	      PUSHREF( tresl.root );
+	      tresh = apply_aij_rec(HIGH(l), r, HIGH(t));
+	      PUSHREF( tresh.root );
+	  } else {
+	      splitVar = LEVEL(l);
+	      tresl = apply_aij_rec(LOW(l), r, t);
+	      PUSHREF( tresl.root );
+	      tresh = apply_aij_rec(HIGH(l), r, t);
+	      PUSHREF( tresh.root );
+	  }
+      } else
+      {
+	  if (LEVEL(t) < LEVEL(r)) {
+	      splitVar = LEVEL(t);
+	      tresl = apply_aij_rec(l, r, LOW(t));
+	      PUSHREF( tresl.root );
+	      tresh = apply_aij_rec(l, r, HIGH(t));
+	      PUSHREF( tresh.root );
+	  } else if (LEVEL(t) == LEVEL(r)) {
+	      splitVar = LEVEL(r);
+	      tresl =  apply_aij_rec(l, LOW(r), LOW(t));
+	      PUSHREF( tresl.root );
+	      tresh = apply_aij_rec(l, HIGH(r), HIGH(t));
+	      PUSHREF( tresh.root );
+	  } else {
+	      splitVar = LEVEL(r);
+	      tresl =  apply_aij_rec(l, LOW(r), t);
+	      PUSHREF( tresl.root );
+	      tresh = apply_aij_rec(l, HIGH(r), t);
+	      PUSHREF( tresh.root );
 	  }
       }
+      tres.root = ISONE(tresl.root) && ISONE(tresh.root) ? BDDONE : BDDZERO;
+      //      printf("Attempting to justify AIJ.  Operands = N%d, N%d, N%d.  Var = %d\n", NNAME(l), NNAME(r), NNAME(t), splitVar);
+      //      printf("   Recursive results give clauses tresl:%d, tresh:%d\n", tresl.clause_id, tresh.clause_id);
+      tres.clause_id = justify_apply(bddop_andj, l, r, splitVar, tresl, tresh, t);
+
+#if DO_TRACE
+      if (tresh.clause_id == TRACE_CLAUSE) {
+	  printf("TRACE: Got clause #%d from apply_aij_rec as high result.  Operands = N%d, N%d, N%d\n", TRACE_CLAUSE, NNAME(l), NNAME(r), NNAME(t));
+      }
+      if (tresl.clause_id == TRACE_CLAUSE) {
+	  printf("TRACE: Got clause #%d from apply_aij_rec as low result.  Operands = N%d, N%d, N%d\n", TRACE_CLAUSE, NNAME(l), NNAME(r), NNAME(t)));
+      }
+#endif /* DO_TRACE */
+
 
       POPREF(2);
 
-      if (applyop == bddop_andj) {
-	  ilist_push(tlist, XVAR(res.root));
-	  print_proof_comment(2, "Justification that N%d & N%d --> N%d", NNAME(l), NNAME(r), NNAME(res.root));
-    
-      } else {
-	  print_proof_comment(2, "Justification that N%d --> N%d", NNAME(l), NNAME(r));
-      }
-
-      res.clause_id = justify_apply(tlist, splitVariable, hint_id, hint_clause);
-
+      BddCache_clause_evict(entry, true);
       entry->a = l;
       entry->b = r;
-      entry->c = applyop;
-      entry->r.res = res.root;
-      entry->r.jclause = res.clause_id;
+      entry->c = t;
+      entry->r.res = tres.root;
+      entry->r.jclause = tres.clause_id;
+#if DO_TRACE
+      if (tres.clause_id == TRACE_CLAUSE) {
+	  printf("TRACE: Adding clause #%d to cache.  Operands = N%d, N%d, N%d\n", TRACE_CLAUSE, NNAME(l), NNAME(r), NNAME(t));
+      }
+      if (NNAME(tres.root) == TRACE_NNAME) {
+	  printf("TRACE: Adding operation with result node N%d to cache.  Operands = N%d, N%d, N%d\n", TRACE_NNAME, NNAME(l), NNAME(r), NNAME(t));
+      }
+#endif /* DO_TRACE */
    }
 
-   //   printf("applyj_rec called with l=%d (N%d), r=%d (N%d), op = %d.  Returns fun %d (N%d, xvar=%d), clause %d\n",
-   //	  (int) l, NNAME(l), (int) r, NNAME(r), applyop, res.root, NNAME(res.root), XVAR(res.root), res.clause_id);
-
-   return res;
+   return tres;
 }
-#endif 
+
+
 
 /*
 NAME    {* bdd\_and_justify *}
@@ -1174,11 +1169,25 @@ SHORT   {* Confirm the logical 'implication' between two BDDs and generate the p
 PROTO   {* TBDD bdd_imptstj(TBDD l, TBDD r) *}
 DESCR   {* This a wrapper that calls {\tt bdd\_applyj(l,r,bddop\_imptstj)}. *}
 RETURN  {* BDD 1 if the implication holds, 0 if it does not, plus a proof. *}
-ALSO    {* tbdd\_imp *}
+ALSO    {* tbdd\_validate *}
 */
 TBDD bdd_imptst_justify(BDD l, BDD r)
 {
    return bdd_applyj(l,r,bddop_imptstj);
+}
+
+/*
+NAME    {* bdd\_and\_imptst_justify *}
+SECTION {* operator *}
+SHORT   {* Confirm that the conjunction of two BDDs logical implies the third BDD and generate the proof *}
+PROTO   {* TBDD bdd_and_imptstj(TBDD l, TBDD r, TBDD t) *}
+DESCR   {* This a wrapper that calls {\tt bdd\_apply\_aij(l,r,t}. *}
+RETURN  {* BDD 1 if the implication holds, 0 if it does not, plus a proof. *}
+ALSO    {* tbdd\_validate\_with\_and *}
+*/
+TBDD bdd_and_imptst_justify(BDD l, BDD r, BDD t)
+{
+   return bdd_apply_aij(l,r,t);
 }
 #endif /* ENABLE_TBDD */
 

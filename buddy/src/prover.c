@@ -763,6 +763,8 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
     BDD lh = LEVEL(l) == splitVar ? HIGH(l) : l;
     BDD rl = LEVEL(r) == splitVar ? LOW(r) : r;
     BDD rh = LEVEL(r) == splitVar ? HIGH(r) : r;
+    BDD resl = LEVEL(res) == splitVar ? LOW(res) : res;
+    BDD resh = LEVEL(res) == splitVar ? HIGH(res) : res;
 
     if (op == bddop_imptstj) {
 	if (LEVEL(r) == splitVar) {
@@ -782,16 +784,16 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	    hint_id[HINT_ARG2HD] = bdd_dclause(r, DEF_HD);
 	    hint_clause[HINT_ARG2HD] = defining_clause(hint_clause[HINT_ARG2HD], DEF_HD, XVAR(r), splitVar, XVAR(HIGH(r)), XVAR(LOW(r)));
 	}
-	if (tresl.root != tresh.root) {
+	if (LEVEL(res) == splitVar) { // Test was: tresl.root != tresh.root
 	    hint_id[HINT_RESLU] = bdd_dclause(res, DEF_LU);
 	    hint_clause[HINT_RESLU] = defining_clause(hint_clause[HINT_RESLU], DEF_LU, XVAR(res), splitVar, XVAR(HIGH(res)), XVAR(LOW(res)));
 	    hint_id[HINT_RESHU] = bdd_dclause(res, DEF_HU);
 	    hint_clause[HINT_RESHU] = defining_clause(hint_clause[HINT_RESHU], DEF_HU, XVAR(res), splitVar, XVAR(HIGH(res)), XVAR(LOW(res)));
 	}
 	hint_id[HINT_OPL] = tresl.clause_id;
-	hint_clause[HINT_OPL] = target_and(hint_clause[HINT_OPL], ll, rl, tresl.root);
+	hint_clause[HINT_OPL] = target_and(hint_clause[HINT_OPL], ll, rl, resl); // Was tresl.root
 	hint_id[HINT_OPH] = tresh.clause_id;
-	hint_clause[HINT_OPH] = target_and(hint_clause[HINT_OPH], lh, rh, tresh.root);
+	hint_clause[HINT_OPH] = target_and(hint_clause[HINT_OPH], lh, rh, resh); // Was tresh.root
     }
 
     complete_hints();
@@ -834,6 +836,8 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	    fprintf(proof_file, "c  Uh-Oh.  RUP check failed in first half of proof.  Target = [");
 	    ilist_print(itarg, proof_file, " ");
 	    fprintf(proof_file, "].\n");
+	    print_proof_comment(3, "Candidate hints:");
+	    show_hints();
 	    bdd_error(TBDD_PROOF);
 	}
 	for (oi = 0; oi < HINT_COUNT/2; oi++) {
@@ -846,8 +850,10 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	hint_clause[HINT_EXTRA] = itarg;
 	if (!rup_check(targ, hint_l_order, HINT_COUNT/2+1)) {
 	    fprintf(proof_file, "c  Uh-Oh.  RUP check failed in second half of proof.  Target = [");
-	    ilist_print(itarg, proof_file, " ");
+	    ilist_print(targ, proof_file, " ");
 	    fprintf(proof_file, "].\n");
+	    print_proof_comment(3, "Candidate hints:");
+	    show_hints();
 	    bdd_error(TBDD_PROOF);
 
 	}
