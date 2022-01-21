@@ -22,10 +22,12 @@ make medium N=300
 make medium N=500
 make medium N=600
 make medium N=700
-
-make medlarge N=800
-make medlarge N=900
-make medlarge N=1000
+make medium N=800
+make medium N=900
+make medium N=1000
+make medium N=1200
+make medium N=1400
+make medium N=1600
 make medlarge N=2000
 make medlarge N=3000
 make medlarge N=4000

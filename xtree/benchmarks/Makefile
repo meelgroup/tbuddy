@@ -22,7 +22,7 @@ KDIR = ~/repos/kissat/build
 KISSAT = $(KDIR)/kissat
 KFLAGS = --unsat --no-binary --conflicts=$(CONFLICTS)
 
-CDIR = ~/repos/cryptominisat/
+CDIR = ~/repos/cryptominisat
 CMS = $(CDIR)/cryptominisat5
 CFLAGS = --maxconfl $(CONFLICTS)
 
@@ -30,7 +30,7 @@ CXDIR = ~/repos/cms-dev/cryptominisat/build
 CMSX = $(CXDIR)/cryptominisat5
 CXFLAGS = --presimp 1 --maxmatrixrows 500000
 
-TDIR = ../../bsat/src/
+TDIR = ../../bsat/src
 TBSAT = $(TDIR)/tbsat
 TFLAGS = -b -v $(VLEVEL)
 XEXT = $(MDIR)/xor_extractor.py
@@ -44,6 +44,8 @@ drat: $(ROOT)-$(N).drat
 
 frat: $(ROOT)-$(N).frat
 
+fratc: frat $(ROOT)-$(N).frat_check_data
+
 small: $(ROOT)-$(N).cnf  $(ROOT)-$(N).kissat_data $(ROOT)-$(N).cms_data medium
 
 medium: $(ROOT)-$(N).drat $(ROOT)-$(N).drat_check_data medlarge
@@ -52,7 +54,8 @@ medlarge: $(ROOT)-$(N).cnf $(ROOT)-$(N).frat $(ROOT)-$(N).frat_check_data large
 
 large: $(ROOT)-$(N).cnf $(ROOT)-$(N).cms_noproof_data $(ROOT)-$(N).tbsat_bucket_data huge
 
-huge: $(ROOT)-$(N).cnf $(ROOT)-$(N).drat $(ROOT)-$(N).tbsat_gaussian_data $(ROOT)-$(N).tbsat_bucket_noproof_data $(ROOT)-$(N).tbsat_gaussian_noproof_data
+huge: $(ROOT)-$(N).cnf $(ROOT)-$(N).drat $(ROOT)-$(N).tbsat_gaussian_data $(ROOT)-$(N).tbsat_gaussian_noproof_data
+# $(ROOT)-$(N).tbsat_bucket_noproof_data
 
 fratc: $(ROOT)-$(N).cnf $(ROOT)-$(N).frat $(ROOT)-$(N).frat_check_data 
 
@@ -79,7 +82,7 @@ $(ROOT)-$(N).frat:
 .frat.frat_check_data:
 	{ /usr/bin/time -lp $(FRAT) elab $*.cnf $< $*.lrat 2>&1 ; } | tee $@
 	 $(LRAT) $*.cnf $*.lrat	| tee -a $@
-#	$(RM) $<
+	$(RM) $<
 	$(RM) $*.frat.temp
 	$(RM) $*.lrat
 
