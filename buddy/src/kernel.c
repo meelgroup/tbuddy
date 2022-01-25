@@ -146,7 +146,7 @@ static char *errorstrings[BDD_ERRNUM] =
   "Illegal shift-left/right parameter",
   "Division by zero" 
 #if INCLUDE_TBDD
-  ;
+  ,
   "Cannot (re)allocate ilist",
   "Cannot generate proof"
 #endif
@@ -883,8 +883,12 @@ const char *bdd_errstring(int e)
 
 void bdd_default_errhandler(int e)
 {
-   fprintf(stderr, "BDD error: %s\n", bdd_errstring(e));
-   exit(1);
+    const char *s = bdd_errstring(e);
+    if (s == NULL)
+	fprintf(stderr, "BDD error.  Unknown error code %d\n", e);
+    else
+	fprintf(stderr, "BDD error: %s\n", bdd_errstring(e));
+    exit(1);
 }
 
 

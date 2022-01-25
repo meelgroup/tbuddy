@@ -146,6 +146,11 @@ extern bddCacheStat bddcachestats;
 
 /*=== KERNEL DEFINITIONS ===============================================*/
 
+/* 
+   Note: Although have 22 bits allocated for variable, upper bit
+   required for mark bit used in GC.  That leaves 21 bits available
+   for actual level number
+ */
 #define MAXVAR 0x1FFFFF
 #define MAXREF 0x3FF
 

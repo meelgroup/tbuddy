@@ -178,6 +178,16 @@ ilist clean_clause(ilist clause) {
 	    return TAUTOLOGY_CLAUSE;
 	if (lit == -TAUTOLOGY)
 	    continue;
+	if (lit == 0) {
+	    fprintf(proof_file, "c ERROR.  Encountered literal 0 cleaning clause [");
+	    ilist_print(clause, proof_file, " ");
+	    fprintf(proof_file, "].\n");
+
+	    fprintf(stderr, "c ERROR.  Encountered literal 0 cleaning clause [");
+	    ilist_print(clause, stderr, " ");
+	    fprintf(stderr, "].\n");
+	    bdd_error(TBDD_PROOF);
+	}
 	if (lit == plit)
 	    continue;
 	if (lit == -plit)
@@ -613,13 +623,13 @@ static void complete_hints() {
     }
 }
 
-static void show_hints() {
+static void show_hints(FILE *outfile) {
     jtype_t hi;
     for (hi = (jtype_t) 0; hi < HINT_COUNT+1; hi++) {
 	if (hint_id[hi] != TAUTOLOGY) {
-	    fprintf(proof_file, "c    %s: #%d = [", hint_name[hi], hint_id[hi]);
-	    ilist_print(hint_clause[hi], proof_file, " ");
-	    fprintf(proof_file, "]\n");
+	    fprintf(outfile, "c    %s: #%d = [", hint_name[hi], hint_id[hi]);
+	    ilist_print(hint_clause[hi], outfile, " ");
+	    fprintf(outfile, "]\n");
 	}
     }
 }
@@ -799,7 +809,7 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
     complete_hints();
     if (print_ok(3)) {
 	print_proof_comment(3, "Hints:");
-	show_hints();
+	show_hints(proof_file);
     }
 
     bool checked = false;
@@ -833,11 +843,17 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	    ilist_push(itarg, targ[li]);
 	itarg = clean_clause(itarg);
 	if (!rup_check(itarg, hint_h_order, HINT_COUNT/2)) {
-	    fprintf(proof_file, "c  Uh-Oh.  RUP check failed in first half of proof.  Target = [");
+	    fprintf(proof_file, "c ERROR.  RUP check failed in first half of proof.  Target = [");
 	    ilist_print(itarg, proof_file, " ");
 	    fprintf(proof_file, "].\n");
-	    print_proof_comment(3, "Candidate hints:");
-	    show_hints();
+	    print_proof_comment(3, "  Candidate hints:");
+	    show_hints(proof_file);
+
+	    fprintf(stderr, "c ERROR.  RUP check failed in first half of proof.  Target = [");
+	    ilist_print(itarg, stderr, " ");
+	    fprintf(stderr, "].\n");
+	    fprintf(stderr, "c   Candidate hints:");
+	    show_hints(stderr);
 	    bdd_error(TBDD_PROOF);
 	}
 	for (oi = 0; oi < HINT_COUNT/2; oi++) {
@@ -849,11 +865,17 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	hint_id[HINT_EXTRA] = iid;
 	hint_clause[HINT_EXTRA] = itarg;
 	if (!rup_check(targ, hint_l_order, HINT_COUNT/2+1)) {
-	    fprintf(proof_file, "c  Uh-Oh.  RUP check failed in second half of proof.  Target = [");
+	    fprintf(proof_file, "c Uh-Oh.  RUP check failed in second half of proof.  Target = [");
 	    ilist_print(targ, proof_file, " ");
 	    fprintf(proof_file, "].\n");
-	    print_proof_comment(3, "Candidate hints:");
-	    show_hints();
+	    print_proof_comment(3, "  Candidate hints:");
+	    show_hints(proof_file);
+
+	    fprintf(stderr, "c Uh-Oh.  RUP check failed in second half of proof.  Target = [");
+	    ilist_print(itarg, stderr, " ");
+	    fprintf(stderr, "].\n");
+	    fprintf(stderr, "c   Candidate hints:");
+	    show_hints(stderr);
 	    bdd_error(TBDD_PROOF);
 
 	}

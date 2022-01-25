@@ -895,10 +895,20 @@ static TBDD applyj_rec(BDD l, BDD r)
 	   { tres.root = BDDONE; return tres; }
        if (ISONE(l))
 	   /* Implication cannot hold for all arguments */
-	   { tres.root = BDDZERO; return tres; }
+	   { 
+	       tres.root = BDDZERO;
+	       fprintf(stderr, "Implication failure.  N%d -/-> N%d\n", bdd_nameid(l), bdd_nameid(r));
+	       bdd_error(TBDD_PROOF);
+	       return tres;
+	   }
        if (ISZERO(r))
 	   /* Implication cannot hold for all arguments */
-	   { tres.root = BDDZERO; return tres; }
+	   { 
+	       tres.root = BDDZERO;
+	       fprintf(stderr, "Implication failure.  N%d -/-> N%d\n", bdd_nameid(l), bdd_nameid(r));
+	       bdd_error(TBDD_PROOF);
+	       return tres;
+	   }
        break;
    }
 
