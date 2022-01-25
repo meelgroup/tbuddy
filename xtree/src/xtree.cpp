@@ -193,7 +193,7 @@ void gen_drat_proof(char *fname, int n, int vlevel) {
 }
 // $end xtree-drat
 
-// $begin xtree-drat-gauss
+// $begin xtree-gauss-drat
 void gen_drat_gauss_proof(char *fname, int n, int vlevel) {
     ilist lits = ilist_new(2); // For adding clauses directly to proof
     std::unordered_set<int> internals; // Variables internal to set of equations
@@ -206,25 +206,25 @@ void gen_drat_gauss_proof(char *fname, int n, int vlevel) {
 
     // TBDD initialization
     tbdd_set_verbose(vlevel);
-    tbdd_init_drat(proof_file, vcount);  ///line:drat-gauss:initialize
+    tbdd_init_drat(proof_file, vcount);  ///line:drat:gauss:initialize
     // Use parity reasoning to infer constraint R1 ^ R2 = 1
-    xor_set xset; ///line:drat-gauss:xset:start
+    xor_set xset; ///line:drat:gauss:xset:start
     for (int x = 0; x < xor_variables.size(); x++) {
 	xor_constraint xc(xor_variables[x], xor_phases[x]);
 	xset.add(xc);
-    } ///line:drat-gauss:xset:end
+    } ///line:drat:gauss:xset:end
     for (int v = 1; v <= vcount; v++)
 	if (v != R1(n) && v != R2(n))
 	    internals.insert(v);
     xor_set eset, iset;
-    xset.gauss_jordan(internals, eset, iset); ///line:drat-gauss:xset:gauss
+    xset.gauss_jordan(internals, eset, iset); ///line:drat:gauss:xset:gauss
     // Assert inequivalence of R1 and R2, as is implied by XOR sum
-    assert_clause(ilist_fill2(lits, R1(n), R2(n)));  ///line:drat-gauss:xor:start
-    assert_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:drat-gauss:xor:end
+    assert_clause(ilist_fill2(lits, R1(n), R2(n)));  ///line:drat:gauss:xor:start
+    assert_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:drat:gauss:xor:end
     // Assert unit clause for R1
-    assert_clause(ilist_fill1(lits, R1(n))); ///line:drat-gauss:unit
+    assert_clause(ilist_fill1(lits, R1(n))); ///line:drat:gauss:unit
     // Assert empty clause
-    assert_clause(ilist_resize(lits, 0)); ///line:drat-gauss:empty
+    assert_clause(ilist_resize(lits, 0)); ///line:drat:gauss:empty
     // Finish up
     eset.clear(); // Free underlying BDDs.  Delete clauses
     iset.clear();
@@ -233,7 +233,7 @@ void gen_drat_gauss_proof(char *fname, int n, int vlevel) {
     ilist_free(lits);
     std::cout << "File " << fname << " written" << std::endl << std::endl;
 }
-// $end xtree-drat-gauss
+// $end xtree-gauss-drat
 
 
 void gen_dratb_proof(char *fname, int n, int vlevel) {
