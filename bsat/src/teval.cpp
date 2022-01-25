@@ -11,7 +11,6 @@
 using namespace trustbdd;
 
 #define DEFAULT_SEED 123456
-#define SOLUTION_COUNT 20
 
 // GC Parameters
 // Minimum number of dead nodes to trigger GC
@@ -264,8 +263,6 @@ public:
 	bdd constraint = bdd_true();
 	for (int i = qsteps.size()-1; i >= 0; i--)
 	    solution = qsteps[i]->solve_step(solution, phase_gen);
-	// Now exclude this solution from future enumerations.
-	impose_constraint(bdd_not(solution));
 	return solution;
     }
 
@@ -908,7 +905,7 @@ public:
 
 };
 
-bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary) {
+bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary, int max_solutions) {
     CNF cset = CNF(cnf_file);
     fclose(cnf_file);
     if (cset.failed()) {
@@ -949,13 +946,16 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int 
 	std::cout << "s SATISFIABLE" << std::endl;
 	// Generate solutions
 	solver.set_constraint(r);
-	for (int i = 0; i < SOLUTION_COUNT; i++) {
+	for (int i = 0; i < max_solutions; i++) {
 	    bdd s = solver.next_solution();
 	    if (s == bdd_false())
 		break;
 	    ilist slist = bdd_decode_cube(s);
 	    printf("v "); ilist_print(slist, stdout, " "); printf(" 0\n");
 	    ilist_free(slist);
+	    // Now exclude this solution from future enumerations.
+	    if (i < max_solutions-1)
+		solver.impose_constraint(bdd_not(s));
 	}
     }
     tbdd_done();
