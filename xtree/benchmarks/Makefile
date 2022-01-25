@@ -2,7 +2,6 @@ GEN = ../src/xtree
 ROOT=xtree
 N=010
 SEED=123456
-CONFLICTS=1000000000
 VLEVEL = 1
 
 RM = rm -f
@@ -24,9 +23,9 @@ KFLAGS = --unsat --no-binary --conflicts=$(CONFLICTS)
 
 CDIR = ~/repos/cryptominisat
 CMS = $(CDIR)/cryptominisat5
-CFLAGS = --maxconfl $(CONFLICTS)
+CFLAGS = 
 
-CXDIR = ~/repos/cms-dev/cryptominisat/build
+CXDIR = ~/repos/cms-experimental/cryptominisat/build
 CMSX = $(CXDIR)/cryptominisat5
 CXFLAGS = --presimp 1 --maxmatrixrows 500000
 

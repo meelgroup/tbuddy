@@ -9,7 +9,7 @@ EXTRACT = ../../../../tools/xor_extractor.py
 LRAT = ~/repos/drat-trim/lrat-check
 VLEVEL=1
 RM=rm
-GRAB = $(INTERP) ./grab_data.py
+GRAB = $(INTERP) $(GDIR)/grab_data.py
 
 cnf: urquhart-li-$(M).cnf
 
