@@ -898,6 +898,9 @@ private:
 		ilist_resize(pivot_sequence, 0);
 		pivot_sequence = ilist_push(pivot_sequence, pvar);
 		return true;
+	    } else if (neq->is_degenerate()) {
+		equations[eid] = NULL;
+		remaining_equation_count--;
 	    } else {
 		equations[eid] = neq;
 		// Update inverse map
