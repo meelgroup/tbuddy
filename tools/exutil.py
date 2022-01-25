@@ -58,6 +58,9 @@ class CnfReader():
         lineNumber = 0
         nclause = 0
         clauseCount = 0
+        # Might need to read several lines to get single clause.
+        # Accumulate here
+        currentLits = []
         for line in self.file:
             lineNumber += 1
             line = trim(line)
@@ -88,14 +91,17 @@ class CnfReader():
                     lits = [int(s) for s in line.split()]
                 except:
                     raise CnfException("Line %d.  Non-integer field" % lineNumber)
+                currentLits += lits
                 # Last one should be 0
-                if careful and lits[-1] != 0:
-                    raise CnfException("Line %d.  Clause line should end with 0" % lineNumber)
-                lits = lits[:-1]
+                if lits[-1] != 0:
+                    # Loop around to pick up rest of clause
+                    continue
+                # Convert into clause
+                currentLits = currentLits[:-1]
                 # Sort literals by variable
-                lits.sort(key = lambda l: abs(l))
+                currentLits.sort(key = lambda l: abs(l))
                 if careful:
-                    vars = [abs(l) for l in lits]
+                    vars = [abs(l) for l in currentLits]
                     if len(vars) == 0:
                         raise CnfException("Line %d.  Empty clause" % lineNumber)                    
                     if vars[-1] > self.nvar or vars[0] == 0:
@@ -105,10 +111,11 @@ class CnfReader():
                             raise CnfException("Line %d.  Opposite or repeated literal" % lineNumber)
                 # See if this clause indicates that the CNF cannot be converted
                 if rejectClause is not None:
-                    self.reason = rejectClause(lits, clauseCount+1)
+                    self.reason = rejectClause(currentLits, clauseCount+1)
                     if self.reason is not None:
                         return
-                self.clauses.append(lits)
+                self.clauses.append(currentLits)
+                currentLits = []
                 clauseCount += 1
         if clauseCount != nclause:
             raise CnfException("Line %d: Got %d clauses.  Expected %d" % (lineNumber, clauseCount, nclause))
