@@ -17,7 +17,7 @@ using namespace trustbdd;
 #define COLLECT_MIN_LRAT 150000
 #define COLLECT_MIN_DRAT  20000
 // Minimum fraction of dead:total nodes to trigger GC
-#define COLLECT_FRACTION 0.20
+#define COLLECT_FRACTION 0.10
 
 // Functions to aid parsing of schedule lines
 
@@ -571,7 +571,7 @@ public:
 		if (verblevel >= 3)
 		    std::cout << "c Bucket " << bvar << " Conjunction of terms " 
 			      << tp1->get_term_id() << " and " << tp2->get_term_id() << " yields term " 
-			      << tpn->get_term_id() << " with top variable " << top << std::endl;
+			      << tpn->get_term_id() << " with " << tpn->get_node_count() << " nodes, and with top variable " << top << std::endl;
 		buckets[top].push_back(tpn->get_term_id());
 	    }
 	    if (next_idx == buckets[bvar].size()-1) {
