@@ -74,6 +74,8 @@ class Writer:
         self.outfile = None
 
 
+     
+
 # Creating CNF
 class CnfWriter(Writer):
     clauseCount = 0
@@ -110,6 +112,94 @@ class CnfWriter(Writer):
             self.show(line)
         self.outfile.close()
         self.outfile = None
+
+# Enable permuting of variables before emitting CNF
+class Permuter:
+    forwardMap = {}
+    reverseMap = {}
+    
+    def __init__(self, valueList = [], permutedList = []):
+        self.forwardMap = {}
+        self.reverseMap = {}
+        identity = False
+        if len(permutedList) == 0:
+            permutedList = valueList
+            identity = True
+        if len(valueList) != len(permutedList):
+            raise WriterException("Unequal list lengths: %d, %d" % (len(valueList), len(permutedList)))
+        for v, p in zip(valueList, permutedList):
+            self.forwardMap[v] = p
+            self.reverseMap[p] = v
+        if identity:
+            return
+        # Check permutation
+        for v in valueList:
+            if v not in self.reverseMap:
+                raise WriterException("Not permutation: Nothing maps to %s" % str(v))
+        for v in permutedList:
+            if v not in self.forwardMap:
+                raise WriterException("Not permutation: %s does not map anything" % str(v))
+            
+            
+    def forward(self, v):
+        if v not in self.forwardMap:
+            raise WriterException("Value %s not in permutation" % (str(v)))
+        return self.forwardMap[v]
+
+    def reverse(self, v):
+        if v not in self.reverseMap:
+            raise WriterException("Value %s not in permutation range" % (str(v)))
+        return self.reverseMap[v]
+    
+    def __len__(self):
+        return len(self.forwardMap)
+
+
+# Creating CNF incrementally.  Don't know number of variables in advance
+class LazyCnfWriter:
+
+    variableCount = 0
+    # Set of tuples (T/F, item)
+    # Boolean T for clause F for comment
+    # item: list of literals for clause, string for comment
+    items = []
+    froot = ""
+    verbose = False
+    permuter = None
+
+    def __init__(self, froot, permuter = None, verbose = False):
+        self.variableCount = 0
+        self.items = []
+        self.froot = froot
+        self.permuter = permuter
+        self.verbose = verbose
+
+
+    def newVariable(self):
+        self.variableCount += 1
+        if self.permuter is not None:
+            return self.permuter.reverse(self.variableCount)
+        else:
+            return self.variableCount
+
+    def newVariables(self, n):
+        return [self.newVariable() for i in range(n)]
+    
+    def doComment(self, line):
+        self.items.append((False, line))
+
+    def doClause(self, lits):
+        self.items.append((True, lits))
+
+    def finish(self):
+        writer = CnfWriter(self.variableCount, self.froot, self.verbose)
+        for (isClause, value) in self.items:
+            if isClause:
+                writer.doClause(value)
+            else:
+                writer.doComment(value)
+        writer.finish()
+    
 
 # Creating LRAT proof
 class LratWriter(Writer):
