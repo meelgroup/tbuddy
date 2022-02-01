@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Generate CNF encoding of Crawford's parity benchmark
+# Generate CNF encoding of Crawford's Minimal Disagreement Parity benchmark
 # http://www.cs.cornell.edu/selman/docs/crawford-parity.pdf
 # Use different encoding than presented in paper:
 # - Incorporate constants directly into encoding
@@ -189,6 +189,9 @@ def document():
     print("c Solution variables: %s" % vectorString(solutionVariables))
     print("c Corrupted samples: %s" % vectorString(corruptionBits))
     print("c Corruption variables: %s" % vectorString(corruptionVariables))
+    for i in range(numSamples):
+        cwriter.doComment("Sample #%.2d: %s | %d" % (i+1, vectorString(sampleBitSet[i]), parityBits[i]))
+        print("c Sample #%.2d: %s | %d" % (i+1, vectorString(sampleBitSet[i]), parityBits[i]))
 
 
 def generate():
