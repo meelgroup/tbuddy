@@ -3,9 +3,7 @@ ROOT=xtree
 N=010
 SEED=123456
 VLEVEL = 1
-
 RM = rm -f
-
 
 DDIR = ~/repos/drat-trim
 DRAT = $(DDIR)/drat-trim
@@ -25,7 +23,7 @@ CDIR = ~/repos/cryptominisat
 CMS = $(CDIR)/cryptominisat5
 CFLAGS = 
 
-CXDIR = ~/repos/cms-experimental/cryptominisat/build
+CXDIR = ~/repos/cms-dev/cryptominisat/build
 CMSX = $(CXDIR)/cryptominisat5
 CXFLAGS = --presimp 1 --maxmatrixrows 500000
 
@@ -139,6 +137,8 @@ data:
 	$(GRAB) "verification time" *.kissat_data > kissat-drat-seconds.csv
 	$(GRAB) "Total time" *.cms_data > cms-generation-seconds.csv
 	$(GRAB) 2 "resolution steps" *.cms_data > cms-clauses.csv
+	$(GRAB) "Total time" *.cmsx_data > cmsx-generation-seconds.csv
+	$(GRAB) 2 "resolution steps" *.cmsx_data > cmsx-clauses.csv
 	$(GRAB) "Total time" *.cms_noproof_data > cms-noproof-seconds.csv
 	$(GRAB) "verification time" *.cms_data > cms-drat-seconds.csv
 	$(GRAB) "Elapsed" *.tbsat_bucket_data > tbsat-bucket-generation-seconds.csv
