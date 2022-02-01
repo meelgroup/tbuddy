@@ -277,7 +277,6 @@ extern BDD      BDD_nithvar(int);
 extern int      bdd_var(BDD);
 extern BDD      bdd_low(BDD);
 extern BDD      bdd_high(BDD);
-extern int      bdd_varlevel(int);
 extern BDD      bdd_addref(BDD);
 extern BDD      bdd_delref(BDD);
 extern void     bdd_gbc(void);
