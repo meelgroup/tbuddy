@@ -541,6 +541,9 @@ public:
 	if (verblevel >= 1)
 	    std::cout << "c Placed " << tcount << " terms into " << bcount << " buckets." << std::endl;
 
+	// Report status ~20 times during bucket elimination
+	int report_level = bcount / 20;
+
 	for (int bvar = 1 ; bvar <= max_variable; bvar++) {
 	    int next_idx = 0;
 	    if (buckets[bvar].size() == 0) {
@@ -578,7 +581,7 @@ public:
 		Term *tp = terms[buckets[bvar][next_idx]];
 		Term *tpn = equantify(tp, bvar);
 		bdd root = tpn->get_root();
-		if (verblevel >= 1 && (bvar % 100 == 0 || verblevel >= 3))
+		if (verblevel >= 1 && (bvar % report_level == 0 || verblevel >= 3))
 		    std::cout << "c Bucket " << bvar << " Reduced to term with " << tpn->get_node_count() << " nodes" << std::endl;
 		if (root == bdd_true()) {
 		    if (verblevel >= 3)
