@@ -97,7 +97,9 @@ def genParityChain(vars, phase):
         genParity(left, 0)
         genParityChain(right, phase)
 
-# Generate atMost-k ladder.  Return variable encoding result
+# Generate atMost-k ladder.
+# If holds==True, enforce that constraint must hold and return None.
+# Else, Return variable encoding result
 def genAmk(vars, k):
     m = len(vars)
     # Assume 0 <= k < m
@@ -110,7 +112,7 @@ def genAmk(vars, k):
     # Count = 0
     c[(0,0)] = -vars[0]
     cwriter.doComment("Encode at-most-0 conditions")
-    for i in range(1, m):
+    for i in range(1, m-k):
         here = cwriter.newVariable()
         if verbose:
             cwriter.doComment("Variable %d encodes that vars 0..%d have at most %d 1's" % (here, i,0))
@@ -133,7 +135,7 @@ def genAmk(vars, k):
         cwriter.doClause([-local, prevJm1, -here])
         cwriter.doClause([local, here])
         cwriter.doClause([-prevJm1, here])
-        for i in range(j+1, m):
+        for i in range(j+1, m+j-k):
             here = cwriter.newVariable()
             if verbose:
                 cwriter.doComment("Variable %d encodes that vars 0..%d have at most %d 1's" % (here,i,j))
@@ -201,7 +203,7 @@ def generate():
     # Generate at-most-k
     topVar = genAmk(corruptionVariables, numTolerated)
     if verbose:
-        cwriter.doComment("Force at-most-k condition to hold")
+        cwriter.doComment("Assert that at-most-%d condition holds" % numTolerated)
     cwriter.doClause([topVar])
 
 
@@ -243,26 +245,14 @@ def run(name, args):
     if numTolerated < 0:
         numTolerated = numCorrupt
 
-    base = "parity"
+    base = "mdparity"
     if fixed:
         base += "-fixed"
     root = "%s-n%d-k%d-t%d-s%d" % (base, numVariables, numCorrupt, numTolerated, seed)
     random.seed(seed)
     initData(fixed)
 
-    # First pass.  Establish the variables
     cwriter = writer.LazyCnfWriter(root, verbose=False)
-    initVariables()
-    generate()
-
-    # Second pass.  Actual generation
-    encodingVariables = list(range(corruptionVariables[-1] + 1, cwriter.variableCount+1))
-#    orderedVariables = encodingVariables + solutionVariables + corruptionVariables
-    orderedVariables = solutionVariables + corruptionVariables + encodingVariables 
-    allVariables = sorted(orderedVariables)
-
-    perm = writer.Permuter(allVariables, orderedVariables)
-    cwriter = writer.LazyCnfWriter(root, permuter = perm, verbose=False)
     initVariables()
     document()
     generate()

@@ -1,6 +1,6 @@
 INTERP=python3
 GDIR=../../generators
-GENERATOR = $(GDIR)/parity.py
+GENERATOR = $(GDIR)/mdparity.py
 TBSAT = ../../../src/tbsat
 TDIR = ../../../../tools
 EXTRACT = $(TDIR)/xor_extractor.py
@@ -15,7 +15,7 @@ CXFLAGS = --presimp 1 --maxmatrixrows 500000
 
 CDIR = ~/repos/cryptominisat
 CMS = $(CDIR)/cryptominisat5
-CFLAGS = 
+CFLAGS = --maxmatrixrows 50000
 
 N=16
 K=8
@@ -30,9 +30,9 @@ GRAB = $(INTERP) $(GDIR)/grab_data.py
 
 
 
-cnf: parity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf
+cnf: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf
 
-parity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf: $(GENERATOR)
+mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf: $(GENERATOR)
 	$(INTERP) $(GENERATOR) -n $(N) -k $(K) -t $(T) -s $(SEED)
 
 .SUFFIXES: .cnf .cms_noproof_data .tbsat_noproof_bucket_data .tbsat_noproof_gaussian_data 
@@ -49,7 +49,7 @@ parity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf: $(GENERATOR)
 
 clean:
 	rm -f *~
-	rm -f parity-*.cnf parity-*.schedule
+	rm -f mdparity-*.cnf mdparity-*.schedule
 
 superclean: clean
 	rm -f *.cms_noproof_data *.tbsat_noproof_bucket_data *.tbsat_noproof_gaussian_data
