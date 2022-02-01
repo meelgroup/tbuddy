@@ -257,7 +257,8 @@ def run(name, args):
 
     # Second pass.  Actual generation
     encodingVariables = list(range(corruptionVariables[-1] + 1, cwriter.variableCount+1))
-    orderedVariables = encodingVariables + solutionVariables + corruptionVariables
+#    orderedVariables = encodingVariables + solutionVariables + corruptionVariables
+    orderedVariables = solutionVariables + corruptionVariables + encodingVariables 
     allVariables = sorted(orderedVariables)
 
     perm = writer.Permuter(allVariables, orderedVariables)
