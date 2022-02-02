@@ -176,6 +176,23 @@ ilist ilist_copy_list(int *ls, int length) {
 }
 
 /*
+  Dynamically allocate ilist and fill with numbers from a text file
+  Return NULL if invalid number encountered
+ */
+ilist ilist_read_file(FILE *infile) {
+    ilist rils = ilist_new(1);
+    int val;
+    int rcode;
+    while ((rcode = fscanf(infile, "%d", &val)) == 1) {
+	rils = ilist_push(rils, val);
+    }
+    if (rcode != EOF)
+	return NULL;
+    return rils;
+}
+
+
+/*
   Test whether value is member of list
  */
 extern bool ilist_is_member(ilist ils, int val) {

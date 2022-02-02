@@ -98,6 +98,12 @@ extern ilist ilist_copy(ilist ils);
 extern ilist ilist_copy_list(int *ls, int length);
 
 /*
+  Dynamically allocate ilist and fill with numbers from a text file
+  Return NULL if invalid number encountered
+ */
+extern ilist ilist_read_file(FILE *infile);
+
+/*
   Reverse elements in ilist
  */
 extern void ilist_reverse(int *ls);
