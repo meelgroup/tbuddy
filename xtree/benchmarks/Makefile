@@ -141,6 +141,7 @@ data:
 	$(GRAB) 2 "resolution steps" *.cmsx_data > cmsx-clauses.csv
 	$(GRAB) "Total time" *.cms_noproof_data > cms-noproof-seconds.csv
 	$(GRAB) "verification time" *.cms_data > cms-drat-seconds.csv
+	$(GRAB) "verification time" *.cmsx_data > cmsx-drat-seconds.csv
 	$(GRAB) "Elapsed" *.tbsat_bucket_data > tbsat-bucket-generation-seconds.csv
 	$(GRAB) "verification time" *.tbsat_bucket_data > tbsat-bucket-lrat-seconds.csv	
 	$(GRAB) "Total clauses" *.tbsat_bucket_data > tbsat-bucket-clauses.csv	
