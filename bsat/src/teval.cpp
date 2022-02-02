@@ -395,7 +395,7 @@ private:
 
 public:
 
-    TermSet(CNF &cnf, FILE *proof_file, int verb, proof_type_t ptype, bool binary, Solver *sol) {
+    TermSet(CNF &cnf, FILE *proof_file, ilist variable_ordering, int verb, proof_type_t ptype, bool binary, Solver *sol) {
 	verblevel = verb;
 	proof_type = ptype;
 	tbdd_set_verbose(verb);
@@ -413,7 +413,7 @@ public:
 	}
 	int rcode;
 	tbdd_set_verbose(verblevel);
-	if ((rcode = tbdd_init(proof_file, &variable_count, &last_clause_id, clauses, ptype, binary)) != 0) {
+	if ((rcode = tbdd_init(proof_file, &variable_count, &last_clause_id, clauses, variable_ordering, ptype, binary)) != 0) {
 	    fprintf(stderr, "c Initialization failed.  Return code = %d\n", rcode);
 	    exit(1);
 	}
@@ -910,7 +910,7 @@ public:
 
 };
 
-bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary, int max_solutions) {
+bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary, int max_solutions) {
     CNF cset = CNF(cnf_file);
     fclose(cnf_file);
     if (cset.failed()) {
@@ -924,7 +924,15 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *sched_file, bool bucket, int 
 		      << cset.max_variable() << " variables" << std::endl;
     PhaseGenerator pg(GENERATE_RANDOM, DEFAULT_SEED);
     Solver solver(&pg);
-    TermSet tset(cset, proof_file, verblevel, ptype, binary, &solver);
+    ilist variable_ordering;
+    if (order_file != NULL) {
+	variable_ordering = ilist_read_file(order_file);
+	if (variable_ordering == NULL) {
+	    std::cerr << "c ERROR: Invalid number encountered in ordering file" << std::endl;
+	    return false;
+	}
+    }
+    TermSet tset(cset, proof_file, variable_ordering, verblevel, ptype, binary, &solver);
     tbdd tr = tbdd_tautology();
     if (sched_file != NULL)
 	tr = tset.schedule_reduce(sched_file);
