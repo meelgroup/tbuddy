@@ -19,7 +19,7 @@ RM=rm -f
 	$(RM) $*.lrat
 
 .cnf.sdata:
-	$(BSAT) -v $(VLEVEL) -i $< -s $*.schedule -o $*.lrat | tee $@
+	$(BSAT) -v $(VLEVEL) -i $< -p $*.order -s $*.schedule -o $*.lrat | tee $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
 
