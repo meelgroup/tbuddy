@@ -250,6 +250,7 @@ extern bddfilehandler bdd_file_hook(bddfilehandler);
 extern int      bdd_init(int, int);
 extern void     bdd_done(void);
 extern int      bdd_setvarnum(int);
+extern int      bdd_setvarnum_ordered(int, int*);
 extern int      bdd_extvarnum(int);
 extern int      bdd_isrunning(void);
 extern int      bdd_setmaxnodenum(int);
@@ -508,6 +509,7 @@ private:
 
    friend int      bdd_init(int, int);
    friend int      bdd_setvarnum(int);
+   friend int      bdd_setvarnum(int, int*);
    friend bdd      bdd_true(void);
    friend bdd      bdd_false(void);
    friend bdd      bdd_ithvarpp(int);

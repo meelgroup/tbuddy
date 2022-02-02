@@ -137,7 +137,7 @@ static char *errorstrings[BDD_ERRNUM] =
   "Unknown operator",
   "Illegal variable set",
   "Bad variable block operation",
-  "Trying to decrease the number of variables",
+  "Invalid change to the number of variables",
   "Trying to replace with variables already in the bdd",
   "Number of nodes reached user defined maximum",
   "Unknown BDD - was not in node table",
@@ -370,9 +370,27 @@ DESCR   {* This function is used to define the number of variables used in
 	   to increase the number of variables. The argument
 	   {\tt num} is the number of variables to use. *}
 RETURN  {* Zero on succes, otherwise a negative error code. *}
-ALSO    {* BDD\_ithvar, bdd\_varnum, bdd\_extvarnum *}
+ALSO    {* bdd\_setvarnum\_ordered, BDD\_ithvar, bdd\_varnum, bdd\_extvarnum *}
 */
-int bdd_setvarnum(int num)
+int bdd_setvarnum(int num) {
+    return bdd_setvarnum_ordered(num, NULL);
+}
+
+/*
+NAME    {* bdd\_setvarnum\_ordered *}
+SECTION {* kernel *}
+SHORT   {* set the number of used bdd variables and specify the variable ordering *}
+PROTO   {* int bdd_setvarnum(int num, int *varlist) *}
+DESCR   {* This function is used to define the number of variables used in
+           the bdd package and to optionally specify an ordering of the variables.
+	   It can only be called once and before any BDD operations have been performed.
+	   The argument {\tt num} is the number of variables to use.
+	   The argument {\tt varlist} is a permutation over 0 ... num-1
+	   specifying the variable ordering *}
+RETURN  {* Zero on succes, otherwise a negative error code. *}
+ALSO    {* bdd\_setvarnum, bdd\_setvarorder *}
+*/
+int bdd_setvarnum_ordered(int num, int *varlist)
 {
    int bdv;
    int oldbddvarnum = bddvarnum;
@@ -387,11 +405,14 @@ int bdd_setvarnum(int num)
 
    if (num < bddvarnum)
       return bdd_error(BDD_DECVNUM);
+   if (oldbddvarnum > 0 && varlist != NULL)
+       return bdd_error(BDD_DECVNUM);
    if (num == bddvarnum)
       return 0;
 
    if (bddvarset == NULL)
    {
+      int var, level;
       if ((bddvarset=(BDD*)malloc(sizeof(BDD)*num*2)) == NULL)
 	 return bdd_error(BDD_MEMORY);
       if ((bddlevel2var=(int*)malloc(sizeof(int)*(num+1))) == NULL)
@@ -405,9 +426,34 @@ int bdd_setvarnum(int num)
 	 free(bddlevel2var);
 	 return bdd_error(BDD_MEMORY);
       }
+      for (var = 0; var < num; var++)
+	  bddvar2level[var] = -1;
+      for (level = 0; level < num; level++)
+      {
+	  if (varlist)
+	  {
+	      var = varlist[level];
+	      if (var < 0 || var >= num)
+	      {
+		  fprintf(stderr, "Invalid variable %d in initial ordering\n", var);
+		  bdd_error(BDD_DECVNUM);
+		  return bddfalse;
+	      }
+	      if (bddvar2level[var] >= 0)
+	      {
+		  fprintf(stderr, "Attempt to assign variable %d to multiple levels in initial ordering\n", var);
+		  bdd_error(BDD_DECVNUM);
+		  return bddfalse;
+	      }
+	  } else
+	      var = level;
+	  bddvar2level[var] = level;
+	  bddlevel2var[level] = var;
+      }
    }
    else
    {
+      int level;
       if ((bddvarset=(BDD*)realloc(bddvarset,sizeof(BDD)*num*2)) == NULL)
 	 return bdd_error(BDD_MEMORY);
       if ((bddlevel2var=(int*)realloc(bddlevel2var,sizeof(int)*(num+1))) == NULL)
@@ -421,6 +467,12 @@ int bdd_setvarnum(int num)
 	 free(bddlevel2var);
 	 return bdd_error(BDD_MEMORY);
       }
+      for (level = oldbddvarnum; level < num; level++)
+      {
+	  bddvar2level[level] = level;
+	  bddlevel2var[level] = level;
+      }
+
    }
 
    if (bddrefstack != NULL)
@@ -429,8 +481,9 @@ int bdd_setvarnum(int num)
 
    for(bdv=bddvarnum ; bddvarnum < num; bddvarnum++)
    {
-      bddvarset[bddvarnum*2] = PUSHREF( bdd_makenode(bddvarnum, 0, 1) );
-      bddvarset[bddvarnum*2+1] = bdd_makenode(bddvarnum, 1, 0);
+      int level = bddvar2level[bddvarnum];
+      bddvarset[bddvarnum*2] = PUSHREF( bdd_makenode(level, 0, 1) );
+      bddvarset[bddvarnum*2+1] = bdd_makenode(level, 1, 0);
       POPREF(1);
       
       if (bdderrorcond)
@@ -441,8 +494,6 @@ int bdd_setvarnum(int num)
       
       bddnodes[bddvarset[bddvarnum*2]].refcou = MAXREF;
       bddnodes[bddvarset[bddvarnum*2+1]].refcou = MAXREF;
-      bddlevel2var[bddvarnum] = bddvarnum;
-      bddvar2level[bddvarnum] = bddvarnum;
    }
 
    LEVEL(0) = num;
