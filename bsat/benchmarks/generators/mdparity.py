@@ -14,11 +14,12 @@ import writer
 
 
 def usage(name):
-    print("Usage: %s [-h] [-v] [-f] [-n N] [-m M] [-k K] [-t T] [-s SEED]" % name)
+    print("Usage: %s [-h] [-v] [-f] [-O] [-a] [-n N] [-m M] [-k K] [-t T] [-s SEED]" % name)
     print("  -h       Print this message")
     print("  -v       Put comments in file")
     print("  -f       Use fixed solution and corruption bits")
-    print("  -u       Generate (possibly) unsatisfiable instance")
+    print("  -O       Optimize (Plaisted-Greenbaum encoding)")
+    print("  -a       Anonymize.  Don't include solution information in file")
     print("  -n N     Number of variables")
     print("  -m M     Number of samples")
     print("  -k K     Number of corrupted samples")
@@ -30,6 +31,7 @@ cwriter = None
 
 # Parameters
 verbose = False
+optimize = False
 seed = 123456
 numVariables = 8
 numSamples = 16
@@ -97,10 +99,9 @@ def genParityChain(vars, phase):
         genParity(left, 0)
         genParityChain(right, phase)
 
-# Generate atMost-k ladder.
-# If holds==True, enforce that constraint must hold and return None.
-# Else, Return variable encoding result
-def genAmk(vars, k):
+# Generate atMost-k ladder and assert that it holds
+# Only enforce one side of constraints (Plaisted-Greenbaum)
+def enforceAmk(vars, k):
     m = len(vars)
     # Assume 0 <= k < m
     # Lits of variables encoding counts.
@@ -121,7 +122,9 @@ def genAmk(vars, k):
         prev = c[(i-1,0)]
         cwriter.doClause([-local, -here])
         cwriter.doClause([prev, -here])
-        cwriter.doClause([local, -prev, here])
+        # Don't need constraint:
+        if not optimize:
+            cwriter.doClause([local, -prev, here])
     for j in range(1, k+1):
         if verbose:
             cwriter.doComment("Encode at-most-%d conditions" % j)
@@ -133,8 +136,10 @@ def genAmk(vars, k):
         local = vars[i]
         prevJm1 = c[(i-1,j-1)]
         cwriter.doClause([-local, prevJm1, -here])
-        cwriter.doClause([local, here])
-        cwriter.doClause([-prevJm1, here])
+        # Don't need constraint:
+        if not optimize:
+            cwriter.doClause([local, here])
+            cwriter.doClause([-prevJm1, here])
         for i in range(j+1, m+j-k):
             here = cwriter.newVariable()
             if verbose:
@@ -145,9 +150,15 @@ def genAmk(vars, k):
             prevJm1 = c[(i-1,j-1)]
             cwriter.doClause([prevJ, -here])
             cwriter.doClause([-local, prevJm1, -here])
-            cwriter.doClause([-prevJm1, -prevJ, here])
-            cwriter.doClause([local, -prevJ, here])
-    return c[(m-1,k)]
+            # Don't need constraint:
+            if not optimize:
+                cwriter.doClause([-prevJm1, -prevJ, here])
+                cwriter.doClause([local, -prevJ, here])
+    topVar = c[(m-1,k)]
+    if verbose:
+        cwriter.doComment("Assert that at-most-%d condition holds" % numTolerated)
+    cwriter.doClause([topVar])
+
 
 def initData(fixed):
     global solutionBits, corruptionBits, sampleBitSet, parityBits, phaseBits
@@ -178,20 +189,27 @@ def initVariables():
     solutionVariables = cwriter.newVariables(numVariables)
     corruptionVariables = cwriter.newVariables(numSamples)
 
-def document():
+def document(anonymous):
     cwriter.doComment("Parity sampling problem.  n=%d, m=%d, k=%d, t=%d, seed=%d" % (numVariables, numSamples, numCorrupt, numTolerated, seed))
-    cwriter.doComment("Target Solution: %s" % vectorString(solutionBits))
-    cwriter.doComment("Solution variables: %s" % vectorString(solutionVariables))
-    cwriter.doComment("Corrupted samples: %s" % vectorString(corruptionBits))
-    cwriter.doComment("Corruption variables: %s" % vectorString(corruptionVariables))
     print("c Parity sampling problem.  n=%d, m=%d, k=%d, t=%d, seed=%d" % (numVariables, numSamples, numCorrupt, numTolerated, seed))
-    print("c Target Solution: %s" % vectorString(solutionBits))
+    if not anonymous:
+        cwriter.doComment("Target Solution: %s" % vectorString(solutionBits))
+        print("c Target Solution: %s" % vectorString(solutionBits))
+    cwriter.doComment("Solution variables: %s" % vectorString(solutionVariables))
     print("c Solution variables: %s" % vectorString(solutionVariables))
-    print("c Corrupted samples: %s" % vectorString(corruptionBits))
+    if not anonymous:
+        cwriter.doComment("Corrupted samples: %s" % vectorString(corruptionBits))
+        print("c Corrupted samples: %s" % vectorString(corruptionBits))
+    cwriter.doComment("Corruption variables: %s" % vectorString(corruptionVariables))
     print("c Corruption variables: %s" % vectorString(corruptionVariables))
-    for i in range(numSamples):
-        cwriter.doComment("Sample #%.2d: %s | %d" % (i+1, vectorString(sampleBitSet[i]), parityBits[i]))
-        print("c Sample #%.2d: %s | %d" % (i+1, vectorString(sampleBitSet[i]), parityBits[i]))
+    if not anonymous:
+        for i in range(numSamples):
+            if corruptionBits[i]:
+                cwriter.doComment("Sample #%.2d: %s | %d (Corrupted)" % (i+1, vectorString(sampleBitSet[i]), phaseBits[i]))
+                print("c Sample #%.2d: %s | %d (Corrupted)" % (i+1, vectorString(sampleBitSet[i]), phaseBits[i]))
+            else:
+                cwriter.doComment("Sample #%.2d: %s | %d" % (i+1, vectorString(sampleBitSet[i]), phaseBits[i]))
+                print("c Sample #%.2d: %s | %d" % (i+1, vectorString(sampleBitSet[i]), phaseBits[i]))
 
 
 def generate():
@@ -204,31 +222,30 @@ def generate():
             cwriter.doComment("Sample #%d.  Vars = %s.  Phase = %d (Corrupted: %s)" % (i, vectorString(vars), phase, cstring))
         genParityChain(vars, phase)
     # Generate at-most-k
-    topVar = genAmk(corruptionVariables, numTolerated)
-    if verbose:
-        cwriter.doComment("Assert that at-most-%d condition holds" % numTolerated)
-    cwriter.doClause([topVar])
+    enforceAmk(corruptionVariables, numTolerated)
 
 
 def run(name, args):
-    global verbose, numVariables, numSamples, numCorrupt, numTolerated, seed
+    global verbose, optimize, numVariables, numSamples, numCorrupt, numTolerated, seed
     global cwriter
     fixed = False
-    unsat = False
+    anonymous = False
     numSamples = -1
     numCorrupt = -1
     numTolerated = -1
-    optlist, args = getopt.getopt(args, "hvfun:m:k:t:s:")
+    optlist, args = getopt.getopt(args, "hvfOan:m:k:t:s:")
     for (opt, val) in optlist:
         if opt == '-h':
             usage(name)
             return
         elif opt == '-v':
             verbose = True
+        elif opt == '-O':
+            optimize = True
         elif opt == '-f':
             fixed = True
-        elif opt == '-u':
-            unsat = True
+        elif opt == '-a':
+            anonymous = True
         elif opt == '-n':
             numVariables = int(val)
         elif opt == '-m':
@@ -257,7 +274,7 @@ def run(name, args):
 
     cwriter = writer.LazyCnfWriter(root, verbose=False)
     initVariables()
-    document()
+    document(anonymous)
     generate()
     cwriter.finish()
 

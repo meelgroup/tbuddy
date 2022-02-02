@@ -199,7 +199,7 @@ class LazyCnfWriter:
             else:
                 writer.doComment(value)
         writer.finish()
-    
+        print("c Generated file with %d variables and %d clauses" % (self.variableCount, writer.clauseCount))
 
 # Creating LRAT proof
 class LratWriter(Writer):
