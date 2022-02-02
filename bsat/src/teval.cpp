@@ -543,6 +543,8 @@ public:
 
 	// Report status ~20 times during bucket elimination
 	int report_level = bcount / 20;
+	if (report_level == 0)
+	    report_level = 1;
 
 	for (int bvar = 1 ; bvar <= max_variable; bvar++) {
 	    int next_idx = 0;
