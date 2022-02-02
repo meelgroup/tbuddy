@@ -70,13 +70,13 @@ extern "C" {
 /* Supported proof types */
    typedef enum { PROOF_LRAT, PROOF_DRAT, PROOF_FRAT, PROOF_NONE } proof_type_t;
 
-extern int tbdd_init(FILE *pfile, int *variable_counter, int *clause_id_counter, ilist *input_clauses, proof_type_t ptype, bool binary);
+   extern int tbdd_init(FILE *pfile, int *variable_counter, int *clause_id_counter, ilist *input_clauses, ilist variable_ordering, proof_type_t ptype, bool binary);
 
 /* 
    Initializers specific for the seven combinations of proof formats
  */
-extern int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses);
-extern int tbdd_init_lrat_binary(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses);
+extern int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, ilist variable_ordering);
+extern int tbdd_init_lrat_binary(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, ilist variable_ordering);
 extern int tbdd_init_drat(FILE *pfile, int variable_count);
 extern int tbdd_init_drat_binary(FILE *pfile, int variable_count);
 extern int tbdd_init_frat(FILE *pfile, int *variable_counter, int *clause_id_counter);

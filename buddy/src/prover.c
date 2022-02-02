@@ -52,7 +52,7 @@ static size_t dest_buf_len = 0;
 
 
 /* API functions */
-int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_clauses, proof_type_t ptype, bool binary) {
+int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_clauses, ilist variable_ordering, proof_type_t ptype, bool binary) {
     empty_clause_detected = false;
     proof_type = ptype;
     do_binary = binary;
@@ -110,9 +110,27 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
     int bincrease = input_clause_count < BUDDY_THRESHOLD ? BUDDY_INCREASE_SMALL : BUDDY_INCREASE_LARGE;
     int rval = bdd_init(bnodes, bcache);
 
+    int *varlist = NULL;
+    if (variable_ordering != NULL) {
+	if (ilist_length(variable_ordering) != input_variable_count) {
+	    fprintf(stderr, "Invalid variable ordering.  Given ordering for %d variables.  Must have %d\n",
+		    ilist_length(variable_ordering), input_variable_count);
+	    return bdd_error(BDD_DECVNUM);
+	}
+	varlist = calloc(input_variable_count+1, sizeof(int));
+	if (varlist == NULL)
+	    return bdd_error(BDD_MEMORY);
+	int level;
+	/* We start with level 1. */
+	varlist[0] = 0;
+	for (level = 1; level <= input_variable_count; level++) {
+	    varlist[level] = variable_ordering[level-1];
+	}
+    }
+
     bdd_setcacheratio(BUDDY_CACHE_RATIO);
     bdd_setmaxincrease(bincrease);
-    bdd_setvarnum(input_variable_count+1);
+    bdd_setvarnum_ordered(input_variable_count+1, varlist);
     bdd_disable_reorder();
     return rval;
 }

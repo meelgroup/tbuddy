@@ -27,7 +27,7 @@ extern int max_live_clause_count;
 extern int deleted_clause_count;
 
 /* Prover setup and completion */
-extern int prover_init(FILE *pfile, int *variable_counter, int *clause_counter, ilist *clauses, proof_type_t ptype, bool binary);
+extern int prover_init(FILE *pfile, int *variable_counter, int *clause_counter, ilist *clauses, ilist variable_ordering, proof_type_t ptype, bool binary);
 extern void prover_done();
 
 /* Put literals in clause in canonical order */

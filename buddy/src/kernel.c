@@ -435,13 +435,13 @@ int bdd_setvarnum_ordered(int num, int *varlist)
 	      var = varlist[level];
 	      if (var < 0 || var >= num)
 	      {
-		  fprintf(stderr, "Invalid variable %d in initial ordering\n", var);
+		  fprintf(stderr, "Invalid variable %d in initial ordering for level %d\n", var, level);
 		  bdd_error(BDD_DECVNUM);
 		  return bddfalse;
 	      }
 	      if (bddvar2level[var] >= 0)
 	      {
-		  fprintf(stderr, "Attempt to assign variable %d to multiple levels in initial ordering\n", var);
+		  fprintf(stderr, "Attempt to assign variable %d to both levels %d and %d in initial ordering\n", var, bddvar2level[var], level);
 		  bdd_error(BDD_DECVNUM);
 		  return bddfalse;
 	      }
