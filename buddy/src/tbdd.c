@@ -213,6 +213,7 @@ static TBDD tbdd_duplicate(TBDD tr) {
 static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     TBDD rr;
     print_proof_comment(2, "Build BDD representation of clause #%d", id);
+    clause = clean_clause(clause);
     BDD r = bdd_addref(BDD_build_clause(clause));
     if (proof_type == PROOF_NONE) {
 	rr.clause_id = TAUTOLOGY;
@@ -589,21 +590,24 @@ BDD BDD_build_xor(ilist vars, int phase) {
     if (ilist_length(vars) == 0)
 	return phase ? bdd_false() : bdd_true();
     ilist variables = ilist_copy(vars);
-    ilist_sort(variables);
+    /* Put into descending order by level */
+    variables = clean_clause(variables);
     BDD even = bdd_addref(bdd_true());
     BDD odd = bdd_addref(bdd_false());
-    int i, v;
-    for (i = ilist_length(variables)-1; i > 0; i--) {
-	v = variables[i];
-	BDD neven = bdd_addref(bdd_makenode(v, even, odd));
-	BDD nodd = bdd_addref(bdd_makenode(v, odd, even));
+    int i, var, level;
+    for (i = 0; i < ilist_length(variables); i++) {
+	var = variables[i];
+	level = bdd_var2level(var);
+	BDD neven = bdd_addref(bdd_makenode(level, even, odd));
+	BDD nodd = bdd_addref(bdd_makenode(level, odd, even));
 	bdd_delref(even);
 	bdd_delref(odd);
 	even = neven;
 	odd = nodd;
     }
-    v = variables[0];
-    BDD r = phase ? bdd_makenode(v, odd, even) : bdd_makenode(v, even, odd);
+    var = variables[0];
+    level = bdd_var2level(var);
+    BDD r = phase ? bdd_makenode(level, odd, even) : bdd_makenode(level, even, odd);
     bdd_delref(even);
     bdd_delref(odd);
     ilist_free(variables);
@@ -611,17 +615,24 @@ BDD BDD_build_xor(ilist vars, int phase) {
 }
 
 /*
-  Build BDD representation of clause
+  Build BDD representation of clause.
  */
 BDD BDD_build_clause(ilist literals) {
+    /* Put into descending order by level */
+    literals = clean_clause(literals);
     if (literals == TAUTOLOGY_CLAUSE)
 	return bdd_true();
+    //    printf("Building BDD for clause [");
+    //    ilist_print(literals, stdout, " ");
+    //    printf("]\n");
     BDD r = bdd_false();
-    int i, lit;
+    int i, lit, var, level;
     for (i = 0; i < ilist_length(literals); i++) {
 	bdd_addref(r);
 	lit = literals[i];
-	BDD nr = lit < 0 ? bdd_makenode(-lit, bdd_true(), r) : bdd_makenode(lit, r, bdd_true());
+	var = ABS(lit);
+	level = bdd_var2level(var);
+	BDD nr = lit < 0 ? bdd_makenode(level, bdd_true(), r) : bdd_makenode(level, r, bdd_true());
 	bdd_delref(r);
 	r = nr;
     }
@@ -634,12 +645,16 @@ BDD BDD_build_clause(ilist literals) {
 BDD BDD_build_cube(ilist literals) {
     if (literals == FALSE_CUBE)
 	return bdd_false();
+    /* Put into descending order by level */
+    literals = clean_clause(literals);
     BDD r = bdd_true();
-    int i, lit;
+    int i, lit, var, level;
     for (i = 0; i < ilist_length(literals); i++) {
 	bdd_addref(r);
 	lit = literals[i];
-	BDD nr = lit < 0 ? bdd_makenode(-lit, r, bdd_false()) : bdd_makenode(lit, bdd_false(), r);
+	var = ABS(lit);
+	level = bdd_var2level(var);
+	BDD nr = lit < 0 ? bdd_makenode(level, r, bdd_false()) : bdd_makenode(level, bdd_false(), r);
 	bdd_delref(r);
 	r = nr;
     }

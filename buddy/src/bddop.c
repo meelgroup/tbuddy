@@ -940,10 +940,11 @@ static TBDD applyj_rec(BDD l, BDD r)
       TBDD tresh;
       TBDD tresl;
       int splitVar;
+      int splitLevel;
 
       if (LEVEL(l) == LEVEL(r))
       {
-	  splitVar = LEVEL(l);
+	  splitLevel = LEVEL(l);
 	  tresl = applyj_rec(LOW(l), LOW(r));
 	  PUSHREF( tresl.root );
 	  tresh = applyj_rec(HIGH(l), HIGH(r));
@@ -952,7 +953,7 @@ static TBDD applyj_rec(BDD l, BDD r)
       else
       if (LEVEL(l) < LEVEL(r))
       {
-	  splitVar = LEVEL(l);
+	  splitLevel = LEVEL(l);
 	  tresl = applyj_rec(LOW(l), r);
 	  PUSHREF( tresl.root );
 	  tresh = applyj_rec(HIGH(l), r);
@@ -960,16 +961,17 @@ static TBDD applyj_rec(BDD l, BDD r)
       }
       else
       {
-	  splitVar = LEVEL(r);
+	  splitLevel = LEVEL(r);
 	  tresl =  applyj_rec(l, LOW(r));
 	  PUSHREF( tresl.root );
 	  tresh = applyj_rec(l, HIGH(r));
 	  PUSHREF( tresh.root );
       }
+      splitVar = bdd_level2var(splitLevel);
       if (applyop == bddop_imptstj)
 	  tres.root = ISONE(tresl.root) && ISONE(tresh.root) ? BDDONE : BDDZERO;
       else 
-	  tres.root = bdd_makenode(splitVar, READREF(2), READREF(1));
+	  tres.root = bdd_makenode(splitLevel, READREF(2), READREF(1));
       tres.clause_id = justify_apply(applyop, l, r, splitVar, tresl, tresh, tres.root);
 
 #if DO_TRACE
@@ -1054,23 +1056,24 @@ static TBDD apply_aij_rec(BDD l, BDD r, BDD t)
       TBDD tresh;
       TBDD tresl;
       int splitVar;
+      int splitLevel;
 
       if (LEVEL(l) == LEVEL(r))
       {
 	  if (LEVEL(t) < LEVEL(l)) {
-	      splitVar = LEVEL(t);
+	      splitLevel = LEVEL(t);
 	      tresl = apply_aij_rec(l, r, LOW(t));
 	      PUSHREF( tresl.root );
 	      tresh = apply_aij_rec(l, r, HIGH(t));
 	      PUSHREF( tresh.root );
 	  } else if (LEVEL(t) == LEVEL(l)) {
-	      splitVar = LEVEL(l);
+	      splitLevel = LEVEL(l);
 	      tresl = apply_aij_rec(LOW(l), LOW(r), LOW(t));
 	      PUSHREF( tresl.root );
 	      tresh = apply_aij_rec(HIGH(l), HIGH(r), HIGH(t));
 	      PUSHREF( tresh.root );
 	  } else {
-	      splitVar = LEVEL(l);
+	      splitLevel = LEVEL(l);
 	      tresl = apply_aij_rec(LOW(l), LOW(r), t);
 	      PUSHREF( tresl.root );
 	      tresh = apply_aij_rec(HIGH(l), HIGH(r), t);
@@ -1079,19 +1082,19 @@ static TBDD apply_aij_rec(BDD l, BDD r, BDD t)
       } else if (LEVEL(l) < LEVEL(r))
       {
 	  if (LEVEL(t) < LEVEL(l)) {
-	      splitVar = LEVEL(t);
+	      splitLevel = LEVEL(t);
 	      tresl = apply_aij_rec(l, r, LOW(t));
 	      PUSHREF( tresl.root );
 	      tresh = apply_aij_rec(l, r, HIGH(t));
 	      PUSHREF( tresh.root );
 	  } else if (LEVEL(t) == LEVEL(l)) {
-	      splitVar = LEVEL(l);
+	      splitLevel = LEVEL(l);
 	      tresl = apply_aij_rec(LOW(l), r, LOW(t));
 	      PUSHREF( tresl.root );
 	      tresh = apply_aij_rec(HIGH(l), r, HIGH(t));
 	      PUSHREF( tresh.root );
 	  } else {
-	      splitVar = LEVEL(l);
+	      splitLevel = LEVEL(l);
 	      tresl = apply_aij_rec(LOW(l), r, t);
 	      PUSHREF( tresl.root );
 	      tresh = apply_aij_rec(HIGH(l), r, t);
@@ -1100,25 +1103,26 @@ static TBDD apply_aij_rec(BDD l, BDD r, BDD t)
       } else
       {
 	  if (LEVEL(t) < LEVEL(r)) {
-	      splitVar = LEVEL(t);
+	      splitLevel = LEVEL(t);
 	      tresl = apply_aij_rec(l, r, LOW(t));
 	      PUSHREF( tresl.root );
 	      tresh = apply_aij_rec(l, r, HIGH(t));
 	      PUSHREF( tresh.root );
 	  } else if (LEVEL(t) == LEVEL(r)) {
-	      splitVar = LEVEL(r);
+	      splitLevel = LEVEL(r);
 	      tresl =  apply_aij_rec(l, LOW(r), LOW(t));
 	      PUSHREF( tresl.root );
 	      tresh = apply_aij_rec(l, HIGH(r), HIGH(t));
 	      PUSHREF( tresh.root );
 	  } else {
-	      splitVar = LEVEL(r);
+	      splitLevel = LEVEL(r);
 	      tresl =  apply_aij_rec(l, LOW(r), t);
 	      PUSHREF( tresl.root );
 	      tresh = apply_aij_rec(l, HIGH(r), t);
 	      PUSHREF( tresh.root );
 	  }
       }
+      splitVar = bdd_level2var(splitLevel);
       tres.root = ISONE(tresl.root) && ISONE(tresh.root) ? BDDONE : BDDZERO;
       //      printf("Attempting to justify AIJ.  Operands = N%d, N%d, N%d.  Var = %d\n", NNAME(l), NNAME(r), NNAME(t), splitVar);
       //      printf("   Recursive results give clauses tresl:%d, tresh:%d\n", tresl.clause_id, tresh.clause_id);

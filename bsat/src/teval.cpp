@@ -531,10 +531,10 @@ public:
 		return result;
 	    }
 	    if (root != bdd_true()) {
-		int top = bdd_var(root);
-		if (buckets[top].size() == 0)
+		int toplevel = bdd_var2level(bdd_var(root));
+		if (buckets[toplevel].size() == 0)
 		    bcount++;
-		buckets[top].push_back(i);
+		buckets[toplevel].push_back(i);
 		tcount++;
 	    }
 	}
@@ -546,69 +546,71 @@ public:
 	if (report_level == 0)
 	    report_level = 1;
 
-	for (int bvar = 1 ; bvar <= max_variable; bvar++) {
+	for (int blevel = 1 ; blevel <= max_variable; blevel++) {
 	    int next_idx = 0;
-	    if (buckets[bvar].size() == 0) {
-		if (solver && eliminated_variables.count(bvar) == 0) {
-		    // Insert step so that solver will assign value to bvar
+	    int bvar = bdd_level2var(blevel);
+	    if (buckets[blevel].size() == 0) {
+		if (solver && eliminated_variables.count(blevel) == 0) {
+		    // Insert step so that solver will assign value to blevel
 		    int vbuf[ILIST_OVHD+1];
 		    ilist vlist = ilist_make(vbuf, 1);
 		    ilist_fill1(vlist, bvar);
 		    solver->add_step(vlist, bdd_true());
 		}
 		if (verblevel >= 3)
-		    std::cout << "c Bucket " << bvar << " empty.  Skipping" << std::endl;
+		    std::cout << "c Bucket " << blevel << " empty.  Skipping" << std::endl;
 		continue;
 	    }
-	    while (next_idx < buckets[bvar].size() - 1) {
-		Term *tp1 = terms[buckets[bvar][next_idx++]];
-		Term *tp2 = terms[buckets[bvar][next_idx++]];
+	    while (next_idx < buckets[blevel].size() - 1) {
+		Term *tp1 = terms[buckets[blevel][next_idx++]];
+		Term *tp2 = terms[buckets[blevel][next_idx++]];
 		Term *tpn = conjunct(tp1, tp2);
 		bdd root = tpn->get_root();
 		if (root == bdd_false()) {
 		    if (verblevel >= 3)
-			std::cout << "c Bucket " << bvar << " Conjunction of terms " 
+			std::cout << "c Bucket " << blevel << " Conjunction of terms " 
 				  << tp1->get_term_id() << " and " << tp2->get_term_id() << " yields FALSE" << std::endl;
 		    tbdd result = tpn->get_fun();
 		    return result;
 		}
-		int top = bdd_var(root);
+		int toplevel = bdd_var2level(bdd_var(root));
 		if (verblevel >= 3)
-		    std::cout << "c Bucket " << bvar << " Conjunction of terms " 
+		    std::cout << "c Bucket " << blevel << " Conjunction of terms " 
 			      << tp1->get_term_id() << " and " << tp2->get_term_id() << " yields term " 
-			      << tpn->get_term_id() << " with " << tpn->get_node_count() << " nodes, and with top variable " << top << std::endl;
-		buckets[top].push_back(tpn->get_term_id());
+			      << tpn->get_term_id() << " with " << tpn->get_node_count() << " nodes, and with top level " << toplevel << std::endl;
+		buckets[toplevel].push_back(tpn->get_term_id());
 	    }
-	    if (next_idx == buckets[bvar].size()-1) {
-		Term *tp = terms[buckets[bvar][next_idx]];
+	    if (next_idx == buckets[blevel].size()-1) {
+		Term *tp = terms[buckets[blevel][next_idx]];
 		Term *tpn = equantify(tp, bvar);
+
 		bdd root = tpn->get_root();
-		if (verblevel >= 1 && (bvar % report_level == 0 || verblevel >= 3))
-		    std::cout << "c Bucket " << bvar << " Reduced to term with " << tpn->get_node_count() << " nodes" << std::endl;
+		if (verblevel >= 1 && (blevel % report_level == 0 || verblevel >= 3))
+		    std::cout << "c Bucket " << blevel << " Reduced to term with " << tpn->get_node_count() << " nodes" << std::endl;
 		if (root == bdd_true()) {
 		    if (verblevel >= 3)
-			std::cout << "c Bucket " << bvar << " Quantification of term " 
+			std::cout << "c Bucket " << blevel << " Quantification of term " 
 				  << tp->get_term_id() << " yields TRUE" << std::endl;
 		} else {
-		    int top = bdd_var(root);
-		    buckets[top].push_back(tpn->get_term_id());
+		    int toplevel = bdd_var2level(bdd_var(root));
+		    buckets[toplevel].push_back(tpn->get_term_id());
 		    if (verblevel >= 3) {
-			std::cout << "c Bucket " << bvar << " Quantification of term " 
+			std::cout << "c Bucket " << blevel << " Quantification of term " 
 				  << tp->get_term_id() << " yields term " << tpn->get_term_id() 
-				  << " with top variable " << top << std::endl;
+				  << " with top level " << toplevel << std::endl;
 		    }
 
 		}
 	    } else {
 		if (solver) {
-		    // Insert step so that solver will assign value to bvar
+		    // Insert step so that solver will assign value to blevel
 		    int vbuf[ILIST_OVHD+1];
 		    ilist vlist = ilist_make(vbuf, 1);
 		    ilist_fill1(vlist, bvar);
 		    solver->add_step(vlist, bdd_true());
 		}
 		if (verblevel >= 3)
-		    std::cout << "c Bucket " << bvar << " cleared before quantifying." << std::endl;
+		    std::cout << "c Bucket " << blevel << " cleared before quantifying." << std::endl;
 	    }
 	}
 	// If get here, formula must be satisfiable

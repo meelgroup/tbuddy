@@ -170,11 +170,13 @@ void print_clause(FILE *out, ilist clause) {
 int literal_compare(const void *l1p, const void *l2p) {
      int l1 = *(int *) l1p;
      int l2 = *(int *) l2p;
-     unsigned u1 = l1 < 0 ? -l1 : l1;
-     unsigned u2 = l2 < 0 ? -l2 : l2;
-     if (u2 > u1)
+     int v1 = l1 < 0 ? -l1 : l1;
+     int v2 = l2 < 0 ? -l2 : l2;
+     int x1 = v1 <= input_variable_count ? bdd_var2level(v1) : v1;
+     int x2 = v2 <= input_variable_count ? bdd_var2level(v2) : v2;
+     if (x2 > x1)
 	 return 1;
-     if (u2 < u1)
+     if (x2 < x1)
 	 return -1;
      return 0;
 }
@@ -185,6 +187,8 @@ ilist clean_clause(ilist clause) {
     int len = ilist_length(clause);
     if (len == 0)
 	return clause;
+    //    printf("Cleaning clause [");
+    //    ilist_print(clause, stdout, " ");
     /* Sort the literals */
     qsort((void *) clause, ilist_length(clause), sizeof(int), literal_compare);
     int geti = 0;
@@ -214,6 +218,9 @@ ilist clean_clause(ilist clause) {
 	plit = lit;
     }
     clause = ilist_resize(clause, puti);
+    //    printf("] --> [");
+    //    ilist_print(clause, stdout, " ");
+    //    printf("]\n");
     return clause;
 }
 
@@ -755,6 +762,7 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
     int dbuf[1+ILIST_OVHD];
     ilist del = ilist_make(dbuf, 1);
     int oi, hi, li;
+    int splitLevel = bdd_var2level(splitVar);
 
     int jid = 0;
     if (op == bddop_andj) {
@@ -780,22 +788,22 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
     /* Prepare the candidates */
     initialize_hints();
 
-    if (LEVEL(l) == splitVar) {
+    if (LEVEL(l) == splitLevel) {
 	hint_id[HINT_ARG1LD] = bdd_dclause(l, DEF_LD);
 	hint_clause[HINT_ARG1LD] = defining_clause(hint_clause[HINT_ARG1LD], DEF_LD, XVAR(l), splitVar, XVAR(HIGH(l)), XVAR(LOW(l)));
 	hint_id[HINT_ARG1HD] = bdd_dclause(l, DEF_HD);
 	hint_clause[HINT_ARG1HD] = defining_clause(hint_clause[HINT_ARG1HD], DEF_HD, XVAR(l), splitVar, XVAR(HIGH(l)), XVAR(LOW(l)));
     }
 
-    BDD ll = LEVEL(l) == splitVar ? LOW(l) : l;
-    BDD lh = LEVEL(l) == splitVar ? HIGH(l) : l;
-    BDD rl = LEVEL(r) == splitVar ? LOW(r) : r;
-    BDD rh = LEVEL(r) == splitVar ? HIGH(r) : r;
-    BDD resl = LEVEL(res) == splitVar ? LOW(res) : res;
-    BDD resh = LEVEL(res) == splitVar ? HIGH(res) : res;
+    BDD ll = LEVEL(l) == splitLevel ? LOW(l) : l;
+    BDD lh = LEVEL(l) == splitLevel ? HIGH(l) : l;
+    BDD rl = LEVEL(r) == splitLevel ? LOW(r) : r;
+    BDD rh = LEVEL(r) == splitLevel ? HIGH(r) : r;
+    BDD resl = LEVEL(res) == splitLevel ? LOW(res) : res;
+    BDD resh = LEVEL(res) == splitLevel ? HIGH(res) : res;
 
     if (op == bddop_imptstj) {
-	if (LEVEL(r) == splitVar) {
+	if (LEVEL(r) == splitLevel) {
 	    hint_id[HINT_RESLU] = bdd_dclause(r, DEF_LU);
 	    hint_clause[HINT_RESLU] = defining_clause(hint_clause[HINT_RESLU], DEF_LU, XVAR(r), splitVar, XVAR(HIGH(r)), XVAR(LOW(r)));
 	    hint_id[HINT_RESHU] = bdd_dclause(r, DEF_HU);
@@ -806,13 +814,13 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BD
 	hint_id[HINT_OPH] = tresh.clause_id;
 	hint_clause[HINT_OPH] = target_imply(hint_clause[HINT_OPH], lh, rh);
     } else {
-	if (LEVEL(r) == splitVar) {
+	if (LEVEL(r) == splitLevel) {
 	    hint_id[HINT_ARG2LD] = bdd_dclause(r, DEF_LD);
 	    hint_clause[HINT_ARG2LD] = defining_clause(hint_clause[HINT_ARG2LD], DEF_LD, XVAR(r), splitVar, XVAR(HIGH(r)), XVAR(LOW(r)));
 	    hint_id[HINT_ARG2HD] = bdd_dclause(r, DEF_HD);
 	    hint_clause[HINT_ARG2HD] = defining_clause(hint_clause[HINT_ARG2HD], DEF_HD, XVAR(r), splitVar, XVAR(HIGH(r)), XVAR(LOW(r)));
 	}
-	if (LEVEL(res) == splitVar) { // Test was: tresl.root != tresh.root
+	if (LEVEL(res) == splitLevel) { // Test was: tresl.root != tresh.root
 	    hint_id[HINT_RESLU] = bdd_dclause(res, DEF_LU);
 	    hint_clause[HINT_RESLU] = defining_clause(hint_clause[HINT_RESLU], DEF_LU, XVAR(res), splitVar, XVAR(HIGH(res)), XVAR(LOW(res)));
 	    hint_id[HINT_RESHU] = bdd_dclause(res, DEF_HU);

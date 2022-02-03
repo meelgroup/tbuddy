@@ -449,6 +449,7 @@ int bdd_setvarnum_ordered(int num, int *varlist)
 	      var = level;
 	  bddvar2level[var] = level;
 	  bddlevel2var[level] = var;
+	  printf("Variable %d at level %d\n", var, level);
       }
    }
    else
@@ -479,21 +480,23 @@ int bdd_setvarnum_ordered(int num, int *varlist)
       free(bddrefstack);
    bddrefstack = bddrefstacktop = (int*)malloc(sizeof(int)*(num*2+4));
 
-   for(bdv=bddvarnum ; bddvarnum < num; bddvarnum++)
+   bddvarnum = num;
+
+   for(bdv=oldbddvarnum; bdv < num; bdv++)
    {
-      int level = bddvar2level[bddvarnum];
-      bddvarset[bddvarnum*2] = PUSHREF( bdd_makenode(level, 0, 1) );
-      bddvarset[bddvarnum*2+1] = bdd_makenode(level, 1, 0);
+      int level = bddvar2level[bdv];
+      bddvarset[bdv*2] = PUSHREF( bdd_makenode(level, 0, 1) );
+      bddvarset[bdv*2+1] = bdd_makenode(level, 1, 0);
       POPREF(1);
       
       if (bdderrorcond)
       {
-	 bddvarnum = bdv;
+	 bddvarnum = oldbddvarnum;
 	 return -bdderrorcond;
       }
       
-      bddnodes[bddvarset[bddvarnum*2]].refcou = MAXREF;
-      bddnodes[bddvarset[bddvarnum*2+1]].refcou = MAXREF;
+      bddnodes[bddvarset[bdv*2]].refcou = MAXREF;
+      bddnodes[bddvarset[bdv*2+1]].refcou = MAXREF;
    }
 
    LEVEL(0) = num;
@@ -1568,6 +1571,21 @@ int bdd_makenode(unsigned int level, int low, int high)
 #endif
    }
    
+   /* Error checking */
+   if (level >= LEVEL(low))
+   {
+       fprintf(stderr, "Attempt to create invalid BDD node.  New Level = %d.  Low node level = %d\n", level, LEVEL(low));
+       bdd_error(BDD_ILLBDD);
+       return 0;
+   }
+
+   if (level >= LEVEL(high))
+   {
+       fprintf(stderr, "Attempt to create invalid BDD node.  New Level = %d.  High node level = %d\n", level, LEVEL(high));
+       bdd_error(BDD_ILLBDD);
+       return 0;
+   }
+
       /* No existing node -> build one */
 #ifdef CACHESTATS
    bddcachestats.uniqueMiss++;
@@ -1621,7 +1639,7 @@ int bdd_makenode(unsigned int level, int low, int high)
 	   DCLAUSEp(node) = 0;
        } else {
 	   int nid = ++(*variable_counter);
-	   int vid = level;
+	   int vid = bdd_level2var(level);
 	   int hid = XVAR(high);
 	   int lid = XVAR(low);
 	   int hname = NNAME(high);
@@ -1633,7 +1651,7 @@ int bdd_makenode(unsigned int level, int low, int high)
 	   int huid, luid;
 	   XVARp(node) = nid;
 	   DCLAUSEp(node) = *clause_id_counter + 1;
-	   print_proof_comment(2, "Defining clauses for node N%d = ITE(V%d, N%d, N%d)", nid, vid, hname, lname);
+	   print_proof_comment(2, "Defining clauses for node N%d = ITE(V%d (level=%d), N%d, N%d)", nid, vid, level, hname, lname);
 	   huid = generate_clause(defining_clause(dlist, DEF_HU, nid, vid, hid, lid), alist);
 	   luid = generate_clause(defining_clause(dlist, DEF_LU, nid, vid, hid, lid), alist);
 	   if (huid != TAUTOLOGY)
