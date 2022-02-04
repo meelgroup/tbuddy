@@ -165,7 +165,7 @@ static char *errorstrings[BDD_ERRNUM] =
 static BDD checknode(BDD n) {
     if (n < 0 || n >= bddnodesize) { 
 	fprintf(stderr, "Invalid node %d detected.  Raising error\n", n);
-	bdd_error(BDD_ILLBDD);
+	bdd_error(BDD_ORDER);
     }
     return n;
 }
@@ -176,7 +176,7 @@ static BDD checknode(BDD n) {
 static int checkrange(int v) {
     if (v < 0 || v >= bddnodesize) { 
 	fprintf(stderr, "Invalid value %d detected.  Raising error\n", v);
-	bdd_error(BDD_ILLBDD);
+	bdd_error(BDD_ORDER);
     }
     return v;
 }
@@ -449,7 +449,6 @@ int bdd_setvarnum_ordered(int num, int *varlist)
 	      var = level;
 	  bddvar2level[var] = level;
 	  bddlevel2var[level] = var;
-	  printf("Variable %d at level %d\n", var, level);
       }
    }
    else
