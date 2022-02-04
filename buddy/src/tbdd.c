@@ -592,10 +592,15 @@ BDD BDD_build_xor(ilist vars, int phase) {
     ilist variables = ilist_copy(vars);
     /* Put into descending order by level */
     variables = clean_clause(variables);
+    int n = ilist_length(variables);
     BDD even = bdd_addref(bdd_true());
     BDD odd = bdd_addref(bdd_false());
     int i, var, level;
-    for (i = 0; i < ilist_length(variables); i++) {
+    //    printf("Building Xor for [");
+    //    ilist_print(variables, stdout, " ");
+    //    printf("]\n");
+
+    for (i = 0; i < n-1; i++) {
 	var = variables[i];
 	level = bdd_var2level(var);
 	BDD neven = bdd_addref(bdd_makenode(level, even, odd));
@@ -605,7 +610,7 @@ BDD BDD_build_xor(ilist vars, int phase) {
 	even = neven;
 	odd = nodd;
     }
-    var = variables[0];
+    var = variables[n-1];
     level = bdd_var2level(var);
     BDD r = phase ? bdd_makenode(level, odd, even) : bdd_makenode(level, even, odd);
     bdd_delref(even);
