@@ -168,12 +168,13 @@ void print_clause(FILE *out, ilist clause) {
 
 /* Helper function for clause cleaning.  Sort literals to put variables in descending order */
 int literal_compare(const void *l1p, const void *l2p) {
+     int bvn = bdd_varnum();
      int l1 = *(int *) l1p;
      int l2 = *(int *) l2p;
      int v1 = l1 < 0 ? -l1 : l1;
      int v2 = l2 < 0 ? -l2 : l2;
-     int x1 = v1 <= input_variable_count ? bdd_var2level(v1) : v1;
-     int x2 = v2 <= input_variable_count ? bdd_var2level(v2) : v2;
+     int x1 = v1 < bvn ? bdd_var2level(v1) : v1;
+     int x2 = v2 < bvn ? bdd_var2level(v2) : v2;
      if (x2 > x1)
 	 return 1;
      if (x2 < x1)

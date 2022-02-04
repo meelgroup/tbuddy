@@ -476,16 +476,19 @@ TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
 /* See if can validate clause directly from path in BDD */
 
 static bool test_validation_path(ilist clause, TBDD tr) {
+    // Put in descending order by level
+    clause = clean_clause(clause);
     int len = ilist_length(clause);
     int i;
     BDD r = tr.root;
     for (i = len-1; i >= 0; i--) {
 	int lit = clause[i];
 	int var = ABS(lit);
-	if (LEVEL(r) > var)
+	int level = bdd_var2level(var);
+	if (LEVEL(r) > level)
 	    // Function does not depend on this variable
 	    continue;
-	if (LEVEL(r) < var)
+	if (LEVEL(r) < level)
 	    // Cannot validate clause directly
 	    return false;
 	if (lit < 0)
