@@ -14,7 +14,8 @@ LRAT = $(DDIR)/lrat-check
 
 VLEVEL=1
 RM=rm
-GRAB = $(INTERP) $(GDIR)/grab_data.py
+TOOLDIR = ../../../../tools
+GRAB = $(INTERP) $(TOOLDIR)/grab_data.py
 
 CDIR = ~/repos/cryptominisat
 CMS = $(CDIR)/cryptominisat5

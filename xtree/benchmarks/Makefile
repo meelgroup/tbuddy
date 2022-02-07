@@ -12,8 +12,8 @@ LRAT = $(DDIR)/lrat-check
 FDIR = ~/repos/frat
 FRAT = $(FDIR)/frat-rs
 
-MDIR = ../../tools
-MATCHER = $(MDIR)/frat-matcher.py
+TOOLDIR = ../../tools
+MATCHER = $(TOOLDIR)/frat-matcher.py
 
 KDIR = ~/repos/kissat/build
 KISSAT = $(KDIR)/kissat
@@ -30,10 +30,13 @@ CXFLAGS = --presimp 1 --maxmatrixrows 500000
 TDIR = ../../bsat/src
 TBSAT = $(TDIR)/tbsat
 TFLAGS = -b -v $(VLEVEL)
-XEXT = $(MDIR)/xor_extractor.py
+XEXT = $(TOOLDIR)/xor_extractor.py
+
+PGDIR = ~/repos/pgpbs-artifact/src
+PGBDD = $(PGDIR)/pgbdd.py
 
 INTERP=python3
-GRAB = $(INTERP) ./grab_data.py
+GRAB = $(INTERP) $(TOOLDIR)/grab_data.py
 
 cnf: $(ROOT)-$(N).cnf
 
@@ -68,8 +71,8 @@ $(ROOT)-$(N).frat:
 
 
 .SUFFIXES: .cnf .drat .frat .drat_check_data .frat_check_data .kissat_data .cms_data .cmsx_data .cms_noproof_data \
-		.tbsat_bucket_data .tbsat_gaussian_data .tbsat_bucket_noproof_data .tbsat_gaussian_noproof_data
-
+		.tbsat_bucket_data .tbsat_gaussian_data .tbsat_bucket_noproof_data .tbsat_gaussian_noproof_data \
+		.pgbdd_bucket_data
 
 .drat.drat_check_data:
 	$(DRAT) $*.cnf $< | tee $@
@@ -124,7 +127,11 @@ $(ROOT)-$(N).frat:
 	$(XEXT) -i $< -o $*.schedule | tee $@
 	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule  | tee -a $@
 
-
+.cnf.pgbdd_bucket_data:
+	$(INTERP) $(PGBDD) -b -v $(VLEVEL) -i $< -o $*-pgbdd.lrat 2>&1 | tee $@
+	$(LRAT) $< $*-pgbdd.lrat | tee -a $@
+	ls -l $*-pgbdd.lrat
+	$(RM) $*-pgbdd.lrat
 
 data:
 	rm -f *.csv
@@ -132,15 +139,9 @@ data:
 	$(GRAB) "Elapsed" *.drat_gen_data > tbuddy-generation-seconds.csv
 	$(GRAB) "verification time" *.drat_check_data > tbuddy-drat-seconds.csv
 	$(GRAB) "real " *.frat_check_data > tbuddy-frat-seconds.csv
-	$(GRAB) "Elapsed time" *.kissat_data > kissat-generation-seconds.csv
-	$(GRAB) "proof_added" *.kissat_data > kissat-clauses.csv
-	$(GRAB) "verification time" *.kissat_data > kissat-drat-seconds.csv
-	$(GRAB) "Total time" *.cms_data > cms-generation-seconds.csv
-	$(GRAB) 2 "resolution steps" *.cms_data > cms-clauses.csv
 	$(GRAB) "Total time" *.cmsx_data > cmsx-generation-seconds.csv
 	$(GRAB) 2 "resolution steps" *.cmsx_data > cmsx-clauses.csv
 	$(GRAB) "Total time" *.cms_noproof_data > cms-noproof-seconds.csv
-	$(GRAB) "verification time" *.cms_data > cms-drat-seconds.csv
 	$(GRAB) "verification time" *.cmsx_data > cmsx-drat-seconds.csv
 	$(GRAB) "Elapsed" *.tbsat_bucket_data > tbsat-bucket-generation-seconds.csv
 	$(GRAB) "verification time" *.tbsat_bucket_data > tbsat-bucket-lrat-seconds.csv	
@@ -150,6 +151,11 @@ data:
 	$(GRAB) "verification time" *.tbsat_gaussian_data > tbsat-gaussian-lrat-seconds.csv	
 	$(GRAB) "Total clauses" *.tbsat_gaussian_data > tbsat-gaussian-clauses.csv	
 	$(GRAB) "Elapsed" *.tbsat_gaussian_noproof_data > tbsat-gaussian-noproof-generation-seconds.csv
+	$(GRAB) "Elapsed" *.pgbdd_bucket_data > pgbdd-bucket-generation-seconds.csv
+	$(GRAB) "verification time" *.pgbdd_bucket_data > pgbdd-bucket-lrat-seconds.csv	
+	$(GRAB) "Total Clauses" *.pgbdd_bucket_data > pgbdd-bucket-clauses.csv	
+
+
 
 clean:
 	rm -f *~

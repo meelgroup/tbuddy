@@ -24,7 +24,9 @@ SEED=1
 SOLNS=10
 VLEVEL=1
 RM=rm
-GRAB = $(INTERP) $(GDIR)/grab_data.py
+
+TOOLDIR = ../../../../tools
+GRAB = $(INTERP) $(TOOLDIR)/grab_data.py
 
 
 cnf: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf

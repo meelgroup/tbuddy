@@ -118,10 +118,13 @@ def run(name, args):
     for fname in names:
         pair = extract(fname)
         if pair is not None:
-            vals[pair[0]] = pair
+            if pair[0] in vals:
+                vals[pair[0]].append(pair)
+            else:
+                vals[pair[0]] = [pair]
     for k in sorted(vals.keys()):
-        print("%s,%s" % vals[k])
-
+        for p in vals[k]:
+            print("%s,%s" % p)
 
 if __name__ == "__main__":
     run(sys.argv[0], sys.argv[1:])
