@@ -50,8 +50,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-/*=== Defined operators for apply calls ================================*/
+/*=== Defined operators for apply calls, and for op field in cache ====*/
 
+/* Covered by apply operations */
 #define bddop_and       0
 #define bddop_xor       1
 #define bddop_or        2
@@ -63,15 +64,21 @@
 #define bddop_less      8
 #define bddop_invimp    9
 
-   /* Should *not* be used in bdd_apply calls !!! */
-#define bddop_not      10
-#define bddop_simplify 11
+/* Special operations */
+#define bddop_not      11
+#define bddop_simplify 12
+#define bddop_ite        13
+#define bddop_misc       14
+#define bddop_replace    15
+#define bddop_quant      16
+#define bddop_appex      17
+
 
 #if ENABLE_TBDD
 /* Proof generating apply operations */
-#define bddop_andj     12
-#define bddop_imptstj  13
-#define bddop_andimptstj  14
+#define bddop_andj     18
+#define bddop_imptstj  19
+#define bddop_andimptstj  20
 #endif
 
 /*=== Defining clauses ===================================================*/

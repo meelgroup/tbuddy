@@ -104,7 +104,7 @@ static int supportID;               /* Current ID (true value) for support */
 static int supportMin;              /* Min. used level in support calc. */
 static int supportMax;              /* Max. used level in support calc. */
 static int* supportSet;             /* The found support set */
-static BddCache applycache;         /* Cache for apply results */
+static BddCache opcache;            /* Cache for all operations */
 static BddCache itecache;           /* Cache for ITE results */
 static BddCache aijcache;            /* Cache for and-imply-justify results */
 static BddCache quantcache;         /* Cache for exist/forall results */
@@ -157,6 +157,7 @@ static TBDD    apply_aij_rec(BDD, BDD, BDD);
    /* Hashvalues */
 #define NOTHASH(r)           (r)
 #define APPLYHASH(l,r,op)    (TRIPLE(l,r,op))
+#define AIJHASH(l,r,t)    (TRIPLE(l,r,t))
 #define ITEHASH(f,g,h)       (TRIPLE(f,g,h))
 #define RESTRHASH(r,var)     (PAIR(r,var))
 #define CONSTRAINHASH(f,c)   (PAIR(f,c))
@@ -183,9 +184,9 @@ static TBDD    apply_aij_rec(BDD, BDD, BDD);
 
 int bdd_operator_init(int cachesize)
 {
-   if (BddCache_init(&applycache,cachesize) < 0)
+   if (BddCache_init(&opcache,cachesize) < 0)
       return bdd_error(BDD_MEMORY);
-   
+
    if (BddCache_init(&itecache,cachesize) < 0)
       return bdd_error(BDD_MEMORY);
 
@@ -219,11 +220,11 @@ void bdd_operator_done(void)
       free(quantvarset);
    
 #if ENABLE_TBDD
-   BddCache_clear_clauses(&applycache, false);
-   BddCache_clear_clauses(&aijcache, true);
+   BddCache_clear_clauses(&opcache);
+   BddCache_clear_clauses(&aijcache);
    process_deferred_deletions();
 #endif
-   BddCache_done(&applycache);
+   BddCache_done(&opcache);
    BddCache_done(&itecache);
    BddCache_done(&aijcache);
    BddCache_done(&quantcache);
@@ -239,10 +240,10 @@ void bdd_operator_done(void)
 void bdd_operator_reset(void)
 {
 #if ENABLE_TBDD
-   BddCache_clear_clauses(&applycache, false);
-   BddCache_clear_clauses(&aijcache, true);
+   BddCache_clear_clauses(&opcache);
+   BddCache_clear_clauses(&aijcache);
 #endif
-   BddCache_reset(&applycache);
+   BddCache_reset(&opcache);
    BddCache_reset(&itecache);
    BddCache_reset(&aijcache);
    BddCache_reset(&quantcache);
@@ -272,10 +273,10 @@ static void bdd_operator_noderesize(void)
       int newcachesize = bddnodesize / cacheratio;
       
 #if ENABLE_TBDD
-      BddCache_clear_clauses(&applycache, false);
-      BddCache_clear_clauses(&aijcache, true);
+      BddCache_clear_clauses(&opcache);
+      BddCache_clear_clauses(&aijcache);
 #endif
-      BddCache_resize(&applycache, newcachesize);
+      BddCache_resize(&opcache, newcachesize);
       BddCache_resize(&itecache, newcachesize);
       BddCache_resize(&aijcache, newcachesize);
       BddCache_resize(&quantcache, newcachesize);
@@ -461,9 +462,9 @@ static BDD not_rec(BDD r)
    if (ISONE(r))
       return BDDZERO;
    
-   entry = BddCache_lookup(&applycache, NOTHASH(r));
+   entry = BddCache_lookup(&opcache, NOTHASH(r));
       
-   if (entry->a == r  &&  entry->c == bddop_not)
+   if (entry->a == r  &&  entry->op == bddop_not)
    {
 #ifdef CACHESTATS
       bddcachestats.opHit++;
@@ -480,7 +481,9 @@ static BDD not_rec(BDD r)
    POPREF(2);
    
    entry->a = r;
-   entry->c = bddop_not;
+   entry->b = -1;
+   entry->c = -1;
+   entry->op = bddop_not;
    entry->r.res = res;
 
    return res;
@@ -622,9 +625,9 @@ static BDD apply_rec(BDD l, BDD r)
       res = oprres[applyop][l<<1 | r];
    else
    {
-      entry = BddCache_lookup(&applycache, APPLYHASH(l,r,applyop));
+      entry = BddCache_lookup(&opcache, APPLYHASH(l,r,applyop));
       
-      if (entry->a == l  &&  entry->b == r  &&  entry->c == applyop)
+      if (entry->a == l  &&  entry->b == r  &&  entry->op == applyop)
       {
 #ifdef CACHESTATS
 	 bddcachestats.opHit++;
@@ -658,12 +661,13 @@ static BDD apply_rec(BDD l, BDD r)
       POPREF(2);
 
 #if ENABLE_TBDD
-      BddCache_clause_evict(entry, false);
+      BddCache_clause_evict(entry);
 #endif      
 
       entry->a = l;
       entry->b = r;
-      entry->c = applyop;
+      entry->c = -1;
+      entry->op = applyop;
       entry->r.res = res;
    }
 
@@ -914,8 +918,8 @@ static TBDD applyj_rec(BDD l, BDD r)
 
 
    {
-      entry = BddCache_lookup(&applycache, APPLYHASH(l,r,applyop));
-      if (entry->a == l  &&  entry->b == r  &&  entry->c == applyop)
+      entry = BddCache_lookup(&opcache, APPLYHASH(l,r,applyop));
+      if (entry->a == l  &&  entry->b == r  &&  entry->op == applyop)
       {
 #ifdef CACHESTATS
 	 bddcachestats.opHit++;
@@ -986,10 +990,11 @@ static TBDD applyj_rec(BDD l, BDD r)
 
       POPREF(2);
 
-      BddCache_clause_evict(entry, false);
+      BddCache_clause_evict(entry);
       entry->a = l;
       entry->b = r;
-      entry->c = applyop;
+      entry->c = -1;
+      entry->op = applyop;
       entry->r.res = tres.root;
       entry->r.jclause = tres.clause_id;
 #if DO_TRACE
@@ -1031,7 +1036,7 @@ static TBDD apply_aij_rec(BDD l, BDD r, BDD t)
        return tres;
    {
       entry = BddCache_lookup(&aijcache, APPLYHASH(l,r,t));
-      if (entry->a == l  &&  entry->b == r  &&  entry->c == t)
+      if (entry->a == l  &&  entry->b == r  &&  entry->c == t && entry->op == bddop_andimptstj)
       {
 #ifdef CACHESTATS
 	 bddcachestats.opHit++;
@@ -1140,10 +1145,11 @@ static TBDD apply_aij_rec(BDD l, BDD r, BDD t)
 
       POPREF(2);
 
-      BddCache_clause_evict(entry, true);
+      BddCache_clause_evict(entry);
       entry->a = l;
       entry->b = r;
       entry->c = t;
+      entry->op = bddop_andimptstj;
       entry->r.res = tres.root;
       entry->r.jclause = tres.clause_id;
 #if DO_TRACE
@@ -1273,7 +1279,7 @@ static BDD ite_rec(BDD f, BDD g, BDD h)
       return not_rec(f);
 
    entry = BddCache_lookup(&itecache, ITEHASH(f,g,h));
-   if (entry->a == f  &&  entry->b == g  &&  entry->c == h)
+   if (entry->a == f  &&  entry->b == g  &&  entry->c == h && entry->op == bddop_ite)
    {
 #ifdef CACHESTATS
       bddcachestats.opHit++;
@@ -1357,6 +1363,7 @@ static BDD ite_rec(BDD f, BDD g, BDD h)
    entry->a = f;
    entry->b = g;
    entry->c = h;
+   entry->op = bddop_ite;
    entry->r.res = res;
 
    return res;
@@ -1440,7 +1447,7 @@ static int restrict_rec(int r)
       return r;
 
    entry = BddCache_lookup(&misccache, RESTRHASH(r,miscid));
-   if (entry->a == r  &&  entry->c == miscid)
+   if (entry->a == r  &&  entry->c == miscid && entry->op == bddop_misc)
    {
 #ifdef CACHESTATS
       bddcachestats.opHit++;
@@ -1467,7 +1474,9 @@ static int restrict_rec(int r)
    }
 
    entry->a = r;
+   entry->b = -1;
    entry->c = miscid;
+   entry->op = bddop_misc;
    entry->r.res = res;
 
    return res;
@@ -1535,7 +1544,7 @@ static BDD constrain_rec(BDD f, BDD c)
       return BDDZERO;
 
    entry = BddCache_lookup(&misccache, CONSTRAINHASH(f,c));
-   if (entry->a == f  &&  entry->b == c  &&  entry->c == miscid)
+   if (entry->a == f  &&  entry->b == c  &&  entry->c == miscid && entry->op == bddop_misc)
    {
 #ifdef CACHESTATS
       bddcachestats.opHit++;
@@ -1586,6 +1595,7 @@ static BDD constrain_rec(BDD f, BDD c)
    entry->a = f;
    entry->b = c;
    entry->c = miscid;
+   entry->op = bddop_misc;
    entry->r.res = res;
 
    return res;
@@ -1651,7 +1661,7 @@ static BDD replace_rec(BDD r)
       return r;
 
    entry = BddCache_lookup(&replacecache, REPLACEHASH(r));
-   if (entry->a == r  &&  entry->c == replaceid)
+   if (entry->a == r  &&  entry->c == replaceid && entry->op == bddop_replace)
    {
 #ifdef CACHESTATS
       bddcachestats.opHit++;
@@ -1669,7 +1679,9 @@ static BDD replace_rec(BDD r)
    POPREF(2);
 
    entry->a = r;
+   entry->b = -1;
    entry->c = replaceid;
+   entry->op = bddop_replace;
    entry->r.res = res;
 
    return res;
@@ -1775,7 +1787,7 @@ static BDD compose_rec(BDD f, BDD g)
       return f;
 
    entry = BddCache_lookup(&replacecache, COMPOSEHASH(f,g));
-   if (entry->a == f  &&  entry->b == g  &&  entry->c == replaceid)
+   if (entry->a == f  &&  entry->b == g  &&  entry->c == replaceid && entry->op == bddop_replace)
    {
 #ifdef CACHESTATS
       bddcachestats.opHit++;
@@ -1818,6 +1830,7 @@ static BDD compose_rec(BDD f, BDD g)
    entry->a = f;
    entry->b = g;
    entry->c = replaceid;
+   entry->op = bddop_replace;
    entry->r.res = res;
 
    return res;
@@ -1888,7 +1901,7 @@ static BDD veccompose_rec(BDD f)
       return f;
    
    entry = BddCache_lookup(&replacecache, VECCOMPOSEHASH(f));
-   if (entry->a == f  &&  entry->c == replaceid)
+   if (entry->a == f  &&  entry->c == replaceid && entry->op == bddop_replace)
    {
 #ifdef CACHESTATS
       bddcachestats.opHit++;
@@ -1905,7 +1918,9 @@ static BDD veccompose_rec(BDD f)
    POPREF(2);
 
    entry->a = f;
+   entry->b = -1;
    entry->c = replaceid;
+   entry->op = bddop_replace;
    entry->r.res = res;
 
    return res;
@@ -1972,9 +1987,9 @@ static BDD simplify_rec(BDD f, BDD d)
    if (ISZERO(d))
       return BDDZERO;
 
-   entry = BddCache_lookup(&applycache, APPLYHASH(f,d,bddop_simplify));
+   entry = BddCache_lookup(&opcache, APPLYHASH(f,d,bddop_simplify));
    
-   if (entry->a == f  &&  entry->b == d  &&  entry->c == bddop_simplify)
+   if (entry->a == f  &&  entry->b == d  &&  entry->op == bddop_simplify)
    {
 #ifdef CACHESTATS
       bddcachestats.opHit++;
@@ -2017,7 +2032,8 @@ static BDD simplify_rec(BDD f, BDD d)
 
    entry->a = f;
    entry->b = d;
-   entry->c = bddop_simplify;
+   entry->c = -1;
+   entry->op = bddop_simplify;
    entry->r.res = res;
 
    return res;
@@ -2191,7 +2207,7 @@ static int quant_rec(int r)
       return r;
 
    entry = BddCache_lookup(&quantcache, QUANTHASH(r));
-   if (entry->a == r  &&  entry->c == quantid)
+   if (entry->a == r  &&  entry->c == quantid && entry->op == bddop_quant)
    {
 #ifdef CACHESTATS
       bddcachestats.opHit++;
@@ -2213,7 +2229,9 @@ static int quant_rec(int r)
    POPREF(2);
    
    entry->a = r;
+   entry->b = -1;
    entry->c = quantid;
+   entry->op = bddop_quant;
    entry->r.res = res;
 
    return res;
@@ -2480,7 +2498,7 @@ static int appquant_rec(int l, int r)
    else
    {
       entry = BddCache_lookup(&appexcache, APPEXHASH(l,r,appexop));
-      if (entry->a == l  &&  entry->b == r  &&  entry->c == appexid)
+      if (entry->a == l  &&  entry->b == r  &&  entry->c == appexid && entry->op == bddop_appex)
       {
 #ifdef CACHESTATS
 	 bddcachestats.opHit++;
@@ -2525,6 +2543,7 @@ static int appquant_rec(int l, int r)
       entry->a = l;
       entry->b = r;
       entry->c = appexid;
+      entry->op = bddop_appex;
       entry->r.res = res;
    }
 
@@ -2995,7 +3014,7 @@ static double satcount_rec(int root)
       return root;
 
    entry = BddCache_lookup(&misccache, SATCOUHASH(root));
-   if (entry->a == root  &&  entry->c == miscid)
+   if (entry->a == root  &&  entry->c == miscid && entry->op == bddop_misc)
       return entry->r.dres;
 
    node = &bddnodes[root];
@@ -3010,7 +3029,9 @@ static double satcount_rec(int root)
    size += s * satcount_rec(HIGHp(node));
 
    entry->a = root;
+   entry->b = -1;
    entry->c = miscid;
+   entry->op = bddop_misc;
    entry->r.dres = size;
    
    return size;
@@ -3081,7 +3102,7 @@ static double satcountln_rec(int root)
       return 0.0;
 
    entry = BddCache_lookup(&misccache, SATCOUHASH(root));
-   if (entry->a == root  &&  entry->c == miscid)
+   if (entry->a == root  &&  entry->c == miscid && entry->op == bddop_misc)
       return entry->r.dres;
 
    node = &bddnodes[root];
@@ -3104,7 +3125,9 @@ static double satcountln_rec(int root)
       size = s1 + log1p(pow(2.0,s2-s1)) / M_LN2;
    
    entry->a = root;
+   entry->b = -1;
    entry->c = miscid;
+   entry->op = bddop_misc;
    entry->r.dres = size;
    
    return size;
@@ -3247,13 +3270,15 @@ static double bdd_pathcount_rec(BDD r)
       return 1.0;
 
    entry = BddCache_lookup(&misccache, PATHCOUHASH(r));
-   if (entry->a == r  &&  entry->c == miscid)
+   if (entry->a == r  &&  entry->c == miscid && entry->op == bddop_misc)
       return entry->r.dres;
 
    size = bdd_pathcount_rec(LOW(r)) + bdd_pathcount_rec(HIGH(r));
 
    entry->a = r;
+   entry->b = -1;
    entry->c = miscid;
+   entry->op = bddop_misc;
    entry->r.dres = size;
    
    return size;

@@ -35,6 +35,11 @@
   DATE:  (C) june 1997
 *************************************************************************/
 
+/*************************************************************************
+  Modified 2022/02/10.  R.E. Bryant
+  Create four cache operands (a, b, c, op) so that single cache would suffice for all operations
+*************************************************************************/
+
 #ifndef _CACHE_H
 #define _CACHE_H
 
@@ -58,6 +63,7 @@ typedef struct
 #endif       
    } r;
    int a,b,c;
+   int op;
 } BddCacheData;
 
 
@@ -73,8 +79,8 @@ extern int  BddCache_resize(BddCache *, int);
 extern void BddCache_reset(BddCache *);
 
 #if ENABLE_TBDD
-extern void BddCache_clause_evict(BddCacheData *entry, bool is_aij);
-extern void BddCache_clear_clauses(BddCache *, bool is_aij);
+extern void BddCache_clause_evict(BddCacheData *entry);
+extern void BddCache_clear_clauses(BddCache *);
 #endif
 
 #define BddCache_lookup(cache, hash) (&(cache)->table[hash % (cache)->tablesize])

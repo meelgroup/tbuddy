@@ -6,6 +6,7 @@ BSAT = ../../../src/bsat
 TBSAT = ../../../src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
 CHECK = ../../../src/sat_check
+SOLNS=10
 VLEVEL=1
 RM = rm -f
 
@@ -41,7 +42,7 @@ chess-sat-$(N): $(GENERATOR)
 	$(RM) $*.lrat
 
 .cnf.ssdata:
-	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule | tee $*.solve  tee $@ 
+	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -m $(SOLNS) | tee $*.solve  tee $@ 
 	$(CHECK) -v $(VLEVEL) -i $< -s $*.solve | tee -a $@
 
 
