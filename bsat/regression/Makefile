@@ -49,4 +49,4 @@ clean:
 	rm -f *.lrat *.drat *~
 
 superclean: clean
-	rm -f *.ldata *.bdata *.sdata *.lddata *.bddata *.sddata
+	rm -f *.*data
