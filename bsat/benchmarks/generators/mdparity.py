@@ -14,16 +14,15 @@ import writer
 
 
 def usage(name):
-    print("Usage: %s [-h] [-v] [-f] [-O] [-a] [-n N] [-m M] [-k K] [-t T] [-s SEED]" % name)
+    print("Usage: %s [-h] [-v] [-f] [-a] [-n N] [-m M] [-k K] [-t T] [-s SEED]" % name)
     print("  -h       Print this message")
     print("  -v       Put comments in file")
     print("  -f       Use fixed solution and corruption bits")
-    print("  -O       Optimize (Plaisted-Greenbaum encoding)")
     print("  -a       Anonymize.  Don't include solution information in file")
     print("  -n N     Number of variables")
-    print("  -m M     Number of samples")
-    print("  -k K     Number of corrupted samples")
-    print("  -t T     Number of mismatches tolerated")
+    print("  -m M     Number of samples (default = 2*N)")
+    print("  -k K     Number of corrupted samples (default = M/8)")
+    print("  -t T     Number of mismatches tolerated (default = K)")
     print("  -s SEED  Set random seed")
 
 
@@ -31,7 +30,9 @@ cwriter = None
 
 # Parameters
 verbose = False
-optimize = False
+# Optimize: Use Plaisted-Greenbaum encoding.
+# Don't optimize: Use Tseitin encoding
+optimize = True
 seed = 123456
 numVariables = 8
 numSamples = 16
@@ -226,22 +227,20 @@ def generate():
 
 
 def run(name, args):
-    global verbose, optimize, numVariables, numSamples, numCorrupt, numTolerated, seed
+    global verbose, numVariables, numSamples, numCorrupt, numTolerated, seed
     global cwriter
     fixed = False
     anonymous = False
     numSamples = -1
     numCorrupt = -1
     numTolerated = -1
-    optlist, args = getopt.getopt(args, "hvfOan:m:k:t:s:")
+    optlist, args = getopt.getopt(args, "hvfan:m:k:t:s:")
     for (opt, val) in optlist:
         if opt == '-h':
             usage(name)
             return
         elif opt == '-v':
             verbose = True
-        elif opt == '-O':
-            optimize = True
         elif opt == '-f':
             fixed = True
         elif opt == '-a':
