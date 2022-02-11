@@ -34,7 +34,7 @@ def usage(name):
 # This should be provided as the first argument to the program.
 # If it contains a space, be sure to quote it.
 
-# Check first argument.  If it's numeric, then assume this is a number
+# Check first argument.  If has any sequence of digits, then assume this is a number
 # to indicate the numeric field number for the triggering line.
 # (Numbered from 1)
 
@@ -45,6 +45,9 @@ def trim(s):
     while len(s) > 0 and s[-1] == '\n':
         s = s[:-1]
     return s
+
+# Sequence of one or more digits
+inumber = re.compile('[\d]+')
 
 dashOrDot = re.compile('[.-]')
 def ddSplit(s):
@@ -76,9 +79,10 @@ def nthNumber(fields, n = 1):
 # Extract clause data from log.  Turn into something useable for other tools
 def extract(fname):
     # Try to find size from file name:
-    fields = ddSplit(fname)
-    n = nthNumber(fields)
-    if n < 0:
+    try:
+        m = re.search(inumber, fname)
+        n = int(m.group(0))
+    except:
         print("Couldn't extract problem size from file name '%s'" % fname)
         return None
     try:
