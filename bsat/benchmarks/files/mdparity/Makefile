@@ -1,6 +1,7 @@
 INTERP=python3
 GDIR=../../generators
 GENERATOR = $(GDIR)/mdparity.py
+CHECKER = $(GDIR)/mdpcheck.py
 TBSAT = ../../../src/tbsat
 TDIR = ../../../../tools
 EXTRACT = $(TDIR)/xor_extractor.py
@@ -34,6 +35,8 @@ cnf: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf
 mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf: $(GENERATOR)
 	$(INTERP) $(GENERATOR) -n $(N) -k $(K) -t $(T) -s $(SEED)
 
+ccnf: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cms_noproof_data
+
 .SUFFIXES: .cnf .cms_data .cmsx_data .cmsx_nocheck_data .cms_noproof_data \
 	.tbsat_bucket_data .tbsat_noproof_bucket_data .tbsat_gaussian_data .tbsat_noproof_gaussian_data 
 
@@ -55,6 +58,7 @@ mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf: $(GENERATOR)
 
 .cnf.cms_noproof_data:
 	$(CMS) $(CFLAGS)  $< | tee $@
+	$(INTERP) $(CHECKER) $< $@ | tee -a $@
 
 .cnf.tbsat_bucket_data:
 	$(TBSAT) -b -v $(VLEVEL) -i $<  -o $*-tbsat.lrat | tee $@
@@ -64,6 +68,7 @@ mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf: $(GENERATOR)
 
 .cnf.tbsat_noproof_bucket_data:
 	$(TBSAT) -v $(VLEVEL) -b -i $< -m $(SOLNS) | tee $@
+	$(INTERP) $(CHECKER) $< $@ | tee -a $@
 
 .cnf.tbsat_gaussian_data:
 	$(INTERP) $(EXTRACT) -i $< -o $*.schedule | tee $@
@@ -78,8 +83,10 @@ mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf: $(GENERATOR)
 
 clean:
 	rm -f *~
-	rm -f mdparity-*.cnf mdparity-*.schedule
+	rm -f *.cnf *.schedule *.lrat
 
 superclean: clean
-	rm -f *.cms_noproof_data *.tbsat_noproof_bucket_data *.tbsat_noproof_gaussian_data
+	rm -f *.*data
 
+data:
+	$(GRAB) "Total time" *.cms_noproof_data > cms-noproof-seconds.csv
