@@ -220,7 +220,9 @@ def check(pfile, sfile):
         else:
             print("Solution #%d.  %d mismatches.  Failed" % (i+1, numSamples - m))
             failCount += 1
-    if failCount == 0:
+    if scount == 0:
+        print("NO SOLUTION FOUND")
+    elif failCount == 0:
         if scount == 1:
             print("SOLUTION VERIFIED")
         else:
