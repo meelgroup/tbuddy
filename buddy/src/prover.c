@@ -40,7 +40,7 @@ static size_t dest_buf_len = 0;
 #define BUDDY_NODES_LARGE (2*1000*1000)
 //#define BUDDY_NODES_LARGE (1000)
 #define BUDDY_NODES_SMALL (2* 100*1000)
-#define BUDDY_CACHE_RATIO 2
+#define BUDDY_CACHE_RATIO 8
 #define BUDDY_INCREASE_LARGE (4*1000*1000)
 #define BUDDY_INCREASE_SMALL (1* 100*1000)
 
