@@ -100,7 +100,7 @@ $(ROOT)-$(N).frat:
 
 .cnf.cmsx_data:
 	$(CMSX) $(CXFLAGS)  $< $*-cmsx.drat | tee $@
-	$(DRAT) $< $*-cmsx.drat | tee -a $@
+#	$(DRAT) $< $*-cmsx.drat | tee -a $@
 	ls -l $*-cmsx.drat
 	$(RM) $*-cmsx.drat 
 

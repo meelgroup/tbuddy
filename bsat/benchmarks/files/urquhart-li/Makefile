@@ -29,7 +29,7 @@ huge: urquhart-li-$(M).cnf urquhart-li-$(M).tbsat_gaussian_data urquhart-li-$(M)
 
 
 .cnf.tbsat_bucket_data:
-	$(TBSAT) -v $(VLEVEL) -b -i $< -o $*.lrat | tee $@
+	{ /usr/bin/time -lp $(TBSAT) -v $(VLEVEL) -b -i $< -o $*.lrat 2>&1 ; } | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat

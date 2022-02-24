@@ -1,12 +1,15 @@
 INTERP=python3
 N = 08
 GDIR=../../generators
-GENERATOR = $(GDIR)/chess.py
+GENERATOR = $(GDIR)/pigeon-sinz.py
 BSAT = ../../../src/bsat
 TBSAT = ../../../src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
 VLEVEL=1
 RM = rm
+
+sdata: pigeon-sinz-$(N)
+	make pigeon-sinz-$(N).sdata
 
 pigeon-sinz-$(N): $(GENERATOR)
 	$(INTERP) $(GENERATOR) -n $(N) -r pigeon-sinz-$(N)
