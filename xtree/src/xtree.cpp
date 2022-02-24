@@ -298,7 +298,7 @@ void gen_frat_proof(char *fname, int n, int vlevel) {
     xor_constraint *sum = xset.sum(); ///line:frat:xset:sum
 
     // Assert inequivalence of R1 and R2, as is implied by XOR sum
-    int c1 = sum->validate_clause(ilist_fill2(lits, R1(n), R2(n)));
+    int c1 = sum->validate_clause(ilist_fill2(lits, R1(n), R2(n)));   ///line:frat:xor:start
     int c2 = sum->validate_clause(ilist_fill2(lits, -R1(n), -R2(n))); ///line:frat:xor:end
     // Assert unit clause for R1
     int c3 = assert_clause(ilist_fill1(lits, R1(n))); ///line:frat:unit
