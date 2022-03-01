@@ -41,7 +41,7 @@ for line in sys.stdin:
     elif cmd in reloc_commands:
         id2 = int(fields[2])
         clause_tracker[id] -= 1
-        if id2 in clause_tracker:
+        if id2 in clause_tracker and clause_tracker[id] > 0:
             print("Line #%d. Clause %d is reloced to ID %d but %d is already used" % (line_count, id, id2, id2))
         clause_tracker[id2] = 1
     else:
