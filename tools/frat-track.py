@@ -12,6 +12,7 @@ import sys
 
 add_commands = ['a', 'o']
 delete_commands = ['d', 'f']
+reloc_commands = ['r']
 
 # Mapping from clause Id to its count
 clause_tracker = {}
@@ -37,6 +38,11 @@ for line in sys.stdin:
             print("Line #%d.  Clause %d already accounted for" % (line_count, id))
         else:
             clause_tracker[id] -= 1
+    elif cmd in reloc_commands:
+        id2 = int(fields[2])
+        clause_tracker[id] -= 1
+        assert id2 not in clause_tracker
+        clause_tracker[id2] = 1
     else:
         print("Line #%d.  Unknown command '%s'" % (line_count, cmd))
 
