@@ -183,8 +183,7 @@ void tbdd_delref(TBDD tr) {
 	return;
     bdd_delref(tr.root);
 
-    //    if (!HASREF(tr.root) && tr.clause_id != TAUTOLOGY) {
-    if (tr.clause_id != TAUTOLOGY) {
+    if (!HASREF(tr.root) && tr.clause_id != TAUTOLOGY) {
 	int dbuf[1+ILIST_OVHD];
 	ilist dlist = ilist_make(dbuf, 1);
 	ilist_fill1(dlist, tr.clause_id);
