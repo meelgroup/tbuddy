@@ -3,10 +3,12 @@ ifeq ($(PREFIX),)
     PREFIX := /usr/local
 endif
 
-install:
+all:
 	cd buddy/src; make all
 	cd bsat/src; make clean; make all
 	cd xtree/src; make clean; make all
+
+install:
 	install -d $(DESTDIR)$(PREFIX)/lib/
 	install -m 644 buddy/lib/libtbuddy.so $(DESTDIR)$(PREFIX)/lib/
 	install -m 644 buddy/lib/tbuddy.a $(DESTDIR)$(PREFIX)/lib/
