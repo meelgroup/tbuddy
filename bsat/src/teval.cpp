@@ -926,7 +926,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file,
 		      << cset.max_variable() << " variables" << std::endl;
     PhaseGenerator pg(GENERATE_RANDOM, DEFAULT_SEED);
     Solver solver(&pg);
-    ilist variable_ordering;
+    ilist variable_ordering = NULL;
     if (order_file != NULL) {
 	variable_ordering = ilist_read_file(order_file);
 	if (variable_ordering == NULL) {
