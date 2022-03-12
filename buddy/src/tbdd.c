@@ -139,8 +139,8 @@ void tbdd_add_done_fun(tbdd_done_fun f) {
    proof_step = TAUTOLOGY
    root = 1
  */
-TBDD TBDD_tautology() {
-    TBDD rr;
+tbdd tbdd_tautology() {
+    tbdd rr;
     rr.root = bdd_true();
     rr.clause_id = TAUTOLOGY;
     return rr;
@@ -150,51 +150,34 @@ TBDD TBDD_tautology() {
    proof_step = TAUTOLOGY
    root = 0
  */
-TBDD TBDD_null() {
-    TBDD rr;
+tbdd tbdd_null() {
+    tbdd rr;
     rr.root = bdd_false();
     rr.clause_id = TAUTOLOGY;
     return rr;
 }
 
-bool tbdd_is_true(TBDD tr) {
+bool tbdd_is_true(tbdd tr) {
     return ISONE(tr.root);
 }
 
-bool tbdd_is_false(TBDD tr) {
+bool tbdd_is_false(tbdd tr) {
     return ISZERO(tr.root);
 }
 
-/*
-  Increment/decrement reference count for BDD
- */
-TBDD tbdd_addref(TBDD tr) {
-    bdd_addref(tr.root); return tr;
-}
 
-void tbdd_delref(TBDD tr) {
+void tbdd_delete(tbdd tr) {
     if (!bddnodes)
 	return;
     bdd_delref(tr.root);
 
-    if (!HASREF(tr.root) && tr.clause_id != TAUTOLOGY) {
+    if (tr.clause_id != TAUTOLOGY) {
 	int dbuf[1+ILIST_OVHD];
 	ilist dlist = ilist_make(dbuf, 1);
 	ilist_fill1(dlist, tr.clause_id);
 	print_proof_comment(2, "Deleting unit clause #%d for node N%d", tr.clause_id, NNAME(tr.root));
 	delete_clauses(dlist);
     }
-    tr.clause_id = TAUTOLOGY;
-}
-
-/*
-  Make copy of TBDD
- */
-static TBDD tbdd_duplicate(TBDD tr) {
-    TBDD rr;
-    rr.root = bdd_addref(tr.root);
-    rr.clause_id = tr.clause_id;
-    return rr;
 }
 
 /*
@@ -204,13 +187,12 @@ static TBDD tbdd_duplicate(TBDD tr) {
  */
 
 
-static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
-    TBDD rr;
+static tbdd tbdd_from_clause_with_id(ilist clause, int id) {
+    tbdd rr = tbdd_tautology();
     print_proof_comment(2, "Build BDD representation of clause #%d", id);
     clause = clean_clause(clause);
     BDD r = bdd_addref(BDD_build_clause(clause));
     if (proof_type == PROOF_NONE) {
-	rr.clause_id = TAUTOLOGY;
 	return rr;
     }
     int len = ilist_length(clause);
@@ -243,27 +225,19 @@ static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     return rr;
 }
 
-TBDD tbdd_from_clause_old(ilist clause) {
-    if (verbosity_level >= 2) {
-	ilist_format(clause, ibuf, " ", BUFLEN);
-	print_proof_comment(2, "BDD representation of clause [%s]", ibuf);
-    }
-    BDD r = BDD_build_clause(clause);
-    return tbdd_trust(r);    
-}
 
 // This seems like it should be easier to check, but it isn't.
-TBDD tbdd_from_clause(ilist clause) {
+tbdd tbdd_from_clause(ilist clause) {
     int dbuf[ILIST_OVHD+1];
     ilist dels = ilist_make(dbuf, 1);
     int id = assert_clause(clause);
-    TBDD tr = tbdd_from_clause_with_id(clause, id);
+    tbdd tr = tbdd_from_clause_with_id(clause, id);
     delete_clauses(ilist_fill1(dels, id));
     return tr;
 }
 
 
-TBDD tbdd_from_clause_id(int id) {
+tbdd tbdd_from_clause_id(int id) {
     ilist clause = get_input_clause(id);
     if (clause == NULL) {
 	fprintf(stderr, "Invalid input clause #%d\n", id);
@@ -302,7 +276,7 @@ int int_compare_tbdd(const void *i1p, const void *i2p) {
   clauses to ensure that DRAT can validate result
 */
 
-TBDD TBDD_from_xor(ilist vars, int phase) {
+tbdd tbdd_from_xor(ilist vars, int phase) {
     ilist_sort(vars);
     int len = ilist_length(vars);
     int bits;
@@ -310,20 +284,20 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
     int lbuf[ILIST_OVHD+len];
     ilist lits = ilist_make(lbuf, len);
     ilist_resize(lits, len);
-    TBDD result = TBDD_tautology();
+    tbdd result = tbdd_tautology();
     for (bits = 0; bits < elen; bits++) {
 	int i;
 	if (parity(bits) == phase)
 	    continue;
 	for (i = 0; i < len; i++)
 	    lits[i] = (bits >> i) & 0x1 ? -vars[i] : vars[i];
-	TBDD tc = tbdd_from_clause(lits);
+	tbdd tc = tbdd_from_clause(lits);
 	if (tbdd_is_true(result)) {
 	    result = tc;
 	} else {
-	    TBDD nresult = tbdd_and(result, tc);
-	    tbdd_delref(tc);
-	    tbdd_delref(result);
+	    tbdd nresult = tbdd_and(result, tc);
+	    tbdd_delete(tc);
+	    tbdd_delete(result);
 	    result = nresult;
 	}
     }
@@ -340,10 +314,10 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
   Upgrade ordinary BDD to TBDD by proving
   implication from another TBDD
  */
-TBDD tbdd_validate(BDD r, TBDD tr) {
-    TBDD rr;
+tbdd tbdd_validate(BDD r, tbdd tr) {
+    tbdd rr;
     if (r == tr.root)
-	return tbdd_duplicate(tr);
+	return tr;
     if (proof_type == PROOF_NONE) {
 	rr.root = bdd_addref(r);
 	rr.clause_id = TAUTOLOGY;
@@ -373,8 +347,8 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
   checker must provide validation.
   Only works when generating DRAT proofs
  */
-TBDD tbdd_trust(BDD r) {
-    TBDD rr;
+tbdd tbdd_trust(BDD r) {
+    tbdd rr;
     if (proof_type == PROOF_NONE) {
 	rr.root = bdd_addref(r);
 	rr.clause_id = TAUTOLOGY;
@@ -395,19 +369,19 @@ TBDD tbdd_trust(BDD r) {
   Form conjunction of two TBDDs and prove
   their conjunction implies the new one
  */
-TBDD tbdd_and(TBDD tr1, TBDD tr2) {
+tbdd tbdd_and(tbdd tr1, tbdd tr2) {
     if (proof_type == PROOF_NONE) {
-	TBDD rr;
+	tbdd rr;
 	rr.root = bdd_addref(bdd_and(tr1.root, tr2.root));
 	rr.clause_id = TAUTOLOGY;
 	return rr;
     }
     if (tbdd_is_true(tr1))
-	return tbdd_duplicate(tr2);
+	return tr2;
     if (tbdd_is_true(tr2))
-	return tbdd_duplicate(tr1);
+	return tr1;
     pcbdd t = bdd_and_justify(tr1.root, tr2.root);
-    TBDD tr;
+    tbdd tr;
     tr.root = bdd_addref(t.root);
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
@@ -423,19 +397,12 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     return tr;
 }
 
-#define OLD 0
-
 /*
   Form conjunction of TBDDs tr1 & tr2.  Use to validate
   BDD r
  */
-TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
-    TBDD rr;
-#if OLD
-    TBDD ta = tbdd_and(tr1, tr2);
-    rr = tbdd_validate(r, ta);
-    return tres;
-#else
+tbdd tbdd_validate_with_and(BDD r, tbdd tr1, tbdd tr2) {
+    tbdd rr;
     if (proof_type == PROOF_NONE)
 	return tbdd_trust(r);
     if (tbdd_is_true(tr1))
@@ -459,7 +426,6 @@ TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
     rr.clause_id = generate_clause(clause, ant);
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
-#endif
     return rr;
 }
 
@@ -471,7 +437,7 @@ TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
 
 /* See if can validate clause directly from path in BDD */
 
-static bool test_validation_path(ilist clause, TBDD tr) {
+static bool test_validation_path(ilist clause, tbdd tr) {
     // Put in descending order by level
     clause = clean_clause(clause);
     int len = ilist_length(clause);
@@ -495,7 +461,7 @@ static bool test_validation_path(ilist clause, TBDD tr) {
     return ISZERO(r);
 }
 
-static int tbdd_validate_clause_path(ilist clause, TBDD tr) {
+static int tbdd_validate_clause_path(ilist clause, tbdd tr) {
     int len = ilist_length(clause);
     int abuf[1+len+ILIST_OVHD];
     int i;
@@ -531,7 +497,7 @@ static int tbdd_validate_clause_path(ilist clause, TBDD tr) {
     return id;
 }
 
-int tbdd_validate_clause(ilist clause, TBDD tr) {
+int tbdd_validate_clause(ilist clause, tbdd tr) {
     if (proof_type == PROOF_NONE)
 	return TAUTOLOGY;
     clause = clean_clause(clause);
@@ -545,7 +511,7 @@ int tbdd_validate_clause(ilist clause, TBDD tr) {
 	}
 	BDD cr = BDD_build_clause(clause);
 	bdd_addref(cr);
-	TBDD tcr = tbdd_validate(cr, tr);
+	tbdd tcr = tbdd_validate(cr, tr);
 	bdd_delref(cr);
 	int id = tbdd_validate_clause_path(clause, tcr);
 	if (id < 0) {
@@ -553,7 +519,7 @@ int tbdd_validate_clause(ilist clause, TBDD tr) {
 	    ilist_format(clause, buf, " ", BUFLEN);
 	    print_proof_comment(2, "Oops.  Couldn't validate clause [%s] from N%d", buf, NNAME(tr.root));
 	}
-	tbdd_delref(tcr);
+	tbdd_delete(tcr);
 	return id;
     }
 }

@@ -29,13 +29,13 @@
    entailed by a set of input clauses.
 
    It's structurally identical to a proof-carrying BDD, but with
-   an enhanced interpretation
-*/
-typedef pcbdd TBDD;
+   an enhanced interpretation.
 
-#ifndef CPLUSPLUS
-typedef TBDD tbdd;
-#endif
+   All copies of a TBDD build on single reference to root node.
+   Final deletion should occur when TBDD no longer needed in proof.
+
+*/
+typedef pcbdd tbdd;
 
 #ifdef CPLUSPLUS
 extern "C" {
@@ -113,29 +113,30 @@ extern void tbdd_set_verbose(int level);
 ============================================*/
 
 /*
-  Increment/decrement reference count for BDD
- */
-extern TBDD tbdd_addref(TBDD tr);
-extern void tbdd_delref(TBDD tr);
+ Call to delete TBDD when no longer needed for
+ any inferences.  Will decrement reference count
+ and delete unit clause
+*/
+extern void tbdd_delete(tbdd tr);
 
 /* 
    proof_step = TAUTOLOGY
    root = 1
  */
-extern TBDD TBDD_tautology();
+extern tbdd tbdd_tautology();
 
 /* 
    proof_step = TAUTOLOGY
    root = 0 (Used as an error return)
  */
 
-extern TBDD TBDD_null();
+extern tbdd tbdd_null();
 
 /*
    Test whether underlying BDD is 0/1
  */
-extern bool tbdd_is_true(TBDD tr);
-extern bool tbdd_is_false(TBDD tr);
+extern bool tbdd_is_true(tbdd tr);
+extern bool tbdd_is_false(tbdd tr);
 
 /*
   Generate BDD representation of specified input clause.
@@ -145,49 +146,49 @@ extern bool tbdd_is_false(TBDD tr);
   clause_id should be number between 1 and the number of input clauses
  */
 
-extern TBDD tbdd_from_clause(ilist clause);  // For DRAT
-extern TBDD tbdd_from_clause_id(int id);     // For LRAT
+extern tbdd tbdd_from_clause(ilist clause);  // For DRAT
+extern tbdd tbdd_from_clause_id(int id);     // For LRAT
 
 /*
   Generate BDD representation of XOR.
   For DRAT
  */
-extern TBDD TBDD_from_xor(ilist variables, int phase);
+extern tbdd tbdd_from_xor(ilist variables, int phase);
 
 /* Operations on TBDDs */
-extern TBDD      tbdd_and(TBDD, TBDD);
+extern tbdd      tbdd_and(tbdd, tbdd);
 
 /*
   Upgrade ordinary BDD to TBDD by proving
   implication from another TBDD
  */
-extern TBDD tbdd_validate(BDD r, TBDD tr);
+extern tbdd tbdd_validate(BDD r, tbdd tr);
 
 /*
   Declare BDD to be trustworthy.  Proof
   checker must provide validation.
   Only works when generating DRAT proofs
  */
-extern TBDD tbdd_trust(BDD r);
+extern tbdd tbdd_trust(BDD r);
 
 /*
   Form conjunction of two TBDDs and prove
   their conjunction implies the new one
  */
-extern TBDD tbdd_and(TBDD tr1, TBDD tr2);
+extern tbdd tbdd_and(tbdd tr1, tbdd tr2);
 
 /*
   Form conjunction of TBDDs tl & tr.  Use to validate
   BDD r
  */
-extern TBDD tbdd_validate_with_and(BDD r, TBDD tl, TBDD tr);
+extern tbdd tbdd_validate_with_and(BDD r, tbdd tl, tbdd tr);
 
 /*
   Validate that a clause is implied by a TBDD.
   Use this version when generating LRAT proofs
   Returns clause id.
  */
-extern int tbdd_validate_clause(ilist clause, TBDD tr);
+extern int tbdd_validate_clause(ilist clause, tbdd tr);
 
 /*
   Assert that a clause holds.  Proof checker
@@ -215,119 +216,6 @@ extern ilist BDD_decode_cube(BDD r);
 }
 #endif
 
-#ifndef CPLUSPLUS
-#define tbdd_tautology TBDD_tautology
-#define tbdd_from_xor TBDD_from_xor
-#define tbdd_null TBDD_null
-#endif
-
-#ifdef CPLUSPLUS
-/*============================================
- C++ interface
-============================================*/
-namespace trustbdd {
-class tbdd
-{
- public:
-
-    //    tbdd(const BDD &r, const int &id) { bdd_addref(root=r); clause_id=id; }
-    tbdd(const bdd &r, const int &id) { bdd_addref(root=r.get_BDD()); clause_id=id; }
-    tbdd(const tbdd &t)               { bdd_addref(root=t.root); clause_id=t.clause_id; }
-    tbdd(TBDD tr)                     { root=tr.root; clause_id=tr.clause_id; }
-    tbdd(ilist clause)                { tbdd(tbdd_from_clause(clause)) ; }
-    tbdd(int id)                      { tbdd(tbdd_from_clause_id(id)) ; }
-    tbdd(void)                        { root=1; clause_id = TAUTOLOGY; }
-
-    ~tbdd(void)                       { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delref(dr); root = dr.root; clause_id = dr.clause_id; }
-
-    tbdd operator=(const tbdd &tr)    { 
-				       if (root != tr.root) 
-					   { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delref(dr); 
-					     root = tr.root; bdd_addref(root); }
-				       clause_id = tr.clause_id; return *this; }
-    tbdd operator&(const tbdd &tr) const;
-    tbdd operator&=(const tbdd &tr);
-    
-    // Backdoor functions provide read-only access
-    bdd get_root()                     { return bdd(root); }
-    int get_clause_id()                { return clause_id; }
-
- private:
-    BDD root;
-    int clause_id;  /* Id of justifying clause */
-
-    friend tbdd tbdd_tautology(void);
-    friend tbdd tbdd_null(void);
-    friend bool tbdd_is_true(tbdd &tr);
-    friend bool tbdd_is_false(tbdd &tr);
-    friend tbdd tbdd_and(tbdd &tl, tbdd &tr);
-    friend tbdd tbdd_validate(bdd r, tbdd &tr);
-    friend tbdd tbdd_validate_with_and(bdd r, tbdd &tl, tbdd &tr);
-    friend tbdd tbdd_trust(bdd r);
-    friend int tbdd_validate_clause(ilist clause, tbdd &tr);
-    friend tbdd tbdd_from_xor(ilist variables, int phase);
-    friend int tbdd_nameid(tbdd &tr);
-    friend bdd bdd_build_xor(ilist literals);
-    friend bdd bdd_build_clause(ilist literals);
-    friend bdd bdd_build_cube(ilist literals);
-    friend ilist bdd_decode_cube(bdd &r);
-
-    // Convert to low-level form
-    friend void tbdd_xfer(tbdd &tr, TBDD &res);
-};
-
-inline tbdd tbdd_tautology(void)
-{ return tbdd(TBDD_tautology()); }
-
-inline tbdd tbdd_null(void)
-{ return tbdd(TBDD_null()); }
-
-inline bool tbdd_is_true(tbdd &tr)
-{ return tr.root == bdd_true().get_BDD(); }
-
-inline bool tbdd_is_false(tbdd &tr)
-{ return tr.root == bdd_false().get_BDD(); }
-
-inline tbdd tbdd_and(tbdd &tl, tbdd &tr)
-{ TBDD TL, TR; tbdd_xfer(tl, TL); tbdd_xfer(tr, TR); return tbdd(tbdd_and(TL, TR)); }
-
-inline tbdd tbdd_validate(bdd r, tbdd &tr)
-{ TBDD TR; tbdd_xfer(tr, TR); return tbdd(tbdd_validate(r.get_BDD(), TR)); }
-
-inline tbdd tbdd_validate_with_and(bdd r, tbdd &tl, tbdd &tr)
-{ TBDD TL, TR; tbdd_xfer(tl, TL); tbdd_xfer(tr, TR); return tbdd(tbdd_validate_with_and(r.get_BDD(), TL, TR)); }
-
-inline tbdd tbdd_trust(bdd r)
-{ return tbdd(tbdd_trust(r.get_BDD())); }
-
-inline void tbdd_xfer(tbdd &tr, TBDD &res)
-{ res.root = tr.root; res.clause_id = tr.clause_id; }
-
-inline int tbdd_validate_clause(ilist clause, tbdd &tr)
-{ TBDD TR; tbdd_xfer(tr, TR); return tbdd_validate_clause(clause, TR); }
-
-inline tbdd tbdd_from_xor(ilist variables, int phase)
-{ return tbdd(TBDD_from_xor(variables, phase)); }
-
-inline int tbdd_nameid(tbdd &tr)
-{ return bdd_nameid(tr.root); }
-
-inline bdd bdd_build_xor(ilist variables, int phase)
-{ return bdd(BDD_build_xor(variables, phase)); }
-
-inline bdd bdd_build_clause(ilist literals)
-{ return bdd(BDD_build_clause(literals)); }
-
-inline bdd bdd_build_cube(ilist literals)
-{ return bdd(BDD_build_cube(literals)); }
-
-inline ilist bdd_decode_cube(bdd &r)
-{ return BDD_decode_cube(r.get_BDD()); }
-
-
-
-} /* Namespace trustbdd */
-#endif /* CPLUSPLUS */
 
 #endif /* _TBDD_H */
 /* EOF */
