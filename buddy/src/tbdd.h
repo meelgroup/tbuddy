@@ -27,17 +27,11 @@
    A trusted BDD is one for which a proof has
    been generated showing that it is logically
    entailed by a set of input clauses.
+
+   It's structurally identical to a proof-carrying BDD, but with
+   an enhanced interpretation
 */
-/*
-  A trusted BDD must have a reference count >= 1, or else
-  it's validating clause will be deleted.
-  Consequently, all operations that a return a TBDD
-  have an incremented reference count.  
- */
-typedef struct {
-    BDD root;
-    int clause_id;  /* Id of justifying clause */
-} TBDD;
+typedef pcbdd TBDD;
 
 #ifndef CPLUSPLUS
 typedef TBDD tbdd;
@@ -122,7 +116,7 @@ extern void tbdd_set_verbose(int level);
   Increment/decrement reference count for BDD
  */
 extern TBDD tbdd_addref(TBDD tr);
-extern void tbdd_delete(TBDD *tr);
+extern void tbdd_delref(TBDD tr);
 
 /* 
    proof_step = TAUTOLOGY
@@ -240,15 +234,15 @@ class tbdd
     tbdd(const bdd &r, const int &id) { bdd_addref(root=r.get_BDD()); clause_id=id; }
     tbdd(const tbdd &t)               { bdd_addref(root=t.root); clause_id=t.clause_id; }
     tbdd(TBDD tr)                     { root=tr.root; clause_id=tr.clause_id; }
-    //    tbdd(ilist clause)                { tbdd(tbdd_from_clause(clause)) ; }
-    //    tbdd(int id)                      { tbdd(tbdd_from_clause_id(id)) ; }
+    tbdd(ilist clause)                { tbdd(tbdd_from_clause(clause)) ; }
+    tbdd(int id)                      { tbdd(tbdd_from_clause_id(id)) ; }
     tbdd(void)                        { root=1; clause_id = TAUTOLOGY; }
 
-    ~tbdd(void)                       { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delete(&dr); root = dr.root; clause_id = dr.clause_id; }
+    ~tbdd(void)                       { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delref(dr); root = dr.root; clause_id = dr.clause_id; }
 
     tbdd operator=(const tbdd &tr)    { 
 				       if (root != tr.root) 
-					   { // TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delete(&dr); 
+					   { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delref(dr); 
 					     root = tr.root; bdd_addref(root); }
 				       clause_id = tr.clause_id; return *this; }
     tbdd operator&(const tbdd &tr) const;

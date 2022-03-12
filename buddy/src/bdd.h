@@ -104,6 +104,31 @@ typedef struct s_bddPair
    struct s_bddPair *next;
 } bddPair;
 
+#if ENABLE_TBDD
+/*
+  A proof-carrying BDD (pcbdd) is a combination of a 
+  root BDD node and the ID of a clause that indicates some property
+  of the BDD.
+  
+  pcbdd's are passed by value, and so there can be multiple copies.
+  NONE of them constitute a counted reference to the root BDD,
+  since their entries will be evicted from the cache at the next
+  GC (unless on reference stack)
+ */
+
+typedef struct {
+    BDD root;
+    int clause_id;  /* Id of proof clause */
+} pcbdd;
+
+/* Function prototypes from bddop.c */
+/* Low-level functions to implement operations on TBDDs */
+pcbdd      bdd_and_justify(BDD, BDD);    
+pcbdd      bdd_imptst_justify(BDD, BDD);    
+pcbdd      bdd_and_imptst_justify(BDD, BDD, BDD);    
+#endif
+
+
 
 /*=== Status information ===============================================*/
 
