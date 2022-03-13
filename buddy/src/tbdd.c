@@ -172,12 +172,12 @@ bool tbdd_is_false(TBDD tr) {
 }
 
 
-void tbdd_delete(TBDD tr) {
+void tbdd_delref(TBDD tr) {
     if (!bddnodes)
 	return;
     bdd_delref(tr.root);
 
-    if (tr.clause_id != TAUTOLOGY) {
+    if (!HASREF(tr.root) && tr.clause_id != TAUTOLOGY) {
 	int dbuf[1+ILIST_OVHD];
 	ilist dlist = ilist_make(dbuf, 1);
 	ilist_fill1(dlist, tr.clause_id);
@@ -302,8 +302,8 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
 	    result = tc;
 	} else {
 	    TBDD nresult = tbdd_and(result, tc);
-	    tbdd_delete(tc);
-	    tbdd_delete(result);
+	    tbdd_delref(tc);
+	    tbdd_delref(result);
 	    result = nresult;
 	}
     }
@@ -386,16 +386,15 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
 	return tr2;
     if (tbdd_is_true(tr2))
 	return tr1;
-    pcbdd t = bdd_and_justify(tr1.root, tr2.root);
-    TBDD tr;
-    tr.root = bdd_addref(t.root);
+    TBDD tr = bdd_and_justify(tr1.root, tr2.root);
+    bdd_addref(tr.root);
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
     int abuf[3+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 3);
-    print_proof_comment(2, "Validate unit clause for node N%d = N%d & N%d", NNAME(t.root), NNAME(tr1.root), NNAME(tr2.root));
-    ilist_fill1(clause, XVAR(t.root));
-    ilist_fill3(ant, tr1.clause_id, tr2.clause_id, t.clause_id);
+    print_proof_comment(2, "Validate unit clause for node N%d = N%d & N%d", NNAME(tr.root), NNAME(tr1.root), NNAME(tr2.root));
+    ilist_fill1(clause, XVAR(tr.root));
+    ilist_fill3(ant, tr1.clause_id, tr2.clause_id, tr.clause_id);
     /* Insert proof of unit clause into t's justification */
     tr.clause_id = generate_clause(clause, ant);
     /* Now we can handle any deletions caused by GC */
@@ -525,7 +524,7 @@ int tbdd_validate_clause(ilist clause, TBDD tr) {
 	    ilist_format(clause, buf, " ", BUFLEN);
 	    print_proof_comment(2, "Oops.  Couldn't validate clause [%s] from N%d", buf, NNAME(tr.root));
 	}
-	tbdd_delete(tcr);
+	tbdd_delref(tcr);
 	return id;
     }
 }

@@ -253,6 +253,11 @@ int xor_constraint::validate_clause(ilist clause) {
     return tbdd_validate_clause(clause, validation);
 }
 
+void xor_constraint::debug_info() {
+    show(stdout);
+    printf("\n");
+}
+
 void xor_constraint::show(FILE *out) {
     fprintf(out, "Xor Constraint: Node N%d validates ", tbdd_nameid(validation));
     show_xor(out, variables, phase);
