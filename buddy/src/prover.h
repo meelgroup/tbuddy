@@ -3,6 +3,7 @@
 #ifndef PROVER_H
 #define PROVER_H
 
+#include "tbdd.h"
 #include <stdarg.h>
 
 /* Allow this headerfile to define C++ constructs if requested */
@@ -82,7 +83,7 @@ extern void print_proof_comment(int vlevel, const char *fmt, ...);
 /* Complete proof of apply operation */
 /* Absolute of returned value indicates the ID of the justifying proof step */
 /* Value will be < 0 when previous clause ID also used as intermediate step */
-extern int justify_apply(int op, BDD l, BDD r, int splitVar, pcbdd tresl, pcbdd tresh, BDD res);
+extern int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BDD res);
 
 
 #ifdef CPLUSPLUS

@@ -142,13 +142,10 @@ static int    varset2vartable(BDD);
 static int    varset2svartable(BDD);
 
 #if ENABLE_TBDD
-static pcbdd    bdd_applyj(BDD, BDD, int op);
-static pcbdd    bdd_apply_aij(BDD, BDD, BDD);
-static pcbdd    applyj_rec(BDD, BDD);
-static pcbdd    apply_aij_rec(BDD, BDD, BDD);
-
-static pcbdd    pcbdd_tautology();
-static pcbdd    pcbdd_null();
+static TBDD    bdd_applyj(BDD, BDD, int op);
+static TBDD    bdd_apply_aij(BDD, BDD, BDD);
+static TBDD    applyj_rec(BDD, BDD);
+static TBDD    apply_aij_rec(BDD, BDD, BDD);
 #endif
 
    /* Hashvalues */
@@ -711,36 +708,15 @@ BDD bdd_biimp(BDD l, BDD r)
    return bdd_apply(l,r,bddop_biimp);
 }
 
+
 /*=== Justifying APPLY ============================================================*/
 #if ENABLE_TBDD
-/* 
-   proof_step = TAUTOLOGY
-   root = 1
- */
-pcbdd pcbdd_tautology() {
-    pcbdd rr;
-    rr.root = bdd_true();
-    rr.clause_id = TAUTOLOGY;
-    return rr;
-}
-
-/* 
-   proof_step = TAUTOLOGY
-   root = 0
- */
-pcbdd pcbdd_null() {
-    pcbdd rr;
-    rr.root = bdd_false();
-    rr.clause_id = TAUTOLOGY;
-    return rr;
-}
-
 /*
-NAME    {* bdd\_applyj *}
+NAME    {* tbdd\_apply *}
 SECTION {* operator *}
-SHORT   {* basic BDD operations, with proof generation  *}
-PROTO   {* pcbdd bdd_applyj(BDD left, BDD right, int opr) *}
-DESCR   {* The {\tt bdd\_applyj} function performs basic
+SHORT   {* basic bdd operations, with proof generation  *}
+PROTO   {* TBDD tbdd_apply(TBDD left, TBDD right, int opr) *}
+DESCR   {* The {\tt tbdd\_apply} function performs basic
            proof-generating bdd operations with two operands.
 	   The {\tt left} argument is the left bdd operand and {\tt right}
 	   is the right operand. The {\tt opr} argument is the requested
@@ -755,22 +731,22 @@ DESCR   {* The {\tt bdd\_applyj} function performs basic
         & \verb%>>% \\
    \end{tabular}
    *}
-   RETURN  {* The result of the operation and a proof. *}
+   RETURN  {* The result of the operation. *}
    ALSO    {* bdd\_apply *}
 */
-static pcbdd bdd_applyj(BDD l, BDD r, int op)
+static TBDD bdd_applyj(BDD l, BDD r, int op)
 {
-   pcbdd res;
+   TBDD res;
 
    firstReorder = 1;
    
-   CHECKa(l, pcbdd_null());
-   CHECKa(r, pcbdd_null());
+   CHECKa(l, tbdd_null());
+   CHECKa(r, tbdd_null());
 
    if (op<bddop_andj || op>bddop_imptstj)
    {
       bdd_error(BDD_OP);
-      res = pcbdd_null();
+      res = tbdd_null();
       return res;
    }
 
@@ -792,7 +768,7 @@ static pcbdd bdd_applyj(BDD l, BDD r, int op)
 
       if (firstReorder-- == 1)
 	 goto again;
-      res = pcbdd_tautology();
+      res = tbdd_tautology();
    }
    
    checkresize();
@@ -800,10 +776,10 @@ static pcbdd bdd_applyj(BDD l, BDD r, int op)
 }
 
 /*
-NAME    {* bdd\_apply\_aij *}
+NAME    {* tbdd\_apply\_aij *}
 SECTION {* operator *}
 SHORT   {* basic bdd operations, with proof generation  *}
-PROTO   {* pcbdd bdd_apply_aij(BDD left, BDD right, BDD test) *}
+PROTO   {* TBDD tbdd_apply_aij(TBDD left, TBDD right, TBDD test) *}
 DESCR   {* The {\tt tbdd\_apply\_aij} function generates a proof
            that the conjunction of the first two arguments implies
 	   the third without actually performing the conjunction.
@@ -811,15 +787,15 @@ DESCR   {* The {\tt tbdd\_apply\_aij} function generates a proof
    RETURN  {* The result of the operation. *}
    ALSO    {* bdd\_applyj *}
 */
-static pcbdd bdd_apply_aij(BDD l, BDD r, BDD t)
+static TBDD bdd_apply_aij(BDD l, BDD r, BDD t)
 {
-   pcbdd res;
+   TBDD res;
 
    firstReorder = 1;
    
-   CHECKa(l, pcbdd_null());
-   CHECKa(r, pcbdd_null());
-   CHECKa(t, pcbdd_null());
+   CHECKa(l, tbdd_null());
+   CHECKa(r, tbdd_null());
+   CHECKa(t, tbdd_null());
 
  again:
    if (setjmp(bddexception) == 0)
@@ -842,7 +818,7 @@ static pcbdd bdd_apply_aij(BDD l, BDD r, BDD t)
 
       if (firstReorder-- == 1)
 	 goto again;
-      res = pcbdd_tautology();
+      res = tbdd_tautology();
    }
    
    checkresize();
@@ -851,12 +827,15 @@ static pcbdd bdd_apply_aij(BDD l, BDD r, BDD t)
 }
 
 
-static pcbdd applyj_rec(BDD l, BDD r)
+static TBDD applyj_rec(BDD l, BDD r)
 {
    BddCacheData *entry;
-   pcbdd tres = pcbdd_null();
+   TBDD tres;
    
    //   printf("applyj_rec called with l=%d (N%d), r=%d (N%d), op = %d\n", (int) l, NNAME(l), (int) r, NNAME(r), applyop);
+
+   tres.root = BDDZERO;
+   tres.clause_id = TAUTOLOGY;
 
    switch (applyop)
    {
@@ -921,8 +900,8 @@ static pcbdd applyj_rec(BDD l, BDD r)
       bddcachestats.opMiss++;
 #endif
       
-      pcbdd tresh;
-      pcbdd tresl;
+      TBDD tresh;
+      TBDD tresl;
       int splitVar;
       int splitLevel;
 
@@ -990,10 +969,10 @@ static pcbdd applyj_rec(BDD l, BDD r)
    return tres;
 }
 
-static pcbdd apply_aij_rec(BDD l, BDD r, BDD t)
+static TBDD apply_aij_rec(BDD l, BDD r, BDD t)
 {
    BddCacheData *entry;
-   pcbdd tres;
+   TBDD tres;
    
    //   printf("apply_aij_rec called with l=%d (N%d), r=%d (N%d), t = %d (N%d)\n", (int) l, NNAME(l), (int) r, NNAME(r), int(t), NNAME(t));
 
@@ -1038,8 +1017,8 @@ static pcbdd apply_aij_rec(BDD l, BDD r, BDD t)
       bddcachestats.opMiss++;
 #endif
       
-      pcbdd tresh;
-      pcbdd tresl;
+      TBDD tresh;
+      TBDD tresl;
       int splitVar;
       int splitLevel;
 
@@ -1151,14 +1130,14 @@ static pcbdd apply_aij_rec(BDD l, BDD r, BDD t)
 NAME    {* bdd\_and_justify *}
 SECTION {* operator *}
 SHORT   {* The logical 'and' of two BDDs, with proof generation *}
-PROTO   {* pcbdd bdd_and_justify(BDD l, BDD r) *}
+PROTO   {* TBDD tbdd_and(BDD l, BDD r) *}
 DESCR   {* This a wrapper that calls {\tt bdd\_applyj(l,r,bddop\_andj)}. *}
 RETURN  {* The logical 'and' of {\tt l} and {\tt r} plus a proof. *}
 ALSO    {* tbdd\_and *}
 */
-pcbdd bdd_and_justify(BDD l, BDD r)
+TBDD bdd_and_justify(BDD l, BDD r)
 {
-   pcbdd res= bdd_applyj(l,r,bddop_andj);
+   TBDD res= bdd_applyj(l,r,bddop_andj);
    return res;
 }
 
@@ -1166,12 +1145,12 @@ pcbdd bdd_and_justify(BDD l, BDD r)
 NAME    {* bdd\_imptst_justify *}
 SECTION {* operator *}
 SHORT   {* Confirm the logical 'implication' between two BDDs and generate the proof *}
-PROTO   {* pcbdd bdd_imptst_justify(BDD l, BDD r) *}
+PROTO   {* TBDD bdd_imptstj(TBDD l, TBDD r) *}
 DESCR   {* This a wrapper that calls {\tt bdd\_applyj(l,r,bddop\_imptstj)}. *}
 RETURN  {* BDD 1 if the implication holds, 0 if it does not, plus a proof. *}
 ALSO    {* tbdd\_validate *}
 */
-pcbdd bdd_imptst_justify(BDD l, BDD r)
+TBDD bdd_imptst_justify(BDD l, BDD r)
 {
    return bdd_applyj(l,r,bddop_imptstj);
 }
@@ -1180,12 +1159,12 @@ pcbdd bdd_imptst_justify(BDD l, BDD r)
 NAME    {* bdd\_and\_imptst_justify *}
 SECTION {* operator *}
 SHORT   {* Confirm that the conjunction of two BDDs logical implies the third BDD and generate the proof *}
-PROTO   {* pcbdd bdd_and_imptstj(BDD l, BDD r, BDD t) *}
+PROTO   {* TBDD bdd_and_imptstj(TBDD l, TBDD r, TBDD t) *}
 DESCR   {* This a wrapper that calls {\tt bdd\_apply\_aij(l,r,t}. *}
 RETURN  {* BDD 1 if the implication holds, 0 if it does not, plus a proof. *}
 ALSO    {* tbdd\_validate\_with\_and *}
 */
-pcbdd bdd_and_imptst_justify(BDD l, BDD r, BDD t)
+TBDD bdd_and_imptst_justify(BDD l, BDD r, BDD t)
 {
    return bdd_apply_aij(l,r,t);
 }

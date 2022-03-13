@@ -27,13 +27,13 @@
    A trusted BDD is one for which a proof has
    been generated showing that it is logically
    entailed by a set of input clauses.
-
-   It's structurally identical to a proof-carrying BDD, but with
-   an enhanced interpretation.
-
-   All copies of a TBDD build on single reference to root node.
-   Final deletion should occur when TBDD no longer needed in proof.
 */
+/*
+  A trusted BDD must have a reference count >= 1, or else
+  it's validating clause will be deleted.
+  Consequently, all operations that a return a TBDD
+  have an incremented reference count.  
+ */
 typedef struct {
     BDD root;
     int clause_id;  /* Id of justifying clause */
@@ -119,11 +119,10 @@ extern void tbdd_set_verbose(int level);
 ============================================*/
 
 /*
- Call to delete TBDD when no longer needed for
- any inferences.  Will decrement reference count
- and delete unit clause
-*/
-extern void tbdd_delete(TBDD tr);
+  Increment/decrement reference count for BDD
+ */
+extern TBDD tbdd_addref(TBDD tr);
+extern void tbdd_delete(TBDD *tr);
 
 /* 
    proof_step = TAUTOLOGY
@@ -239,8 +238,27 @@ class tbdd
     // Class is just a wrapper for a TBDD
     TBDD tr;
 
-    tbdd(const TBDD &t) { tr = t; }
-    tbdd(void)                        { tr = TBDD_tautology(); }
+    //    tbdd(const BDD &r, const int &id) { bdd_addref(root=r); clause_id=id; }
+    tbdd(const bdd &r, const int &id) { bdd_addref(root=r.get_BDD()); clause_id=id; }
+    tbdd(const tbdd &t)               { bdd_addref(root=t.root); clause_id=t.clause_id; }
+    tbdd(TBDD tr)                     { root=tr.root; clause_id=tr.clause_id; }
+    //    tbdd(ilist clause)                { tbdd(tbdd_from_clause(clause)) ; }
+    //    tbdd(int id)                      { tbdd(tbdd_from_clause_id(id)) ; }
+    tbdd(void)                        { root=1; clause_id = TAUTOLOGY; }
+
+    ~tbdd(void)                       { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delete(&dr); root = dr.root; clause_id = dr.clause_id; }
+
+    tbdd operator=(const tbdd &tr)    { 
+				       if (root != tr.root) 
+					   { // TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delete(&dr); 
+					     root = tr.root; bdd_addref(root); }
+				       clause_id = tr.clause_id; return *this; }
+    tbdd operator&(const tbdd &tr) const;
+    tbdd operator&=(const tbdd &tr);
+    
+    // Backdoor functions provide read-only access
+    bdd get_root()                     { return bdd(root); }
+    int get_clause_id()                { return clause_id; }
 
  private:
 

@@ -4,6 +4,12 @@
 #include "tbdd.h"
 #include "kernel.h"
 
+/* Function prototypes from bddop.c */
+/* Low-level functions to implement operations on TBDDs */
+TBDD      bdd_and_justify(BDD, BDD);    
+TBDD      bdd_imptst_justify(BDD, BDD);    
+TBDD      bdd_and_imptst_justify(BDD, BDD, BDD);    
+
 
 /*============================================
   Local data
@@ -327,7 +333,7 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     ilist clause = ilist_make(cbuf, 1);
     int abuf[2+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 2);
-    pcbdd t = bdd_imptst_justify(tr.root, bdd_addref(r));
+    TBDD t = bdd_imptst_justify(tr.root, bdd_addref(r));
     if (t.root != bdd_true()) {
 	fprintf(stderr, "Failed to prove implication N%d --> N%d\n", NNAME(tr.root), NNAME(r));
 	exit(1);
@@ -409,7 +415,7 @@ TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
 	return tbdd_validate(r, tr2);
     if (tbdd_is_true(tr2))
 	return tbdd_validate(r, tr1);
-    pcbdd t = bdd_and_imptst_justify(tr1.root, tr2.root, bdd_addref(r));
+    TBDD t = bdd_and_imptst_justify(tr1.root, tr2.root, bdd_addref(r));
     if (t.root != bdd_true()) {
 	fprintf(stderr, "Failed to prove implication N%d & N%d --> N%d\n", NNAME(tr1.root), NNAME(tr2.root), NNAME(r));
 	exit(1);
