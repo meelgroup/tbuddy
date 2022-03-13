@@ -302,15 +302,18 @@ public:
 	is_input = input;
 	is_active = true; 
 	tfun = t;
-	node_count = bdd_nodecount(t.get_root());
+	node_count = bdd_nodecount(t.tr.root);
 	xor_equation = NULL;
     }
 
-    // Returns number of dead nodes generated
-    int deactivate() {
+    // Optionally delete validation
+    // Returns estimated number of dead nodes generated
+    int deactivate(bool full) {
 	if (is_input)
 	    return 0;
-	tfun = tbdd_null();  // Should delete reference to previous value
+	if (full)
+	    tbdd_delete(tfun);
+	tfun = tbdd_null();
 	is_active = false;
 	int rval = node_count;
 	node_count = 0;
@@ -325,9 +328,9 @@ public:
 
     tbdd &get_fun() { return tfun; }
 
-    bdd get_root() { return tfun.get_root(); }
+    bdd get_root() { return tfun.tr.root; }
 
-    int get_clause_id() { return tfun.get_clause_id(); }
+    int get_clause_id() { return tfun.tr.clause_id; }
 
     xor_constraint *get_equation() { return xor_equation; }
 
@@ -444,8 +447,8 @@ public:
 	tbdd tr2 = tp2->get_fun();
 	tbdd nfun = tbdd_and(tr1, tr2);
 	add(new Term(nfun));
-	dead_count += tp1->deactivate();
-	dead_count += tp2->deactivate();
+	dead_count += tp1->deactivate(true);
+	dead_count += tp2->deactivate(true);
 	check_gc();
 	and_count++;
 	return terms.back();
@@ -462,7 +465,7 @@ public:
 	if (solver)
 	    solver->add_step(vars, tp->get_root());
 	add(new Term(tfun));
-	dead_count += tp->deactivate();
+	dead_count += tp->deactivate(true);
 	check_gc();
 	quant_count++;
 	return terms.back();
@@ -480,7 +483,7 @@ public:
 	Term *tpn = new Term(xor_equation->get_validation());
 	tpn->set_equation(xor_equation);
 	add(tpn);
-	dead_count += tp->deactivate();
+	dead_count += tp->deactivate(true);
 	check_gc();
 	equation_count++;
 	return terms.back();
@@ -503,11 +506,13 @@ public:
 	    if (min_active >= terms.size()) {
 		// There was only one term left
 		tbdd result = tp1->get_fun();
-		tp1->deactivate();
+		tp1->deactivate(false);
 		return result;
 	    }
 	    tp2 = terms[min_active++];
 	    Term *tpn = conjunct(tp1, tp2);
+	    tp1->deactivate(true);
+	    tp2->deactivate(true);
 	    if (tpn->get_root() == bdd_false()) {
 		tbdd result = tpn->get_fun();
 		return result;
@@ -520,6 +525,7 @@ public:
 	std::vector<int> *buckets = new std::vector<int>[max_variable+1];
 	int tcount = 0;
 	int bcount = 0;
+	// Place active terms in buckets
 	for (int i = min_active; i < terms.size(); i++) {
 	    Term *tp = terms[i];
 	    if (!tp->active())
@@ -843,7 +849,7 @@ public:
 			for (i = 0; i < ecount; i++) {
 			    Term *tp = term_stack.back();
 			    term_stack.pop_back();
-			    dead_count += tp->deactivate();
+			    dead_count += tp->deactivate(true);
 			}
 			// Equations over internal variables have already been eliminated
 			// but they should be added to solver infrastructure
@@ -853,7 +859,7 @@ public:
 			    int vbuf[ILIST_OVHD+1];
 			    ilist vlist = ilist_make(vbuf, 1);
 			    ilist_fill1(vlist, pvar);
-			    solver->add_step(vlist, xc->get_validation().get_root());
+			    solver->add_step(vlist, xc->get_validation().tr.root);
 			    eliminated_variables.insert(pvar);
 			}
 			int first_term = -1;
@@ -942,7 +948,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file,
 	tr = tset.bucket_reduce();
     else {
 	tr = tset.tree_reduce();
-	bdd r = tr.get_root();
+	bdd r = tr.tr.root;
 	std::cout << "c Final BDD size = " << bdd_nodecount(r) << std::endl;
 	if (r != bdd_false()) {
 	    // Enable solution generation
@@ -954,7 +960,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file,
 	    ilist_free(vlist);
 	}
     }
-    bdd r = tr.get_root();
+    bdd r = tr.tr.root;
     if (r == bdd_false())
 	std::cout << "s UNSATISFIABLE" << std::endl;
     else {
