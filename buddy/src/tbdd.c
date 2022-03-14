@@ -171,6 +171,12 @@ bool tbdd_is_false(TBDD tr) {
     return ISZERO(tr.root);
 }
 
+/*
+  Increment/decrement reference count for BDD
+ */
+TBDD tbdd_addref(TBDD tr) {
+    bdd_addref(tr.root); return tr;
+}
 
 void tbdd_delref(TBDD tr) {
     if (!bddnodes)
@@ -184,6 +190,17 @@ void tbdd_delref(TBDD tr) {
 	print_proof_comment(2, "Deleting unit clause #%d for node N%d", tr.clause_id, NNAME(tr.root));
 	delete_clauses(dlist);
     }
+    tr.clause_id = TAUTOLOGY;
+}
+
+/*
+  Make copy of TBDD
+ */
+static TBDD tbdd_duplicate(TBDD tr) {
+    TBDD rr;
+    rr.root = bdd_addref(tr.root);
+    rr.clause_id = tr.clause_id;
+    return rr;
 }
 
 /*
@@ -194,11 +211,12 @@ void tbdd_delref(TBDD tr) {
 
 
 static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
-    TBDD rr = TBDD_tautology();
+    TBDD rr;
     print_proof_comment(2, "Build BDD representation of clause #%d", id);
     clause = clean_clause(clause);
     BDD r = bdd_addref(BDD_build_clause(clause));
     if (proof_type == PROOF_NONE) {
+	rr.clause_id = TAUTOLOGY;
 	return rr;
     }
     int len = ilist_length(clause);
@@ -231,6 +249,14 @@ static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     return rr;
 }
 
+TBDD tbdd_from_clause_old(ilist clause) {
+    if (verbosity_level >= 2) {
+	ilist_format(clause, ibuf, " ", BUFLEN);
+	print_proof_comment(2, "BDD representation of clause [%s]", ibuf);
+    }
+    BDD r = BDD_build_clause(clause);
+    return tbdd_trust(r);    
+}
 
 // This seems like it should be easier to check, but it isn't.
 TBDD tbdd_from_clause(ilist clause) {
@@ -323,7 +349,7 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
 TBDD tbdd_validate(BDD r, TBDD tr) {
     TBDD rr;
     if (r == tr.root)
-	return tr;
+	return tbdd_duplicate(tr);
     if (proof_type == PROOF_NONE) {
 	rr.root = bdd_addref(r);
 	rr.clause_id = TAUTOLOGY;
@@ -383,24 +409,25 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
 	return rr;
     }
     if (tbdd_is_true(tr1))
-	return tr2;
+	return tbdd_duplicate(tr2);
     if (tbdd_is_true(tr2))
-	return tr1;
-    TBDD tr = bdd_and_justify(tr1.root, tr2.root);
-    bdd_addref(tr.root);
+	return tbdd_duplicate(tr1);
+    TBDD t = tbdd_addref(bdd_and_justify(tr1.root, tr2.root));
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
     int abuf[3+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 3);
-    print_proof_comment(2, "Validate unit clause for node N%d = N%d & N%d", NNAME(tr.root), NNAME(tr1.root), NNAME(tr2.root));
-    ilist_fill1(clause, XVAR(tr.root));
-    ilist_fill3(ant, tr1.clause_id, tr2.clause_id, tr.clause_id);
+    print_proof_comment(2, "Validate unit clause for node N%d = N%d & N%d", NNAME(t.root), NNAME(tr1.root), NNAME(tr2.root));
+    ilist_fill1(clause, XVAR(t.root));
+    ilist_fill3(ant, tr1.clause_id, tr2.clause_id, t.clause_id);
     /* Insert proof of unit clause into t's justification */
-    tr.clause_id = generate_clause(clause, ant);
+    t.clause_id = generate_clause(clause, ant);
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
-    return tr;
+    return t;
 }
+
+#define OLD 0
 
 /*
   Form conjunction of TBDDs tr1 & tr2.  Use to validate
@@ -408,6 +435,11 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
  */
 TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
     TBDD rr;
+#if OLD
+    TBDD ta = tbdd_and(tr1, tr2);
+    rr = tbdd_validate(r, ta);
+    return tres;
+#else
     if (proof_type == PROOF_NONE)
 	return tbdd_trust(r);
     if (tbdd_is_true(tr1))
@@ -431,6 +463,7 @@ TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
     rr.clause_id = generate_clause(clause, ant);
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
+#endif
     return rr;
 }
 

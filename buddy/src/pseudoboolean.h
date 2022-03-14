@@ -70,8 +70,8 @@ class xor_constraint {
     // Copy an Xor constraint, duplicating the data
     xor_constraint(xor_constraint &x) { variables = ilist_copy(x.variables); phase = x.phase; validation = x.validation; }
     
-    // Destructor deletes the list of variables and the validation
-    ~xor_constraint(void) { printf("Deleting:"); debug_info(); ilist_free(variables); variables = NULL; tbdd_delete(validation); validation = trustbdd::tbdd_null(); }
+    // Destructor deletes the list of variables
+    ~xor_constraint(void) { ilist_free(variables); variables = NULL; validation = trustbdd::tbdd_null();  }
 
     // Does the constraint have NO solutions?
     bool is_infeasible(void) { return ilist_length(variables) == 0 && phase != 0; }
@@ -88,8 +88,6 @@ class xor_constraint {
     ilist get_variables() { return variables; }
 
     int get_phase() { return phase; }
-
-    void debug_info();
 
     // Print a representation of the constraint to the file
     void show(FILE *out);
