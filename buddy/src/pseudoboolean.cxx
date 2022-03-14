@@ -4,6 +4,7 @@
 #include <unordered_set>
 
 #include "pseudoboolean.h"
+#include "kernel.h"
 #include "prover.h"
 
 using namespace trustbdd;

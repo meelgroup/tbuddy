@@ -48,11 +48,9 @@
 #include <limits.h>
 #include <setjmp.h>
 
-#if ENABLE_TBDD
-#include "tbdd.h"
-#include "prover.h"
-#else
 #include "bdd.h"
+#if ENABLE_TBDD
+#include "ilist.h"
 #endif
 
 #if ENABLE_TBDD
@@ -115,6 +113,15 @@ typedef struct s_BddNode /* Node table entry */
    int dclause;  /* Base index of defining clause */
 #endif /* ENABLE_TBDD */
 } BddNode;
+
+#if ENABLE_TBDD
+/* Data structure returned by proof-generating apply operations */
+typedef struct
+{
+    BDD root;
+    int clause_id;
+} pcbdd;
+#endif /* ENABLE_TBDD */
 
 
 /*=== KERNEL VARIABLES =================================================*/
@@ -267,6 +274,14 @@ extern void   bdd_cpp_init(void);
 #ifdef CPLUSPLUS
 }
 #endif
+
+#if ENABLE_TBDD
+/* Function prototypes from bddop.c */
+/* Low-level functions to implement operations on TBDDs */
+pcbdd      bdd_and_justify(BDD, BDD);    
+pcbdd      bdd_imptst_justify(BDD, BDD);    
+pcbdd      bdd_and_imptst_justify(BDD, BDD, BDD);    
+#endif /* ENABLE_TBDD */
 
 #endif /* _KERNEL_H */
 

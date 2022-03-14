@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "prover.h"
 #include "kernel.h"
+#include "prover.h"
 
 
 /* Global variables exported by prover */
@@ -753,7 +753,7 @@ static bool rup_check(ilist target_clause, jtype_t *horder, int hcount) {
 
 
 
-int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BDD res) {
+int justify_apply(int op, BDD l, BDD r, int splitVar, pcbdd tresl, pcbdd tresh, BDD res) {
     int tbuf[MAX_CLAUSE+ILIST_OVHD];
     ilist targ = ilist_make(tbuf, MAX_CLAUSE);
     int itbuf[MAX_CLAUSE+ILIST_OVHD];

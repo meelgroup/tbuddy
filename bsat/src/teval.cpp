@@ -302,7 +302,7 @@ public:
 	is_input = input;
 	is_active = true; 
 	tfun = t;
-	node_count = bdd_nodecount(t.tr.root);
+	node_count = bdd_nodecount(t.get_root());
 	xor_equation = NULL;
     }
 
@@ -312,7 +312,7 @@ public:
 	if (is_input)
 	    return 0;
 	if (full)
-	    tbdd_delete(tfun);
+	    tbdd_delref(tfun);
 	tfun = tbdd_null();
 	is_active = false;
 	int rval = node_count;
@@ -328,9 +328,9 @@ public:
 
     tbdd &get_fun() { return tfun; }
 
-    bdd get_root() { return tfun.tr.root; }
+    bdd get_root() { return tfun.get_root(); }
 
-    int get_clause_id() { return tfun.tr.clause_id; }
+    int get_clause_id() { return tfun.get_clause_id(); }
 
     xor_constraint *get_equation() { return xor_equation; }
 
@@ -859,7 +859,7 @@ public:
 			    int vbuf[ILIST_OVHD+1];
 			    ilist vlist = ilist_make(vbuf, 1);
 			    ilist_fill1(vlist, pvar);
-			    solver->add_step(vlist, xc->get_validation().tr.root);
+			    solver->add_step(vlist, xc->get_validation().get_root());
 			    eliminated_variables.insert(pvar);
 			}
 			int first_term = -1;
@@ -948,7 +948,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file,
 	tr = tset.bucket_reduce();
     else {
 	tr = tset.tree_reduce();
-	bdd r = tr.tr.root;
+	bdd r = tr.get_root();
 	std::cout << "c Final BDD size = " << bdd_nodecount(r) << std::endl;
 	if (r != bdd_false()) {
 	    // Enable solution generation
@@ -960,7 +960,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file,
 	    ilist_free(vlist);
 	}
     }
-    bdd r = tr.tr.root;
+    bdd r = tr.get_root();
     if (r == bdd_false())
 	std::cout << "s UNSATISFIABLE" << std::endl;
     else {

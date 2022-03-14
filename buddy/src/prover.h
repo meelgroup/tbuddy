@@ -3,7 +3,7 @@
 #ifndef PROVER_H
 #define PROVER_H
 
-#include "tbdd.h"
+//#include "tbdd.h"
 #include <stdarg.h>
 
 /* Allow this headerfile to define C++ constructs if requested */
@@ -75,16 +75,14 @@ extern bool print_ok(int vlevel);
 
 extern void print_proof_comment(int vlevel, const char *fmt, ...);
 
-/*
-  Support for generating apply operation proofs.
- */
-
+/* Required only for bdd implementation */
+#ifdef BDD_ONLY    
     
 /* Complete proof of apply operation */
 /* Absolute of returned value indicates the ID of the justifying proof step */
 /* Value will be < 0 when previous clause ID also used as intermediate step */
-extern int justify_apply(int op, BDD l, BDD r, int splitVar, TBDD tresl, TBDD tresh, BDD res);
-
+extern int justify_apply(int op, BDD l, BDD r, int splitVar, pcbdd tresl, pcbdd tresh, BDD res);
+#endif
 
 #ifdef CPLUSPLUS
 }

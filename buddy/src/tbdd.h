@@ -20,9 +20,6 @@
 #include "ilist.h"
 #include "bdd.h"
 
-/* Value representing logical truth */
-#define TAUTOLOGY INT_MAX 
-
 /* 
    A trusted BDD is one for which a proof has
    been generated showing that it is logically
@@ -67,10 +64,7 @@ extern "C" {
   Return 0 if OK, otherwise error code
 */
 
-/* Supported proof types */
-   typedef enum { PROOF_LRAT, PROOF_DRAT, PROOF_FRAT, PROOF_NONE } proof_type_t;
-
-   extern int tbdd_init(FILE *pfile, int *variable_counter, int *clause_id_counter, ilist *input_clauses, ilist variable_ordering, proof_type_t ptype, bool binary);
+extern int tbdd_init(FILE *pfile, int *variable_counter, int *clause_id_counter, ilist *input_clauses, ilist variable_ordering, proof_type_t ptype, bool binary);
 
 /* 
    Initializers specific for the seven combinations of proof formats
@@ -262,6 +256,7 @@ class tbdd
     friend tbdd tbdd_null(void);
     friend bool tbdd_is_true(tbdd &tr);
     friend bool tbdd_is_false(tbdd &tr);
+    friend void tbdd_delref(tbdd &tr);
     friend tbdd tbdd_and(tbdd &tl, tbdd &tr);
     friend tbdd tbdd_validate(bdd r, tbdd &tr);
     friend tbdd tbdd_validate_with_and(bdd r, tbdd &tl, tbdd &tr);
@@ -289,6 +284,9 @@ inline bool tbdd_is_true(tbdd &tr)
 
 inline bool tbdd_is_false(tbdd &tr)
 { return tr.root == bdd_false().get_BDD(); }
+
+ inline void tbdd_delref(tbdd &tr)
+ { bdd_delref(tr.root); }
 
 inline tbdd tbdd_and(tbdd &tl, tbdd &tr)
 { TBDD TL, TR; tbdd_xfer(tl, TL); tbdd_xfer(tr, TR); return tbdd(tbdd_and(TL, TR)); }

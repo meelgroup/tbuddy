@@ -36,6 +36,9 @@
 *************************************************************************/
 #include <stdlib.h>
 #include "kernel.h"
+#if ENABLE_TBDD
+#include "prover.h"
+#endif
 #include "cache.h"
 #include "prime.h"
 

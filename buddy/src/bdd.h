@@ -75,10 +75,16 @@
 
 
 #if ENABLE_TBDD
+/* Supported proof types */
+typedef enum { PROOF_LRAT, PROOF_DRAT, PROOF_FRAT, PROOF_NONE } proof_type_t;
+
 /* Proof generating apply operations */
 #define bddop_andj     18
 #define bddop_imptstj  19
 #define bddop_andimptstj  20
+
+/* Value representing logical truth */
+#define TAUTOLOGY INT_MAX 
 #endif
 
 /*=== Defining clauses ===================================================*/
