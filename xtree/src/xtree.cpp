@@ -307,7 +307,7 @@ void gen_frat_proof(char *fname, int n, int vlevel) {
     // Finish up
     delete_clauses(ilist_fill3(dels, c1, c2, c3)); ///line:frat:finish:start
     delete sum; 
-    tbdd_done();  // Eliminates previous reference ///line:frat:finish:end
+    tbdd_done();  ///line:frat:finish:end
     // FRAT requires declaring all remaining clauses
     insert_frat_clause(proof_file, 'f', c4, ilist_resize(lits, 0), false); ///line:frat:finalize:start
     for (int cid = 1; cid <= clauses.size(); cid++)
