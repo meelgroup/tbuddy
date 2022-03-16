@@ -203,14 +203,16 @@ void tbdd_delref(TBDD tr) {
 	return;
     bdd_delref(tr.root);
 
+#if 0
     // Disable this.  Delete all unit clauses at end
-    if (false && !HASREF(tr.root) && tr.clause_id != TAUTOLOGY) {
+    if (!HASREF(tr.root) && tr.clause_id != TAUTOLOGY) {
 	int dbuf[1+ILIST_OVHD];
 	ilist dlist = ilist_make(dbuf, 1);
 	ilist_fill1(dlist, tr.clause_id);
 	print_proof_comment(2, "Deleting unit clause #%d for node N%d", tr.clause_id, NNAME(tr.root));
 	delete_clauses(dlist);
     }
+#endif
 }
 
 /*
