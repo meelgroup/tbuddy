@@ -155,15 +155,20 @@ void tbdd_add_done_fun(tbdd_done_fun f) {
 }
 
 
+TBDD tbdd_create(BDD r, int clause_id) {
+    TBDD res;
+    res.root = bdd_addref(r);
+    res.clause_id = new_unit_clause(clause_id);
+    res.rc_index = 0;
+    return res;
+}
+
 /* 
    proof_step = TAUTOLOGY
    root = 1
  */
 TBDD TBDD_tautology() {
-    TBDD rr;
-    rr.root = bdd_true();
-    rr.clause_id = TAUTOLOGY;
-    return rr;
+    return tbdd_create(bdd_true(), TAUTOLOGY);
 }
 
 /* 
@@ -171,10 +176,7 @@ TBDD TBDD_tautology() {
    root = 0
  */
 TBDD TBDD_null() {
-    TBDD rr;
-    rr.root = bdd_false();
-    rr.clause_id = TAUTOLOGY;
-    return rr;
+    return tbdd_create(bdd_false(), TAUTOLOGY);
 }
 
 bool tbdd_is_true(TBDD tr) {
@@ -213,10 +215,7 @@ void tbdd_delref(TBDD tr) {
   Make copy of TBDD
  */
 static TBDD tbdd_duplicate(TBDD tr) {
-    TBDD rr;
-    rr.root = bdd_addref(tr.root);
-    rr.clause_id = tr.clause_id;
-    return rr;
+    return tbdd_addref(tr);
 }
 
 /*
@@ -225,15 +224,12 @@ static TBDD tbdd_duplicate(TBDD tr) {
   for all assignments satisfying clause.
  */
 
-
 static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
-    TBDD rr;
     print_proof_comment(2, "Build BDD representation of clause #%d", id);
     clause = clean_clause(clause);
-    BDD r = bdd_addref(BDD_build_clause(clause));
+    BDD r = BDD_build_clause(clause);
     if (proof_type == PROOF_NONE) {
-	rr.clause_id = TAUTOLOGY;
-	return rr;
+	return tbdd_create(r, TAUTOLOGY);
     }
     int len = ilist_length(clause);
     int nlits = 2*len+1;
@@ -259,19 +255,9 @@ static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     int cbuf[1+ILIST_OVHD];
     ilist uclause = ilist_make(cbuf, 1);
     ilist_fill1(uclause, XVAR(r));
-    rr.root = r;
-    print_proof_comment(2, "Validate BDD representation of Clause #%d.  Node = N%d.", id, NNAME(rr.root));
-    rr.clause_id = new_unit_clause(generate_clause(uclause, ant));
-    return rr;
-}
-
-TBDD tbdd_from_clause_old(ilist clause) {
-    if (verbosity_level >= 2) {
-	ilist_format(clause, ibuf, " ", BUFLEN);
-	print_proof_comment(2, "BDD representation of clause [%s]", ibuf);
-    }
-    BDD r = BDD_build_clause(clause);
-    return tbdd_trust(r);    
+    print_proof_comment(2, "Validate BDD representation of Clause #%d.  Node = N%d.", id, NNAME(r));
+    int clause_id = generate_clause(uclause, ant);
+    return tbdd_create(r, clause_id);
 }
 
 // This seems like it should be easier to check, but it isn't.
@@ -363,19 +349,16 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
   implication from another TBDD
  */
 TBDD tbdd_validate(BDD r, TBDD tr) {
-    TBDD rr;
     if (r == tr.root)
 	return tbdd_duplicate(tr);
     if (proof_type == PROOF_NONE) {
-	rr.root = bdd_addref(r);
-	rr.clause_id = TAUTOLOGY;
-	return rr;
+	return tbdd_create(r, TAUTOLOGY);
     }
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
     int abuf[2+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 2);
-    pcbdd p = bdd_imptst_justify(tr.root, bdd_addref(r));
+    pcbdd p = bdd_imptst_justify(tr.root, r);
     if (p.root != bdd_true()) {
 	fprintf(stderr, "Failed to prove implication N%d --> N%d\n", NNAME(tr.root), NNAME(r));
 	exit(1);
@@ -383,11 +366,10 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     print_proof_comment(2, "Validation of unit clause for N%d by implication from N%d",NNAME(r), NNAME(tr.root));
     ilist_fill1(clause, XVAR(r));
     ilist_fill2(ant, p.clause_id, tr.clause_id);
-    rr.clause_id = new_unit_clause(generate_clause(clause, ant));
-    rr.root = r;
+    int clause_id = new_unit_clause(generate_clause(clause, ant));
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
-    return rr;
+    return tbdd_create(r, clause_id);
 }
 
 /*
@@ -396,11 +378,8 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
   Only works when generating DRAT proofs
  */
 TBDD tbdd_trust(BDD r) {
-    TBDD rr;
     if (proof_type == PROOF_NONE) {
-	rr.root = bdd_addref(r);
-	rr.clause_id = TAUTOLOGY;
-	return rr;
+	return tbdd_create(r, TAUTOLOGY);
     }
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
@@ -408,9 +387,8 @@ TBDD tbdd_trust(BDD r) {
     ilist ant = ilist_make(abuf, 0);
     print_proof_comment(2, "Assertion of N%d",NNAME(r));
     ilist_fill1(clause, XVAR(r));
-    rr.clause_id = new_unit_clause(generate_clause(clause, ant));
-    rr.root = bdd_addref(r);
-    return rr;
+    int clause_id = new_unit_clause(generate_clause(clause, ant));
+    return tbdd_create(r, clause_id);
 }
 
 /*
@@ -419,17 +397,15 @@ TBDD tbdd_trust(BDD r) {
  */
 TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     if (proof_type == PROOF_NONE) {
-	TBDD rr;
-	rr.root = bdd_addref(bdd_and(tr1.root, tr2.root));
-	rr.clause_id = TAUTOLOGY;
-	return rr;
+	BDD r = bdd_and(tr1.root, tr2.root);
+	return tbdd_create(r, TAUTOLOGY);
     }
     if (tbdd_is_true(tr1))
 	return tbdd_duplicate(tr2);
     if (tbdd_is_true(tr2))
 	return tbdd_duplicate(tr1);
     pcbdd p = bdd_and_justify(tr1.root, tr2.root);
-    BDD r = bdd_addref(p.root);
+    BDD r = p.root;
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
     int abuf[3+ILIST_OVHD];
@@ -437,35 +413,25 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     print_proof_comment(2, "Validate unit clause for node N%d = N%d & N%d", NNAME(r), NNAME(tr1.root), NNAME(tr2.root));
     ilist_fill1(clause, XVAR(r));
     ilist_fill3(ant, tr1.clause_id, tr2.clause_id, p.clause_id);
-    TBDD t;
-    t.root = r;
     /* Insert proof of unit clause into t's justification */
-    t.clause_id = new_unit_clause(generate_clause(clause, ant));
+    int clause_id = new_unit_clause(generate_clause(clause, ant));
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
-    return t;
+    return tbdd_create(r, clause_id);
 }
-
-#define OLD 0
 
 /*
   Form conjunction of TBDDs tr1 & tr2.  Use to validate
   BDD r
  */
 TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
-    TBDD rr;
-#if OLD
-    TBDD ta = tbdd_and(tr1, tr2);
-    rr = tbdd_validate(r, ta);
-    return tres;
-#else
     if (proof_type == PROOF_NONE)
 	return tbdd_trust(r);
     if (tbdd_is_true(tr1))
 	return tbdd_validate(r, tr2);
     if (tbdd_is_true(tr2))
 	return tbdd_validate(r, tr1);
-    pcbdd p = bdd_and_imptst_justify(tr1.root, tr2.root, bdd_addref(r));
+    pcbdd p = bdd_and_imptst_justify(tr1.root, tr2.root, r);
     if (p.root != bdd_true()) {
 	fprintf(stderr, "Failed to prove implication N%d & N%d --> N%d\n", NNAME(tr1.root), NNAME(tr2.root), NNAME(r));
 	exit(1);
@@ -478,12 +444,10 @@ TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
     ilist_fill1(clause, XVAR(r));
     ilist_fill3(ant, tr1.clause_id, tr2.clause_id, p.clause_id);
     /* Insert proof of unit clause into rr's justification */
-    rr.root = r;
-    rr.clause_id = new_unit_clause(generate_clause(clause, ant));
+    int clause_id = new_unit_clause(generate_clause(clause, ant));
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
-#endif
-    return rr;
+    return tbdd_create(r, clause_id);
 }
 
 /*

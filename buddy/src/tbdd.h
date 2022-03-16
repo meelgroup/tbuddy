@@ -37,6 +37,7 @@
 typedef struct {
     BDD root;
     int clause_id;  /* Id of justifying clause */
+    int rc_index;   /* Index of reference counter */
 } TBDD;
 
 #ifndef CPLUSPLUS
@@ -117,6 +118,12 @@ extern void tbdd_set_verbose(int level);
 /*============================================
  Creation and manipulation of trusted BDDs
 ============================================*/
+
+/*
+  Create a fresh TBDD.  Increment reference count for BDD
+  and initialize reference count for TBDD
+ */
+TBDD tbdd_create(BDD r, int clause_id);
 
 /*
   Increment/decrement reference count for BDD
@@ -236,27 +243,20 @@ class tbdd
 {
  public:
 
-    //    tbdd(const BDD &r, const int &id) { bdd_addref(root=r); clause_id=id; }
-    tbdd(const bdd &r, const int &id) { bdd_addref(root=r.get_BDD()); clause_id=id; }
-    tbdd(const tbdd &t)               { bdd_addref(root=t.root); clause_id=t.clause_id; }
-    tbdd(TBDD tr)                     { root=tr.root; clause_id=tr.clause_id; }
-    //    tbdd(ilist clause)                { tbdd(tbdd_from_clause(clause)) ; }
-    //    tbdd(int id)                      { tbdd(tbdd_from_clause_id(id)) ; }
-    tbdd(void)                        { root=1; clause_id = TAUTOLOGY; }
+    tbdd(const bdd &r, const int &id) { tb = tbdd_create(r.get_BDD(), id); }
+    tbdd(const tbdd &t)               { tb = tbdd_addref(t.tb); }
+    tbdd(TBDD tr)                     { tb = tr; }  
+    tbdd(void)                        { tb = TBDD_tautology(); } 
 
-    ~tbdd(void)                       { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delref(dr); }
+    ~tbdd(void)                       { tbdd_delref(tb); }
 
-    tbdd operator=(const tbdd &tr)    { if (root != tr.root) { TBDD dr; dr.root = root; dr.clause_id = clause_id; tbdd_delref(dr); root = tr.root; bdd_addref(root); } clause_id = tr.clause_id; return *this; }
-    tbdd operator&(const tbdd &tr) const;
-    tbdd operator&=(const tbdd &tr);
-    
+    tbdd operator=(const tbdd &tr)    { if (tb.root != tr.tb.root) { tbdd_delref(tb); tb = tbdd_addref(tr.tb); } return *this; }
     // Backdoor functions provide read-only access
-    bdd get_root()                     { return bdd(root); }
-    int get_clause_id()                { return clause_id; }
+    bdd get_root()                     { return bdd(tb.root); }
+    int get_clause_id()                { return tb.clause_id; }
 
  private:
-    BDD root;
-    int clause_id;  /* Id of justifying clause */
+    TBDD tb;
 
     friend tbdd tbdd_tautology(void);
     friend tbdd tbdd_null(void);
@@ -285,34 +285,31 @@ inline tbdd tbdd_null(void)
 { return tbdd(TBDD_null()); }
 
 inline bool tbdd_is_true(tbdd &tr)
-{ return tr.root == bdd_true().get_BDD(); }
+{ return tr.tb.root == bdd_true().get_BDD(); }
 
 inline bool tbdd_is_false(tbdd &tr)
-{ return tr.root == bdd_false().get_BDD(); }
+{ return tr.tb.root == bdd_false().get_BDD(); }
 
 inline tbdd tbdd_and(tbdd &tl, tbdd &tr)
-{ TBDD TL, TR; tbdd_xfer(tl, TL); tbdd_xfer(tr, TR); return tbdd(tbdd_and(TL, TR)); }
+{ return tbdd(tbdd_and(tl.tb, tr.tb)); }
 
 inline tbdd tbdd_validate(bdd r, tbdd &tr)
-{ TBDD TR; tbdd_xfer(tr, TR); return tbdd(tbdd_validate(r.get_BDD(), TR)); }
+{ return tbdd(tbdd_validate(r.get_BDD(), tr.tb)); }
 
 inline tbdd tbdd_validate_with_and(bdd r, tbdd &tl, tbdd &tr)
-{ TBDD TL, TR; tbdd_xfer(tl, TL); tbdd_xfer(tr, TR); return tbdd(tbdd_validate_with_and(r.get_BDD(), TL, TR)); }
+{ return tbdd(tbdd_validate_with_and(r.get_BDD(), tl.tb, tr.tb)); }
 
 inline tbdd tbdd_trust(bdd r)
 { return tbdd(tbdd_trust(r.get_BDD())); }
 
-inline void tbdd_xfer(tbdd &tr, TBDD &res)
-{ res.root = tr.root; res.clause_id = tr.clause_id; }
-
 inline int tbdd_validate_clause(ilist clause, tbdd &tr)
-{ TBDD TR; tbdd_xfer(tr, TR); return tbdd_validate_clause(clause, TR); }
+{ return tbdd_validate_clause(clause, tr.tb); }
 
 inline tbdd tbdd_from_xor(ilist variables, int phase)
 { return tbdd(TBDD_from_xor(variables, phase)); }
 
 inline int tbdd_nameid(tbdd &tr)
-{ return bdd_nameid(tr.root); }
+{ return bdd_nameid(tr.tb.root); }
 
 inline bdd bdd_build_xor(ilist variables, int phase)
 { return bdd(BDD_build_xor(variables, phase)); }
