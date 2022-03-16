@@ -268,6 +268,29 @@ extern void   bdd_cpp_init(void);
 }
 #endif
 
+#if ENABLE_TBDD
+/* Proof generation interface */
+
+/* Data type for proof-generating operations */
+typedef struct {
+    BDD root;
+    int clause_id;
+} pcbdd;
+
+/* In file prover.c */
+/* Complete proof of apply operation */
+/* Absolute of returned value indicates the ID of the justifying proof step */
+/* Value will be < 0 when previous clause ID also used as intermediate step */
+extern int justify_apply(int op, BDD l, BDD r, int splitVar, pcbdd tresl, pcbdd tresh, BDD res);
+
+/* In file bddop.c */
+/* Low-level functions to implement operations on TBDDs */
+pcbdd      bdd_and_justify(BDD, BDD);    
+pcbdd      bdd_imptst_justify(BDD, BDD);    
+pcbdd      bdd_and_imptst_justify(BDD, BDD, BDD);    
+
+#endif
+
 #endif /* _KERNEL_H */
 
 
