@@ -64,10 +64,10 @@ $(ROOT)-$(N).cnf:
 	$(GEN) -n $(N) -s $(SEED) -m n -r $(ROOT)-$(N)
 
 $(ROOT)-$(N).drat:
-	$(GEN) -n $(N) -s $(SEED) -m d -r $(ROOT)-$(N) | tee $(ROOT)-$(N).drat_gen_data
+	$(GEN) -v $(VLEVEL) -n $(N) -s $(SEED) -m d -r $(ROOT)-$(N) | tee $(ROOT)-$(N).drat_gen_data
 
 $(ROOT)-$(N).frat:
-	$(GEN) -n $(N) -s $(SEED) -m f -r $(ROOT)-$(N) | tee $(ROOT)-$(N).frat_gen_data
+	$(GEN) -v $(VLEVEL) -n $(N) -s $(SEED) -m f -r $(ROOT)-$(N) | tee $(ROOT)-$(N).frat_gen_data
 
 
 .SUFFIXES: .cnf .drat .frat .drat_check_data .frat_check_data .kissat_data .cms_data .cmsx_data .cms_noproof_data \
