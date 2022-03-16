@@ -29,6 +29,20 @@ static int dfun_count = 0;
 static int last_variable = 0;
 static int last_clause_id = 0;
 
+
+// Unit clauses that have not been deleted
+static ilist live_unit_clauses;
+
+/*============================================
+  Local functions
+============================================*/
+static int new_unit_clause(int id) {
+    if (id != TAUTOLOGY)
+	live_unit_clauses = ilist_push(live_unit_clauses, id);
+    return id;
+}
+
+
 /*============================================
   Package setup.
 ============================================*/
@@ -51,6 +65,7 @@ static int last_clause_id = 0;
 */
 
 int tbdd_init(FILE *pfile, int *variable_counter, int *clause_id_counter, ilist *input_clauses, ilist variable_ordering, proof_type_t ptype, bool binary) {
+    live_unit_clauses = ilist_new(100);
     return prover_init(pfile, variable_counter, clause_id_counter, input_clauses, variable_ordering, ptype, binary);
 }
 
@@ -96,6 +111,11 @@ void tbdd_set_verbose(int level) {
 }
 
 void tbdd_done() {
+    /* Delete outstanding unit clauses */
+    if (ilist_length(live_unit_clauses) > 0) {
+	print_proof_comment(2, "Delete remaining unit clauses");
+	delete_clauses(live_unit_clauses);
+    }
     int i;
     for (i = 0; i < dfun_count; i++)
 	dfuns[i]();
@@ -183,14 +203,14 @@ void tbdd_delref(TBDD tr) {
 	return;
     bdd_delref(tr.root);
 
-    if (!HASREF(tr.root) && tr.clause_id != TAUTOLOGY) {
+    // Disable this.  Delete all unit clauses at end
+    if (false && !HASREF(tr.root) && tr.clause_id != TAUTOLOGY) {
 	int dbuf[1+ILIST_OVHD];
 	ilist dlist = ilist_make(dbuf, 1);
 	ilist_fill1(dlist, tr.clause_id);
 	print_proof_comment(2, "Deleting unit clause #%d for node N%d", tr.clause_id, NNAME(tr.root));
 	delete_clauses(dlist);
     }
-    tr.clause_id = TAUTOLOGY;
 }
 
 /*
@@ -244,8 +264,8 @@ static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     ilist uclause = ilist_make(cbuf, 1);
     ilist_fill1(uclause, XVAR(r));
     rr.root = r;
-    rr.clause_id = generate_clause(uclause, ant);
     print_proof_comment(2, "Validate BDD representation of Clause #%d.  Node = N%d.", id, NNAME(rr.root));
+    rr.clause_id = new_unit_clause(generate_clause(uclause, ant));
     return rr;
 }
 
@@ -367,7 +387,7 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     print_proof_comment(2, "Validation of unit clause for N%d by implication from N%d",NNAME(r), NNAME(tr.root));
     ilist_fill1(clause, XVAR(r));
     ilist_fill2(ant, t.clause_id, tr.clause_id);
-    rr.clause_id = generate_clause(clause, ant);
+    rr.clause_id = new_unit_clause(generate_clause(clause, ant));
     rr.root = r;
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
@@ -392,7 +412,7 @@ TBDD tbdd_trust(BDD r) {
     ilist ant = ilist_make(abuf, 0);
     print_proof_comment(2, "Assertion of N%d",NNAME(r));
     ilist_fill1(clause, XVAR(r));
-    rr.clause_id = generate_clause(clause, ant);
+    rr.clause_id = new_unit_clause(generate_clause(clause, ant));
     rr.root = bdd_addref(r);
     return rr;
 }
@@ -421,7 +441,7 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     ilist_fill1(clause, XVAR(t.root));
     ilist_fill3(ant, tr1.clause_id, tr2.clause_id, t.clause_id);
     /* Insert proof of unit clause into t's justification */
-    t.clause_id = generate_clause(clause, ant);
+    t.clause_id = new_unit_clause(generate_clause(clause, ant));
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
     return t;
@@ -460,7 +480,7 @@ TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
     ilist_fill3(ant, tr1.clause_id, tr2.clause_id, t.clause_id);
     /* Insert proof of unit clause into rr's justification */
     rr.root = r;
-    rr.clause_id = generate_clause(clause, ant);
+    rr.clause_id = new_unit_clause(generate_clause(clause, ant));
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
 #endif
