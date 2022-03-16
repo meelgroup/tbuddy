@@ -1,7 +1,7 @@
 #!/bin/sh
 
 make clean
-rm -f *.ldata *.sdata *.bdata
+rm -f *.ldata *.sdata *.bdata *.gdata
 
 make 01-unsat2.ldata
 make 01-unsat2.bdata
