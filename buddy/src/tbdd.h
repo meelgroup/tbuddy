@@ -120,6 +120,11 @@ extern void tbdd_set_verbose(int level);
 ============================================*/
 
 /*
+  Print information about TBDD
+ */
+void tbdd_print(TBDD r, FILE *out);
+
+/*
   Create a fresh TBDD.  Increment reference count for BDD
   and initialize reference count for TBDD
  */
@@ -258,6 +263,7 @@ class tbdd
  private:
     TBDD tb;
 
+    friend void tbdd_print(tbdd &tr, FILE *out);
     friend tbdd tbdd_tautology(void);
     friend tbdd tbdd_null(void);
     friend bool tbdd_is_true(tbdd &tr);
@@ -277,6 +283,9 @@ class tbdd
     // Convert to low-level form
     friend void tbdd_xfer(tbdd &tr, TBDD &res);
 };
+
+inline void tbdd_print(tbdd &tr, FILE *out)
+{ tbdd_print(tr.tb, out); } 
 
 inline tbdd tbdd_tautology(void)
 { return tbdd(TBDD_tautology()); }

@@ -85,7 +85,7 @@ static void rc_done() {
 /* Grow the table */
 static void rc_grow() {
     int nsize = rc_allocated_count * TABLE_SCALE;
-    rc_table = realloc(rc_table, nsize);
+    rc_table = realloc(rc_table, nsize*sizeof(int));
     if (!rc_table) {
 	fprintf(stderr, "Couldn't allocate space for %d RC table entries\n", rc_allocated_count);
 	bdd_error(BDD_MEMORY);
@@ -115,6 +115,17 @@ static void rc_dispose(int rci) {
     rc_freepos = rci;
 }
 
+static int rc_get(int rci) {
+    if (rci == -1)
+	return 1;
+    if (rci < -1 || rci >= rc_allocated_count) {
+	fprintf(stderr, "Invalid RC index %d\n", rci);
+	bdd_error(BDD_RANGE);
+	return 0;
+    }
+    return rc_table[rci];
+}
+
 static void rc_increment(int rci) {
     if (rci == -1)
 	/* TAUTOLOGY */
@@ -127,7 +138,6 @@ static void rc_increment(int rci) {
     if (rc_table[rci] == 0)
 	fprintf(stderr, "WARNING: Incrementing RC[%d] to 1\n", rci);
     rc_table[rci]++;
-    //    printf("Incr RC[%d] --> %d\n", rci, rc_table[rci]);
 }
 
 static int rc_decrement(int rci) {
@@ -143,7 +153,6 @@ static int rc_decrement(int rci) {
     if (nval < 0)
 	fprintf(stderr, "WARNING.  Decrementing RC[%d] to %d\n", rci, nval);
     rc_table[rci] = nval;
-    //    printf("Decr RC[%d] --> %d\n", rci, nval);
     return nval;
 }
 
@@ -220,13 +229,7 @@ void tbdd_set_verbose(int level) {
 void tbdd_done() {
     /* Find difference of the created/dead unit clauses */
     ilist_sort(created_unit_clauses);
-    printf("Created %d unit clauses: [", ilist_length(created_unit_clauses));
-    ilist_print(created_unit_clauses, stdout, " ");
-    printf("]\n");
     ilist_sort(dead_unit_clauses);
-    printf("Deleted %d unit clauses: [", ilist_length(dead_unit_clauses));
-    ilist_print(dead_unit_clauses, stdout, " ");
-    printf("]\n");
     int ic = 0;
     int id = 0;
     ilist live_unit_clauses = ilist_new(100);
@@ -247,11 +250,19 @@ void tbdd_done() {
 	live_unit_clauses = ilist_push(live_unit_clauses, created_unit_clauses[ic++]);
     while (id < ilist_length(dead_unit_clauses))
 	fprintf(stderr, "ERROR: Unit clause %d dead but never created\n", dead_unit_clauses[id++]);
+
     /* Delete outstanding unit clauses */
     if (ilist_length(live_unit_clauses) > 0) {
 	print_proof_comment(2, "Delete remaining unit clauses");
 	delete_clauses(live_unit_clauses);
-	printf("Completed proof with %d unit clauses: [", ilist_length(live_unit_clauses));
+    }
+    printf("c Unit clauses: Created %d.  Deleted %d.  Remaining = [",
+	   ilist_length(created_unit_clauses), ilist_length(dead_unit_clauses));
+    if (ilist_length(live_unit_clauses) > 20) {
+	ilist_resize(live_unit_clauses, 20);
+	ilist_print(live_unit_clauses, stdout, " ");
+	printf(" ...]\n");
+    } else {
 	ilist_print(live_unit_clauses, stdout, " ");
 	printf("]\n");
     }
@@ -306,14 +317,20 @@ void tbdd_add_done_fun(tbdd_done_fun f) {
 }
 
 
+void tbdd_print(TBDD t, FILE *out) {
+    int nid = NNAME(t.root);
+    int cid = t.clause_id;
+    int rci = t.rc_index;
+    int rc = rc_get(rci);
+    fprintf(out, "[N%d, Clause #%d, RCI=%d, RC=%d]", nid, cid, rci, rc);
+}
+
 TBDD tbdd_create(BDD r, int clause_id) {
     TBDD res;
     res.root = bdd_addref(r);
     res.clause_id = new_unit_clause(clause_id);
     int rci = rc_new_entry(clause_id);
     res.rc_index = rci;
-    if (rci != -1)
-	printf("INFO: Created RC entry #%d for clause %d\n", rci, clause_id);
     return res;
 }
 
@@ -359,11 +376,10 @@ void tbdd_delref(TBDD tr) {
 	int dbuf[1+ILIST_OVHD];
 	ilist dlist = ilist_make(dbuf, 1);
 	ilist_fill1(dlist, tr.clause_id);
-	print_proof_comment(2, "INFO: Deleting unit clause #%d for node N%d", tr.clause_id, NNAME(tr.root));
-	printf("INFO: Deleting unit clause #%d for node N%d (RCI = %d)\n", tr.clause_id, NNAME(tr.root), tr.rc_index);
+	print_proof_comment(2, "Deleting unit clause #%d for node N%d", tr.clause_id, NNAME(tr.root));
 	delete_clauses(dlist);
 	dead_unit_clauses = ilist_push(dead_unit_clauses, tr.clause_id);
-	//	rc_dispose(tr.rc_index);
+	rc_dispose(tr.rc_index);
     }
 }
 
