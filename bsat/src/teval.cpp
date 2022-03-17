@@ -290,16 +290,14 @@ static int next_term_id = 1;
 class Term {
 private:
     int term_id;
-    bool is_input;
     bool is_active;
     tbdd tfun;
     xor_constraint *xor_equation;
     int node_count;
 
 public:
-    Term (tbdd t, bool input = false) { 
+    Term (tbdd t) { 
 	term_id = next_term_id++;
-	is_input = input;
 	is_active = true; 
 	tfun = t;
 	node_count = bdd_nodecount(t.get_root());
@@ -308,8 +306,6 @@ public:
 
     // Returns number of dead nodes generated
     int deactivate() {
-	if (is_input)
-	    return 0;
 	tfun = tbdd_null();  // Should delete reference to previous value
 	is_active = false;
 	int rval = node_count;
@@ -421,7 +417,7 @@ public:
 	terms.resize(1, NULL);
 	for (int i = 1; i <= clause_count; i++) {
 	    tbdd tc = tbdd_from_clause_id(i);
-	    add(new Term(tc, true));
+	    add(new Term(tc));
 	}
 	min_active = 1;
 	and_count = 0;
@@ -503,7 +499,7 @@ public:
 	    if (min_active >= terms.size()) {
 		// There was only one term left
 		tbdd result = tp1->get_fun();
-		tp1->deactivate();
+		dead_count +=  tp1->deactivate();
 		return result;
 	    }
 	    tp2 = terms[min_active++];
@@ -829,6 +825,7 @@ public:
 			    exit(1);
 			}
 			xset.add(*tp->get_equation());
+			dead_count += tp->deactivate();
 		    }
 		    xor_set eset, iset;
 		    ilist pivot_sequence = xset.gauss_jordan(ivars, eset, iset);
