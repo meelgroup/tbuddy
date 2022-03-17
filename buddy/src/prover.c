@@ -36,6 +36,18 @@ static size_t dest_buf_len = 0;
 
 // Parameters
 // Cutoff betweeen large and small allocations (in terms of clauses)
+
+// Optionally increase level of garbage collection to stress test code
+#define STRESS 0
+
+#if STRESS
+#define BUDDY_THRESHOLD 10
+#define BUDDY_NODES_LARGE (1000)
+#define BUDDY_NODES_SMALL (100)
+#define BUDDY_CACHE_RATIO 8
+#define BUDDY_INCREASE_LARGE (1000)
+#define BUDDY_INCREASE_SMALL (100)
+#else
 #define BUDDY_THRESHOLD 1000
 //#define BUDDY_THRESHOLD 10
 #define BUDDY_NODES_LARGE (2*1000*1000)
@@ -44,6 +56,7 @@ static size_t dest_buf_len = 0;
 #define BUDDY_CACHE_RATIO 8
 #define BUDDY_INCREASE_LARGE (4*1000*1000)
 #define BUDDY_INCREASE_SMALL (1* 100*1000)
+#endif
 
 // How many clauses should allocated for clauses
 #define INITIAL_CLAUSE_COUNT 1000
