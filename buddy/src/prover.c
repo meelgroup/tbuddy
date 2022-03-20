@@ -30,9 +30,12 @@ static int live_clause_count = 0;
 static ilist deferred_deletion_list = NULL;
 /* Track empty clause to:
    1) Know if it has been generated
-   2) Retain it for FRAT proof
+   2) Finalize it for FRAT proof
+   3) Make sure it only gets finalized once
 */
 static int empty_clause_id = TAUTOLOGY;
+static bool empty_clause_finalized = false;
+
 
 // Buffer used when generating binary files
 static unsigned char *dest_buf = NULL;
@@ -424,6 +427,7 @@ int generate_clause(ilist literals, ilist hints) {
     }
     if (ilist_length(clause) == 0)
 	empty_clause_id = cid;
+
     return cid;
 }
 
@@ -432,6 +436,14 @@ extern void insert_frat_clause(FILE *pfile, char cmd, int clause_id, ilist liter
     ilist clause = clean_clause(literals);
     int rval = 0;
     unsigned char *d = dest_buf;
+
+    // Make sure empty clause only finalized once
+    if (cmd == 'f' && empty_clause_id != TAUTOLOGY && ilist_length(literals) == 0) {
+	if (empty_clause_finalized)
+	    return;
+	else
+	    empty_clause_finalized = true;
+    }
 
     if (binary) {
 	check_buffer(ilist_length(clause) + 3);
@@ -499,6 +511,9 @@ void delete_clauses(ilist clause_ids) {
 	    int cid = clause_ids[i];
 	    ilist clause = all_clauses[cid-1];
 	    if (clause == TAUTOLOGY_CLAUSE)
+		continue;
+	    if (cid == empty_clause_id)
+		// Empty clause should not be deleted
 		continue;
 	    if (ilist_length(clause) <= 1 && proof_type == PROOF_DRAT)
 		// Don't delete unit clauses in DRAT
