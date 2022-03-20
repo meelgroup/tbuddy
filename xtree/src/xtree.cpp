@@ -26,7 +26,7 @@ void usage(const char *name) {
     printf("  -g         Use Gaussian elimination\n");
     printf("  -n  N      Set number of problem variables\n");
     printf("  -v VLEVEL  Set verbosity level\n");
-    printf("  -m (d|f|n)   Set proof type (d=DRAT, f=FRAT, n=No proof)\n");
+    printf("  -m (d|f|n)   Set proof type (d=DRAT, f=FRAT, n=CNF)\n");
     printf("  -b         Use binary files\n");
     printf("  -s SEED    Set random seed\n");
     printf("  -r ROOT    Root of CNF and proof files\n");
@@ -308,9 +308,8 @@ void gen_frat_proof(char *fname, int n, int vlevel) {
     delete_clauses(ilist_fill3(dels, c1, c2, c3)); ///line:frat:finish:start
     delete sum; 
     tbdd_done();  ///line:frat:finish:end
-    // FRAT requires declaring all remaining clauses
-    insert_frat_clause(proof_file, 'f', c4, ilist_resize(lits, 0), false); ///line:frat:finalize:start
-    for (int cid = 1; cid <= clauses.size(); cid++)
+    // FRAT requires declaring all remaining nonempty clauses
+    for (int cid = 1; cid <= clauses.size(); cid++)  ///line:frat:finalize:start
 	insert_frat_clause(proof_file, 'f', cid, clauses[cid-1], false);///line:frat:finalize:end
     fclose(proof_file);
     ilist_free(lits);

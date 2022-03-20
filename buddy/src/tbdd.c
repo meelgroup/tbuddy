@@ -29,9 +29,6 @@ static ilist created_unit_clauses;
 /* Unit clauses that (should) have been deleted */
 static ilist dead_unit_clauses;
 
-/* Proof file (for FRAT only) */
-static FILE *proof_file = NULL;
-
 /* Managing reference counts for TBDDs */
 
 /*
@@ -213,12 +210,10 @@ int tbdd_init_drat_binary(FILE *pfile, int variable_count) {
 }
 
 int tbdd_init_frat(FILE *pfile, int *variable_counter, int *clause_id_counter) {
-    proof_file = pfile;
     return tbdd_init(pfile, variable_counter, clause_id_counter, NULL, NULL, PROOF_FRAT, false);
 }
 
 int tbdd_init_frat_binary(FILE *pfile, int *variable_counter, int *clause_id_counter) {
-    proof_file = pfile;
     return tbdd_init(pfile, variable_counter, clause_id_counter, NULL, NULL, PROOF_FRAT, false);
 }
 
@@ -381,16 +376,11 @@ void tbdd_delref(TBDD tr) {
 	int dbuf[1+ILIST_OVHD];
 	ilist dlist = ilist_make(dbuf, 1);
 	ilist_fill1(dlist, tr.clause_id);
-	if (tr.root == bdd_false()) {
-	    if (proof_type == PROOF_FRAT) {
-		print_proof_comment(2, "Retainining empty clause #%d for node N%d", tr.clause_id, NNAME(tr.root));
-		dlist = ilist_resize(dlist, 0);
-		insert_frat_clause(proof_file, 'f', tr.clause_id, dlist, false);
-	    }
-	} else {
+	if (tr.root != bdd_false()) {
 	    print_proof_comment(2, "Deleting unit clause #%d for node N%d", tr.clause_id, NNAME(tr.root));
 	    delete_clauses(dlist);
 	}
+	/* Empty clause will be marked as "dead" so that is not later deleted */
 	dead_unit_clauses = ilist_push(dead_unit_clauses, tr.clause_id);
 	rc_dispose(tr.rc_index);
     }

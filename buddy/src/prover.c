@@ -28,7 +28,11 @@ static ilist *all_clauses = NULL;
 static int alloc_clause_count = 0;
 static int live_clause_count = 0;
 static ilist deferred_deletion_list = NULL;
-static bool empty_clause_detected = false;
+/* Track empty clause to:
+   1) Know if it has been generated
+   2) Retain it for FRAT proof
+*/
+static int empty_clause_id = TAUTOLOGY;
 
 // Buffer used when generating binary files
 static unsigned char *dest_buf = NULL;
@@ -67,7 +71,7 @@ static size_t dest_buf_len = 0;
 
 /* API functions */
 int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_clauses, ilist variable_ordering, proof_type_t ptype, bool binary) {
-    empty_clause_detected = false;
+    empty_clause_id = TAUTOLOGY;
     proof_type = ptype;
     do_binary = binary;
     if (do_binary) {
@@ -151,9 +155,18 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
 
 void prover_done() {
     free(dest_buf);
-    if (proof_type == PROOF_FRAT)
+    if (proof_type == PROOF_FRAT) {
+	int ebuf[ILIST_OVHD];
+	ilist elist = ilist_make(ebuf, 0);
 	/* Do final garbage collection to delete remaining clauses */
 	bdd_gbc();
+	/* Finalize empty clause */
+	if (empty_clause_id != TAUTOLOGY) {
+	    print_proof_comment(2, "Retaining empty clause");
+	    insert_frat_clause(proof_file, 'f', empty_clause_id, elist, do_binary);
+	}
+    }
+    
     //    if (deferred_deletion_list)
     //	ilist_free(deferred_deletion_list);
 }
@@ -333,7 +346,7 @@ int generate_clause(ilist literals, ilist hints) {
 
     if (clause == TAUTOLOGY_CLAUSE)
 	return TAUTOLOGY;
-    if (!empty_clause_detected) {
+    if (empty_clause_id == TAUTOLOGY) {
 	if (do_binary)
 	    *d++ = 'a';
 	else if (proof_type == PROOF_FRAT)
@@ -409,7 +422,8 @@ int generate_clause(ilist literals, ilist hints) {
 	}
 	all_clauses[cid-1] = ilist_copy(clause);
     }
-    empty_clause_detected = ilist_length(clause) == 0;
+    if (ilist_length(clause) == 0)
+	empty_clause_id = cid;
     return cid;
 }
 
@@ -452,7 +466,7 @@ void delete_clauses(ilist clause_ids) {
     live_clause_count -= dlen;
     deleted_clause_count += dlen;
 
-    if (empty_clause_detected && proof_type != PROOF_FRAT)
+    if (empty_clause_id != TAUTOLOGY && proof_type != PROOF_FRAT)
 	return;
 
 #if DO_TRACE
@@ -550,7 +564,7 @@ bool print_ok(int vlevel) {
 	return false;
     if (verbosity_level < vlevel+1)
 	return false;
-    if (proof_type != PROOF_FRAT && empty_clause_detected)
+    if (proof_type != PROOF_FRAT && empty_clause_id != TAUTOLOGY)
 	return false;
     return true;
 }
