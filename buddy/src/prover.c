@@ -88,6 +88,12 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
     variable_counter = var_counter;
     input_variable_count = *variable_counter;
 
+    if (input_variable_count > MAXVAR) {
+	fprintf(stderr, "FATAL: Input variable count %d > Maximum %d allowed by BDD package\n",
+		input_variable_count, MAXVAR);
+	bdd_error(BDD_VAR);
+    }
+
     clause_id_counter = cls_counter;
     if (clause_id_counter) {
 	input_clause_count = total_clause_count = *clause_id_counter;
