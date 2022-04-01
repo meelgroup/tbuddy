@@ -253,7 +253,7 @@ void ilist_sort(int *ils) {
  */
 int ilist_print(ilist ils, FILE *out, const char *sep) {
     int i;
-    int rval;
+    int rval = 0;
     const char *space = "";
     if (ils == TAUTOLOGY_CLAUSE) {
 	rval = fprintf(out, "TAUT");
@@ -264,9 +264,10 @@ int ilist_print(ilist ils, FILE *out, const char *sep) {
 	return rval;
     }
     for (i = 0; i < ilist_length(ils); i++) {
-	rval = fprintf(out, "%s%d", space, ils[i]);
-	if (rval < 0)
-	    return rval;
+	int pval = fprintf(out, "%s%d", space, ils[i]);
+	if (pval < 0)
+	    return pval;
+	rval += pval;
 	space = sep;
     }
     return rval;
