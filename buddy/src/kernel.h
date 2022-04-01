@@ -55,6 +55,9 @@
 #include "bdd.h"
 #endif
 
+/*=== Error message destination ===*/
+#define ERROUT stdout
+
 #if ENABLE_TBDD
 /*=== ERROR CHECKING =========*/
 

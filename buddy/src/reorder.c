@@ -1977,7 +1977,7 @@ ALSO    {* bdd\_reorder, bdd\_level2var *}
 int bdd_var2level(int var)
 {
     if (var < 0  ||  var >= bddvarnum) {
-	fprintf(stderr, "ERROR.  Attempting to find level of variable %d\n", var);
+	fprintf(ERROUT, "ERROR.  Attempting to find level of variable %d\n", var);
 	return bdd_error(BDD_VAR);
     }
 
@@ -1997,7 +1997,7 @@ ALSO    {* bdd\_reorder, bdd\_var2level *}
 int bdd_level2var(int level)
 {
     if (level < 0  ||  level >= bddvarnum) {
-	fprintf(stderr, "ERROR.  Attempting to find variable at level %d\n", level);
+	fprintf(ERROUT, "ERROR.  Attempting to find variable at level %d\n", level);
 	return bdd_error(BDD_VAR);
     }
    return bddlevel2var[level];
