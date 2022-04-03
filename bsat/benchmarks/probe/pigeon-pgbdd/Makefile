@@ -1,11 +1,10 @@
 INTERP=python3
 SIZE = 08
 VLEVEL = 01
-VERB=
 GDIR=../../generators
-GENERATOR = $(GDIR)/chess.py
-SDIR = ../../../src
-SOLVER = $(SDIR)/tbsat
+GENERATOR = $(GDIR)/pigeon-sinz.py
+SDIR = ~/repos/pgbdd/prototype
+SOLVER = $(SDIR)/solver.py
 CDIR = ~/repos/drat-trim
 CHECKER= $(CDIR)/lrat-check
 TDIR= ~/repos/tbuddy/tools
@@ -15,7 +14,7 @@ TLIM=10
 TLIMM=30
 TLIMS=900
 TLIML=3600
-ROOT=chess-scan
+ROOT=pigeon-pgbdd
 
 gen:
 	$(INTERP) $(GENERATOR) -n $(SIZE) -r $(ROOT)-$(SIZE)
@@ -30,7 +29,7 @@ clear:
 	rm -f $(ROOT)-$(SIZE).lrat
 
 mprobe:
-	$(INTERP) $(PROBER) $(VERB) -t $(TLIMM) -m 50 -d 10 -l $(ROOT)-mprobe.data
+	$(INTERP) $(PROBER) -t $(TLIMM) -m 50 -d 10 -l $(ROOT)-mprobe.data
 
 sprobe:
 	$(INTERP) $(PROBER) -t $(TLIMS) -m 50 -d 10 -l $(ROOT)-sprobe.data

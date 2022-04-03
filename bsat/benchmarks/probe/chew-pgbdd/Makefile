@@ -1,9 +1,10 @@
 INTERP=python3
 SIZE = 08
+SEED=123456
 VLEVEL = 01
 VERB=
 GDIR=../../generators
-GENERATOR = $(GDIR)/chess.py
+GENERATOR = $(GDIR)/chew-code/parity-cnf
 SDIR = ~/repos/pgbdd/prototype
 SOLVER = $(SDIR)/solver.py
 CDIR = ~/repos/drat-trim
@@ -15,13 +16,14 @@ TLIM=10
 TLIMM=30
 TLIMS=900
 TLIML=3600
-ROOT=chess-pgbdd
+ROOT=chew-pgbdd-$(SEED)
 
 gen:
-	$(INTERP) $(GENERATOR) -n $(SIZE) -r $(ROOT)-$(SIZE)
+	$(GENERATOR) $(SIZE) $(SEED) 
+	mv formula.cnf $(ROOT)-$(SIZE).cnf
 
 run:
-	$(INTERP) $(WRAP) $(TLIM) $(SOLVER) -v $(VLEVEL) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule -o $(ROOT)-$(SIZE).lrat 2>&1 | tee $(ROOT)-$(SIZE).data
+	$(INTERP) $(WRAP) $(TLIM) $(SOLVER) -v $(VLEVEL) -i $(ROOT)-$(SIZE).cnf -b -o $(ROOT)-$(SIZE).lrat | tee $(ROOT)-$(SIZE).data
 
 check:
 	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
@@ -30,19 +32,20 @@ clear:
 	rm -f $(ROOT)-$(SIZE).lrat
 
 mprobe:
-	$(INTERP) $(PROBER) $(VERB) -t $(TLIMM) -m 50 -d 10 -l $(ROOT)-mprobe.data
+	$(INTERP) $(PROBER) $(VERB) -t $(TLIMM) -m 500 -d 100 -l $(ROOT)-mprobe.data
 
 sprobe:
-	$(INTERP) $(PROBER) -t $(TLIMS) -m 50 -d 10 -l $(ROOT)-sprobe.data
+	$(INTERP) $(PROBER) -t $(TLIMS) -m 500 -d 100 -l $(ROOT)-sprobe.data
 
 lprobe:
-	$(INTERP) $(PROBER) -t $(TLIML) -m 50 -d 10 -l $(ROOT)-lprobe.data
+	$(INTERP) $(PROBER) -t $(TLIML) -m 500 -d 100 -l $(ROOT)-lprobe.data
 
 clean:
 	rm -f $(ROOT)-*.{cnf,schedule,order}
 	rm -f *.lrat *~
 
 superclean: clean
+
 
 
 

@@ -1,9 +1,8 @@
 INTERP=python3
 SIZE = 08
 VLEVEL = 01
-VERB=
 GDIR=../../generators
-GENERATOR = $(GDIR)/chess.py
+GENERATOR = $(GDIR)/pigeon-sinz.py
 SDIR = ../../../src
 SOLVER = $(SDIR)/tbsat
 CDIR = ~/repos/drat-trim
@@ -15,7 +14,7 @@ TLIM=10
 TLIMM=30
 TLIMS=900
 TLIML=3600
-ROOT=chess-scan
+ROOT=pigeon-scan
 
 gen:
 	$(INTERP) $(GENERATOR) -n $(SIZE) -r $(ROOT)-$(SIZE)
@@ -30,7 +29,7 @@ clear:
 	rm -f $(ROOT)-$(SIZE).lrat
 
 mprobe:
-	$(INTERP) $(PROBER) $(VERB) -t $(TLIMM) -m 50 -d 10 -l $(ROOT)-mprobe.data
+	$(INTERP) $(PROBER) -t $(TLIMM) -m 50 -d 10 -l $(ROOT)-mprobe.data
 
 sprobe:
 	$(INTERP) $(PROBER) -t $(TLIMS) -m 50 -d 10 -l $(ROOT)-sprobe.data
@@ -43,7 +42,4 @@ clean:
 	rm -f *.lrat *~
 
 superclean: clean
-
-
-
 

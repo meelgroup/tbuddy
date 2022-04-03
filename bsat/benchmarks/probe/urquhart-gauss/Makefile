@@ -1,9 +1,11 @@
 INTERP=python3
 SIZE = 08
+SEED=123456
 VLEVEL = 01
 VERB=
 GDIR=../../generators
-GENERATOR = $(GDIR)/chess.py
+GENERATOR = $(GDIR)/urquhart-li-code/generate
+PCT=50
 SDIR = ../../../src
 SOLVER = $(SDIR)/tbsat
 CDIR = ~/repos/drat-trim
@@ -11,17 +13,19 @@ CHECKER= $(CDIR)/lrat-check
 TDIR= ~/repos/tbuddy/tools
 PROBER=$(TDIR)/probe.py
 WRAP=$(TDIR)/wrap.py
+EXTRACT=$(TDIR)/xor_extractor.py
 TLIM=10
 TLIMM=30
 TLIMS=900
 TLIML=3600
-ROOT=chess-scan
+ROOT=urquhart-gauss
 
 gen:
-	$(INTERP) $(GENERATOR) -n $(SIZE) -r $(ROOT)-$(SIZE)
+	$(GENERATOR) -m$(SIZE) -p$(PCT) -f$(ROOT)-$(SIZE).cnf
+	$(INTERP) $(EXTRACT) -i $(ROOT)-$(SIZE).cnf -o $(ROOT)-$(SIZE).schedule | tee $(ROOT)-$(SIZE).data
 
 run:
-	$(INTERP) $(WRAP) $(TLIM) $(SOLVER) -v $(VLEVEL) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule -o $(ROOT)-$(SIZE).lrat | tee $(ROOT)-$(SIZE).data
+	$(INTERP) $(WRAP) $(TLIM) $(SOLVER) -v $(VLEVEL) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule -o $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
 
 check:
 	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
@@ -43,6 +47,7 @@ clean:
 	rm -f *.lrat *~
 
 superclean: clean
+	rm -f $(ROOT)-*.data
 
 
 
