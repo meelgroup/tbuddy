@@ -20,7 +20,9 @@ import getopt
 
 
 def usage(name):
-    print("Usage: %s [-h] [-p PATH] [-t TLIM] [-m SMIN] [-d SINCR] [-l LOG]")
+    print("Usage: %s [-h] [-v] [-p PATH] [-t TLIM] [-m SMIN] [-d SINCR] [-l LOG]")
+    print("  -h         Print this message")
+    print("  -v         Print generated results")
     print("  -p PATH    Directory containing benchmark")
     print("  -t TLIM    Time limit")
     print("  -m SMIN    Minimum size parameter")
@@ -32,9 +34,14 @@ makePath = "/usr/bin/make"
 # Mapping from size to result
 resultDict = {}
 
+verbose = False
+# Print info on stdout?
 trace = True
 # How much extra time to allow on final run
 slack = 1.1
+# What to look for in output stream
+okrunword = "UNSAT"
+okcheckword = "VERIFIED"
 
 logfile = None
 
@@ -61,17 +68,29 @@ def dogenerate(path, size):
     return secs
 
 def dorun(path, size, timelimit):
-    alist = [makePath, "run", "SIZE=%d" % size]
+    # Allow a little extra so that timeout unambiguous
+    wlog("Running size %d" % size)
+    tlim = timelimit + 3
+    alist = [makePath, "run", "SIZE=%d" % size, "TLIM=%d" % tlim]
     start = datetime.datetime.now()
-    p = subprocess.Popen(alist)
+    ok = False
+    p = subprocess.Popen(alist, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     try:
-        p.wait(timeout=timelimit)
+        out, errs = p.communicate(timeout=timelimit)
+        outs = out.decode('utf8')
+        if verbose:
+            print(outs)
+        if okrunword in outs:
+            ok = True
     except subprocess.TimeoutExpired:
         p.kill()
         wlog("Timed out size %d after %.3f" % (size, timelimit))
         return -1
     if p.returncode != 0:
         wlog("Benchmark exited with return code %d" % p.returncode, True)
+        return -1
+    if not ok:
+        wlog("Benchmark did not generate '%s' for size %d" % (okrunword, size))
         return -1
     delta = datetime.datetime.now() - start
     secs = delta.seconds + 1e-6 * delta.microseconds
@@ -81,10 +100,17 @@ def dorun(path, size, timelimit):
 def docheck(path, size):
     alist = [makePath, "check", "SIZE=%d" % size]
     start = datetime.datetime.now()
-    p = subprocess.Popen(alist)
-    p.wait()
+    p = subprocess.Popen(alist, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    out, errs = p.communicate()
+    outs = out.decode('utf8')
+    if verbose:
+        print(outs)
+    ok = okcheckword in outs
     if p.returncode != 0:
         wlog("ERROR: Checker exited with return code %d" % p.returncode)
+        return -1
+    if not ok:
+        wlog("Checker did not generate '%s' for size %d" % (okcheckword, size))
         return -1
     delta = datetime.datetime.now() - start
     secs = delta.seconds + 1e-6 * delta.microseconds
@@ -117,6 +143,13 @@ def dopass(path, size, timelimit):
     return t
 
 
+# Choose next size
+def nextsize(low, high, incrsize):
+    l = low//incrsize
+    h = high//incrsize
+    m = (l+h)//2
+    return m*incrsize
+
 def probe(path, minsize, incrsize, timelimit):
     start = datetime.datetime.now()
     psize = 0
@@ -133,16 +166,12 @@ def probe(path, minsize, incrsize, timelimit):
         wlog("Failed for minimum size %d" % minsize, True)
         sys.exit(1)
 
-
     # Binary searching.
     # Invariant: lsize is ok.  hsize is too big
     lsize = psize
     hsize = size
     while True:
-        l = lsize//incrsize
-        h = hsize//incrsize
-        m = (l+h)//2
-        size = m*incrsize
+        size = nextsize(lsize, hsize, incrsize)
         if size == lsize:
             wlog("Converged: lsize:%d, size:%d, hsize:%d" % (lsize, size, hsize))
             break
@@ -152,7 +181,7 @@ def probe(path, minsize, incrsize, timelimit):
         else:
             lsize = size
     # Final run
-    dorun(path, size, timelimit*slack)
+    t = dorun(path, size, timelimit*slack)
     docheck(path, size)
     doclear(path, size)
     wlog("Completed size %d in time %.3f" % (size, t), True)
@@ -165,12 +194,14 @@ def run(name, arglist):
     minsize = 1
     incrsize = 1
     timelimit = 1000.0
-    global logfile
-    optlist, args = getopt.getopt(arglist, "hp:m:d:t:l:")
+    global logfile, verbose
+    optlist, args = getopt.getopt(arglist, "hvp:m:d:t:l:")
     for (opt, val) in optlist:
         if opt == '-h':
             usage(name)
             return
+        elif opt == '-v':
+            verbose = True
         elif opt == '-p':
             path = val
         elif opt == '-m':
