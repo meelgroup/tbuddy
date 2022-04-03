@@ -24,7 +24,7 @@ run:
 	$(INTERP) $(WRAP) $(TLIM) $(SOLVER) -v $(VLEVEL) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule -o $(ROOT)-$(SIZE).lrat | tee $(ROOT)-$(SIZE).data
 
 check:
-	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).sdata
+	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
 
 clear:
 	rm -f $(ROOT)-$(SIZE).lrat
@@ -43,7 +43,7 @@ clean:
 	rm -f *.lrat *~
 
 superclean: clean
-	rm -f *.data
+	rm -f $(ROOT)-*.data
 
 
 

@@ -43,7 +43,7 @@ clean:
 	rm -f *.lrat *~
 
 superclean: clean
-	rm -f *.data
+	rm -f $(ROOT)-*.data
 
 
 
