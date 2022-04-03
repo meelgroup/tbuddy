@@ -1,7 +1,7 @@
 INTERP=python3
 N = 08
 GDIR=../../generators
-GENERATOR = $(GDIR)/chess.py
+GENERATOR = $(GDIR)/pigeon-sinz.py
 BSAT = ../../../src/bsat
 TBSAT = ../../../src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
