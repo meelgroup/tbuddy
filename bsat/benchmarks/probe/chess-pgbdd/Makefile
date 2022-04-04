@@ -16,6 +16,8 @@ TLIMM=30
 TLIMS=900
 TLIML=3600
 ROOT=chess-pgbdd
+MSIZE=50
+DSIZE=2
 
 gen:
 	$(INTERP) $(GENERATOR) -n $(SIZE) -r $(ROOT)-$(SIZE)
@@ -30,10 +32,10 @@ clear:
 	rm -f $(ROOT)-$(SIZE).lrat
 
 mprobe:
-	$(INTERP) $(PROBER) $(VERB) -t $(TLIMM) -m 50 -d 10 -l $(ROOT)-mprobe.data
+	$(INTERP) $(PROBER) $(VERB) -t $(TLIMM) -m $(MSIZE) -d $(DSIZE) -l $(ROOT)-mprobe.data
 
 sprobe:
-	$(INTERP) $(PROBER) -t $(TLIMS) -m 50 -d 10 -l $(ROOT)-sprobe.data
+	$(INTERP) $(PROBER) -t $(TLIMS) -m $(MSIZE) -d $(DSIZE) -l $(ROOT)-sprobe.data
 
 lprobe:
 	$(INTERP) $(PROBER) -t $(TLIML) -m 50 -d 10 -l $(ROOT)-lprobe.data
