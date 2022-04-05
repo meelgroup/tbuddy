@@ -289,6 +289,7 @@ void tbdd_done() {
 	printf("c Input variables: %d\n", input_variable_count);
 	printf("c Input clauses: %d\n", input_clause_count);
 	printf("c Total clauses: %d\n", total_clause_count);
+	printf("c Unused clause IDs: %d\n", *clause_id_counter - total_clause_count);
 	printf("c Maximum live clauses: %d\n", max_live_clause_count);
 	printf("c Deleted clauses: %d\n", deleted_clause_count);
 	printf("c Final live clauses: %d\n", total_clause_count-deleted_clause_count);
