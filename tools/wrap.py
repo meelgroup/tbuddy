@@ -26,8 +26,8 @@ def runprog(timelimit, path, arglist):
     delta = datetime.datetime.now() - start
     secs = delta.seconds + 1e-6 * delta.microseconds
     print("Program %s completed with exit code %d" % (path, p.returncode))
-    print("Elapsed time: %.3f seconds" % secs)
-    return
+    print("Wrapped time: %.3f seconds" % secs)
+    return p.returncode
     
 def run(name, arglist):
     if len(arglist) < 2:
@@ -45,7 +45,8 @@ def run(name, arglist):
         usage(name)
         return
     arglist = arglist[2:]
-    runprog(timelimit, path, arglist)
+    code = runprog(timelimit, path, arglist)
+    sys.exit(code)
           
 
 name = sys.argv[0]

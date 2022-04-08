@@ -36,24 +36,15 @@ static int pseudo_xor_created = 0;
 static int pseudo_xor_unique = 0;
 static int pseudo_total_length = 0;
 static int pseudo_plus_computed = 0;
-static int pseudo_plus_unique = 0;
-static int pseudo_arg_clause_count = 0;
-
-// Track previously generated xor constraints
-// As consequence, all of the TBDDs for the xor constraints will
-// be kept, preventing the deletion of their unit clauses
-static std::unordered_map<int, xor_constraint*> xor_map;
 
 static int show_xor_buf(char *buf, ilist variables, int phase, int maxlen);
 static void pseudo_info_fun(int vlevel);
-static void pseudo_done_fun();
 
 static bool initialized = false;
 
 static void pseudo_init() {
     if (!initialized) {
 	tbdd_add_info_fun(pseudo_info_fun);
-	tbdd_add_done_fun(pseudo_done_fun);
     }
     initialized = true;
 }
@@ -68,17 +59,6 @@ static void pseudo_info_fun(int vlevel) {
     if (pseudo_xor_unique > 0)
 	printf("c Average (unique) constraint size: %.2f\n", (double) pseudo_total_length / pseudo_xor_unique);
     printf("c Number of XOR additions performed: %d\n", pseudo_plus_computed);
-    printf("c Number of unique XOR additions: %d\n", pseudo_plus_unique);
-    printf("c Number of clauses generated from arguments: %d\n", pseudo_arg_clause_count);
-}
-
-
-static void pseudo_done_fun() {
-    for (auto p : xor_map) {
-	xor_constraint *xcp = p.second;
-	delete xcp;
-    }
-    xor_map.clear();
 }
 
 /*
@@ -154,38 +134,14 @@ static ilist coefficient_sum(ilist list1, ilist list2) {
 }
 
 /*
-  Use BDD representation of XOR constraint as canonical representation.
-  Keep table of created constraints.
-  Sets xfun to derived BDD
+  Generate BDD representation of constraint
  */
-static xor_constraint* find_constraint(ilist variables, int phase, bdd &xfun) {
-    xfun = bdd_build_xor(variables, phase);
-    int id = bdd_nameid(xfun);
-    if (xor_map.count(id) > 0) {
-	if (verbosity_level >= 3) {
-	    show_xor_buf(ibuf, variables, phase, BUFLEN);
-	}
-	return new xor_constraint(*xor_map[id]);
-    } else
-	return NULL;
+static bdd build_constraint_bdd(ilist variables, int phase) {
+    pseudo_total_length += ilist_length(variables);
+    pseudo_xor_unique ++;
+    return bdd_build_xor(variables, phase);
 }
 
-static void save_constraint(xor_constraint *xcp) {
-    pseudo_xor_unique ++;
-    ilist variables = xcp->get_variables();
-    pseudo_total_length += ilist_length(variables);
-#if SAVE_CONSTRAINTS
-    // Only save constraints as option.  Saving reduces the need to
-    // recreate multiple times, but it also requires more space,
-    // and increases the number of live clauses.
-    int id = xcp->get_nameid();
-    int phase = xcp->get_phase();
-    xor_map[id] = new xor_constraint(*xcp);
-    if (verbosity_level >= 2) {
-	show_xor_buf(ibuf, variables, phase, BUFLEN);
-    }
-#endif
-}
 
 ///////////////////////////////////////////////////////////////////
 // Methods & functions for xor constraints
@@ -196,40 +152,16 @@ xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
     pseudo_xor_created ++;
     variables = vars;
     phase = p;
-    bdd xfun;
-    if (proof_type == PROOF_NONE) {
-	xfun = bdd_build_xor(vars, p);
-	validation = tbdd_validate(xfun, vfun);
-	pseudo_xor_unique ++;
-	pseudo_total_length += ilist_length(variables);
-    } else {
-	xor_constraint *xcp = find_constraint(variables, phase, xfun);
-	if (xcp == NULL) {
-	    validation = tbdd_validate(xfun, vfun);
-	    save_constraint(this);
-	} else
-	    validation = xcp->validation;
-    }
+    bdd xfun = build_constraint_bdd(vars, p);
+    validation = tbdd_validate(xfun, vfun);
 }
 
 xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun1, tbdd &vfun2) {
     pseudo_xor_created ++;
     variables = vars;
     phase = p;
-    bdd xfun;
-    if (proof_type == PROOF_NONE) {
-	xfun = bdd_build_xor(vars, p);
-	validation = tbdd_validate_with_and(xfun, vfun1, vfun2);
-	pseudo_xor_unique ++;
-	pseudo_total_length += ilist_length(variables);
-    } else {
-	xor_constraint *xcp = find_constraint(variables, phase, xfun);
-	if (xcp == NULL) {
-	    validation = tbdd_validate_with_and(xfun, vfun1, vfun2);
-	    save_constraint(this);
-	} else
-	    validation = xcp->validation;
-    }
+    bdd xfun = build_constraint_bdd(vars, p);
+    validation = tbdd_validate_with_and(xfun, vfun1, vfun2);
 }
 
 // When generating DRAT proof, either reuse or generate validation
@@ -237,16 +169,8 @@ xor_constraint::xor_constraint(ilist vars, int p) {
     pseudo_xor_created ++;
     variables = vars;
     phase = p;
-    bdd xfun;
-    xor_constraint *xcp = find_constraint(variables, phase, xfun);
-    if (xcp == NULL) {
-	int start_clause = total_clause_count;
-	validation = tbdd_from_xor(variables, phase);
-	save_constraint(this);
-	pseudo_arg_clause_count += (total_clause_count - start_clause);
-    }
-    else
-	validation = xcp->validation;
+    int start_clause = total_clause_count;
+    validation = tbdd_from_xor(variables, phase);
 }
 
 int xor_constraint::validate_clause(ilist clause) {
@@ -262,18 +186,8 @@ xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
     ilist nvariables = coefficient_sum(arg1->variables, arg2->variables);
     int nphase = arg1->phase ^ arg2->phase;
     pseudo_plus_computed++;
-    bdd xfun;
-    xor_constraint *xcp = find_constraint(nvariables, nphase, xfun);
-    if (xcp == NULL) {
-	pseudo_plus_unique++;
-	//	tbdd nvalidation = proof_type == PROOF_NONE ? tbdd_tautology() : tbdd_and(arg1->validation, arg2->validation);
-	//	xcp = new xor_constraint(nvariables, nphase, nvalidation);
-	xcp = new xor_constraint(nvariables, nphase, arg1->validation, arg2->validation);
-    }
-    return xcp;
+    return new xor_constraint(nvariables, nphase, arg1->validation, arg2->validation);
 }
-
-
 
 
 ///////////////////////////////////////////////////////////////////

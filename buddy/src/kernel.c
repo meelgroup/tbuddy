@@ -164,7 +164,7 @@ static char *errorstrings[BDD_ERRNUM] =
 
 static BDD checknode(BDD n) {
     if (n < 0 || n >= bddnodesize) { 
-	fprintf(stderr, "Invalid node %d detected.  Raising error\n", n);
+	fprintf(ERROUT, "Invalid node %d detected.  Raising error\n", n);
 	bdd_error(BDD_ORDER);
     }
     return n;
@@ -175,7 +175,7 @@ static BDD checknode(BDD n) {
 
 static int checkrange(int v) {
     if (v < 0 || v >= bddnodesize) { 
-	fprintf(stderr, "Invalid value %d detected.  Raising error\n", v);
+	fprintf(ERROUT, "Invalid value %d detected.  Raising error\n", v);
 	bdd_error(BDD_ORDER);
     }
     return v;
@@ -435,13 +435,13 @@ int bdd_setvarnum_ordered(int num, int *varlist)
 	      var = varlist[level];
 	      if (var < 0 || var >= num)
 	      {
-		  fprintf(stderr, "Invalid variable %d in initial ordering for level %d\n", var, level);
+		  fprintf(ERROUT, "Invalid variable %d in initial ordering for level %d\n", var, level);
 		  bdd_error(BDD_DECVNUM);
 		  return bddfalse;
 	      }
 	      if (bddvar2level[var] >= 0)
 	      {
-		  fprintf(stderr, "Attempt to assign variable %d to both levels %d and %d in initial ordering\n", var, bddvar2level[var], level);
+		  fprintf(ERROUT, "Attempt to assign variable %d to both levels %d and %d in initial ordering\n", var, bddvar2level[var], level);
 		  bdd_error(BDD_DECVNUM);
 		  return bddfalse;
 	      }
@@ -938,9 +938,9 @@ void bdd_default_errhandler(int e)
 {
     const char *s = bdd_errstring(e);
     if (s == NULL)
-	fprintf(stderr, "BDD error.  Unknown error code %d\n", e);
+	fprintf(ERROUT, "BDD error.  Unknown error code %d\n", e);
     else
-	fprintf(stderr, "BDD error: %s\n", bdd_errstring(e));
+	fprintf(ERROUT, "BDD error: %s\n", bdd_errstring(e));
     exit(1);
 }
 
@@ -1159,7 +1159,7 @@ int bdd_dclause(BDD root, dclause_t dtype)
    case DEF_LD:
        return ISONE(LOW(root)) ? TAUTOLOGY : result;
    default: /* Would like to throw exception here */
-       fprintf(stderr, "bdd_dclause got type %d\n", dtype);
+       fprintf(ERROUT, "bdd_dclause got type %d\n", dtype);
        return TAUTOLOGY;
    }
 }
@@ -1573,14 +1573,14 @@ int bdd_makenode(unsigned int level, int low, int high)
    /* Error checking */
    if (level >= LEVEL(low))
    {
-       fprintf(stderr, "Attempt to create invalid BDD node.  New Level = %d.  Low node level = %d\n", level, LEVEL(low));
+       fprintf(ERROUT, "Attempt to create invalid BDD node.  New Level = %d.  Low node level = %d\n", level, LEVEL(low));
        bdd_error(BDD_ILLBDD);
        return 0;
    }
 
    if (level >= LEVEL(high))
    {
-       fprintf(stderr, "Attempt to create invalid BDD node.  New Level = %d.  High node level = %d\n", level, LEVEL(high));
+       fprintf(ERROUT, "Attempt to create invalid BDD node.  New Level = %d.  High node level = %d\n", level, LEVEL(high));
        bdd_error(BDD_ILLBDD);
        return 0;
    }

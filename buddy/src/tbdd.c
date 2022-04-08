@@ -66,7 +66,7 @@ static void rc_init() {
     rc_allocated_count = TABLE_INIT_SIZE;
     rc_table = calloc(rc_allocated_count, sizeof(int));
     if (!rc_table) {
-	fprintf(stderr, "Couldn't allocate space for %d RC table entries\n", rc_allocated_count);
+	fprintf(ERROUT, "Couldn't allocate space for %d RC table entries\n", rc_allocated_count);
 	bdd_error(BDD_MEMORY);
 	return;
     }
@@ -87,7 +87,7 @@ static void rc_grow() {
     int nsize = rc_allocated_count * TABLE_SCALE;
     rc_table = realloc(rc_table, nsize*sizeof(int));
     if (!rc_table) {
-	fprintf(stderr, "Couldn't allocate space for %d RC table entries\n", rc_allocated_count);
+	fprintf(ERROUT, "Couldn't allocate space for %d RC table entries\n", rc_allocated_count);
 	bdd_error(BDD_MEMORY);
 	return;
     }
@@ -119,7 +119,7 @@ static int rc_get(int rci) {
     if (rci == -1)
 	return 1;
     if (rci < -1 || rci >= rc_allocated_count) {
-	fprintf(stderr, "Invalid RC index %d\n", rci);
+	fprintf(ERROUT, "Invalid RC index %d\n", rci);
 	bdd_error(BDD_RANGE);
 	return 0;
     }
@@ -131,12 +131,12 @@ static void rc_increment(int rci) {
 	/* TAUTOLOGY */
 	return;
     if (rci < -1 || rci >= rc_allocated_count) {
-	fprintf(stderr, "Invalid RC index %d\n", rci);
+	fprintf(ERROUT, "Invalid RC index %d\n", rci);
 	bdd_error(BDD_RANGE);
 	return;
     }
     if (rc_table[rci] == 0)
-	fprintf(stderr, "WARNING: Incrementing RC[%d] to 1\n", rci);
+	fprintf(ERROUT, "WARNING: Incrementing RC[%d] to 1\n", rci);
     rc_table[rci]++;
 }
 
@@ -145,13 +145,13 @@ static int rc_decrement(int rci) {
 	/* TAUTOLOGY */
 	return 1;
     if (rci < -1 || rci >= rc_allocated_count) {
-	fprintf(stderr, "Invalid RC index %d\n", rci);
+	fprintf(ERROUT, "Invalid RC index %d\n", rci);
 	bdd_error(BDD_RANGE);
 	return 0;
     }
     int nval = rc_table[rci]-1;
     if (nval < 0)
-	fprintf(stderr, "WARNING.  Decrementing RC[%d] to %d\n", rci, nval);
+	fprintf(ERROUT, "WARNING.  Decrementing RC[%d] to %d\n", rci, nval);
     rc_table[rci] = nval;
     return nval;
 }
@@ -242,14 +242,14 @@ void tbdd_done() {
 	} else if (cc == cd) {
 	    ic++; id++;
 	} else {
-	    fprintf(stderr, "ERROR: Unit clause %d dead but never created\n", cd);
+	    fprintf(ERROUT, "ERROR: Unit clause %d dead but never created\n", cd);
 	    id++;
 	}
     }
     while (ic < ilist_length(created_unit_clauses))
 	live_unit_clauses = ilist_push(live_unit_clauses, created_unit_clauses[ic++]);
     while (id < ilist_length(dead_unit_clauses))
-	fprintf(stderr, "ERROR: Unit clause %d dead but never created\n", dead_unit_clauses[id++]);
+	fprintf(ERROUT, "ERROR: Unit clause %d dead but never created\n", dead_unit_clauses[id++]);
 
     /* Delete outstanding unit clauses */
     if (ilist_length(live_unit_clauses) > 0) {
@@ -289,6 +289,7 @@ void tbdd_done() {
 	printf("c Input variables: %d\n", input_variable_count);
 	printf("c Input clauses: %d\n", input_clause_count);
 	printf("c Total clauses: %d\n", total_clause_count);
+	printf("c Unused clause IDs: %d\n", *clause_id_counter - total_clause_count);
 	printf("c Maximum live clauses: %d\n", max_live_clause_count);
 	printf("c Deleted clauses: %d\n", deleted_clause_count);
 	printf("c Final live clauses: %d\n", total_clause_count-deleted_clause_count);
@@ -302,7 +303,7 @@ void tbdd_done() {
 
 void tbdd_add_info_fun(tbdd_info_fun f) {
     if (ifun_count >= FUN_MAX) {
-	fprintf(stderr, "Limit of %d TBDD information functions.  Request ignored\n", FUN_MAX);
+	fprintf(ERROUT, "Limit of %d TBDD information functions.  Request ignored\n", FUN_MAX);
 	return;
     }
     ifuns[ifun_count++] = f;
@@ -310,7 +311,7 @@ void tbdd_add_info_fun(tbdd_info_fun f) {
 
 void tbdd_add_done_fun(tbdd_done_fun f) {
     if (dfun_count >= FUN_MAX) {
-	fprintf(stderr, "Limit of %d TBDD done functions.  Request ignored\n", FUN_MAX);
+	fprintf(ERROUT, "Limit of %d TBDD done functions.  Request ignored\n", FUN_MAX);
 	return;
     }
     dfuns[dfun_count++] = f;
@@ -449,7 +450,7 @@ TBDD tbdd_from_clause(ilist clause) {
 TBDD tbdd_from_clause_id(int id) {
     ilist clause = get_input_clause(id);
     if (clause == NULL) {
-	fprintf(stderr, "Invalid input clause #%d\n", id);
+	fprintf(ERROUT, "Invalid input clause #%d\n", id);
 	exit(1);
     }
     return tbdd_from_clause_with_id(clause, id);
@@ -535,7 +536,7 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     ilist ant = ilist_make(abuf, 2);
     pcbdd p = bdd_imptst_justify(tr.root, r);
     if (p.root != bdd_true()) {
-	fprintf(stderr, "Failed to prove implication N%d --> N%d\n", NNAME(tr.root), NNAME(r));
+	fprintf(ERROUT, "Failed to prove implication N%d --> N%d\n", NNAME(tr.root), NNAME(r));
 	exit(1);
     }
     print_proof_comment(2, "Validation of unit clause for N%d by implication from N%d",NNAME(r), NNAME(tr.root));
@@ -611,7 +612,7 @@ TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
 	return tbdd_validate(r, tr1);
     pcbdd p = bdd_and_imptst_justify(tr1.root, tr2.root, r);
     if (p.root != bdd_true()) {
-	fprintf(stderr, "Failed to prove implication N%d & N%d --> N%d\n", NNAME(tr1.root), NNAME(tr2.root), NNAME(r));
+	fprintf(ERROUT, "Failed to prove implication N%d & N%d --> N%d\n", NNAME(tr1.root), NNAME(tr2.root), NNAME(r));
 	exit(1);
     }
     int cbuf[1+ILIST_OVHD];

@@ -140,7 +140,7 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
     int *varlist = NULL;
     if (variable_ordering != NULL) {
 	if (ilist_length(variable_ordering) != input_variable_count) {
-	    fprintf(stderr, "Invalid variable ordering.  Given ordering for %d variables.  Must have %d\n",
+	    fprintf(ERROUT, "Invalid variable ordering.  Given ordering for %d variables.  Must have %d\n",
 		    ilist_length(variable_ordering), input_variable_count);
 	    return bdd_error(BDD_DECVNUM);
 	}
@@ -242,9 +242,9 @@ ilist clean_clause(ilist clause) {
 	    ilist_print(clause, proof_file, " ");
 	    fprintf(proof_file, "].\n");
 
-	    fprintf(stderr, "c ERROR.  Encountered literal 0 cleaning clause [");
-	    ilist_print(clause, stderr, " ");
-	    fprintf(stderr, "].\n");
+	    fprintf(ERROUT, "c ERROR.  Encountered literal 0 cleaning clause [");
+	    ilist_print(clause, ERROUT, " ");
+	    fprintf(ERROUT, "].\n");
 	    bdd_error(TBDD_PROOF);
 	}
 	if (lit == plit)
@@ -340,6 +340,10 @@ int generate_clause(ilist literals, ilist hints) {
 	return TAUTOLOGY;
     ilist clause = clean_clause(literals);
     int cid = ++(*clause_id_counter);
+    if (cid < 0) {
+	fprintf(ERROUT, "ERROR: Overflowed clause counter\n");
+	bdd_error(TBDD_PROOF);
+    }
     int rval = 0;
     hints = clean_hints(hints);
     unsigned char *d = dest_buf;
@@ -925,11 +929,11 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, pcbdd tresl, pcbdd tresh, 
 	    print_proof_comment(3, "  Candidate hints:");
 	    show_hints(proof_file);
 
-	    fprintf(stderr, "c ERROR.  RUP check failed in first half of proof.  Target = [");
-	    ilist_print(itarg, stderr, " ");
-	    fprintf(stderr, "].\n");
-	    fprintf(stderr, "c   Candidate hints:");
-	    show_hints(stderr);
+	    fprintf(ERROUT, "c ERROR.  RUP check failed in first half of proof.  Target = [");
+	    ilist_print(itarg, ERROUT, " ");
+	    fprintf(ERROUT, "].\n");
+	    fprintf(ERROUT, "c   Candidate hints:");
+	    show_hints(ERROUT);
 	    bdd_error(TBDD_PROOF);
 	}
 	for (oi = 0; oi < HINT_COUNT/2; oi++) {
@@ -947,11 +951,11 @@ int justify_apply(int op, BDD l, BDD r, int splitVar, pcbdd tresl, pcbdd tresh, 
 	    print_proof_comment(3, "  Candidate hints:");
 	    show_hints(proof_file);
 
-	    fprintf(stderr, "c Uh-Oh.  RUP check failed in second half of proof.  Target = [");
-	    ilist_print(itarg, stderr, " ");
-	    fprintf(stderr, "].\n");
-	    fprintf(stderr, "c   Candidate hints:");
-	    show_hints(stderr);
+	    fprintf(ERROUT, "c Uh-Oh.  RUP check failed in second half of proof.  Target = [");
+	    ilist_print(itarg, ERROUT, " ");
+	    fprintf(ERROUT, "].\n");
+	    fprintf(ERROUT, "c   Candidate hints:");
+	    show_hints(ERROUT);
 	    bdd_error(TBDD_PROOF);
 
 	}

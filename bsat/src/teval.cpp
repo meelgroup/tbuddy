@@ -410,7 +410,7 @@ public:
 	int rcode;
 	tbdd_set_verbose(verblevel);
 	if ((rcode = tbdd_init(proof_file, &variable_count, &last_clause_id, clauses, variable_ordering, ptype, binary)) != 0) {
-	    fprintf(stderr, "c Initialization failed.  Return code = %d\n", rcode);
+	    fprintf(stdout, "c Initialization failed.  Return code = %d\n", rcode);
 	    exit(1);
 	}
 	// Want to number terms starting at 1
@@ -649,17 +649,17 @@ public:
 	    case 'c':
 		c = get_numbers(schedfile, numbers);
 		if (c != '\n' && c != EOF) {
-		    fprintf(stderr, "c Schedule line #%d.  Clause command. Non-numeric argument '%c'\n", line, c);
+		    fprintf(stdout, "c Schedule line #%d.  Clause command. Non-numeric argument '%c'\n", line, c);
 		    exit(1);
 		}
 		for (int i = 0; i < numbers.size(); i++) {
 		    int ci = numbers[i];
 		    if (ci < 1 || ci > clause_count) {
-			fprintf(stderr, "c Schedule line #%d.  Invalid clause number %d\n", line, ci);
+			fprintf(stdout, "c Schedule line #%d.  Invalid clause number %d\n", line, ci);
 			exit(1);
 		    }
 		    if (ci >= terms.size()) {
-			fprintf(stderr, "c Schedule line #%d.  Internal error.  Attempting to get clause #%d, but only have %d terms\n", line, ci, (int) terms.size()-1);
+			fprintf(stdout, "c Schedule line #%d.  Internal error.  Attempting to get clause #%d, but only have %d terms\n", line, ci, (int) terms.size()-1);
 			exit(1);
 		    }
 		    term_stack.push_back(terms[ci]);
@@ -673,16 +673,16 @@ public:
 	    case 'a':
 		c = get_numbers(schedfile, numbers);
 		if (c != '\n' && c != EOF) {
-		    fprintf(stderr, "c Schedule line #%d.  And command. Non-numeric argument '%c'\n", line, c);
+		    fprintf(stdout, "c Schedule line #%d.  And command. Non-numeric argument '%c'\n", line, c);
 		    exit(1);
 		}
 		if (numbers.size() != 1) {
-		    fprintf(stderr, "c Schedule line #%d.  Should specify number of conjunctions\n", line);
+		    fprintf(stdout, "c Schedule line #%d.  Should specify number of conjunctions\n", line);
 		    exit(1);
 		} else {
 		    int ccount = numbers[0];
 		    if (ccount < 1 || ccount > term_stack.size()-1) {
-			fprintf(stderr, 
+			fprintf(stdout, 
 				"Schedule line #%d.  Cannot perform %d conjunctions.  Stack size = %d\n",
 				line, ccount, (int) term_stack.size());
 			exit(1);
@@ -690,14 +690,14 @@ public:
 		    Term *product = term_stack.back();
 		    term_stack.pop_back();
 		    if (!product->active()) {
-			fprintf(stderr, "c Schedule line #%d.  Attempting to reuse clause #%d\n", line, product->get_term_id());
+			fprintf(stdout, "c Schedule line #%d.  Attempting to reuse clause #%d\n", line, product->get_term_id());
 			exit(1);
 		    }
 		    while (ccount-- > 0) {
 			Term *tp = term_stack.back();
 			term_stack.pop_back();
 			if (!tp->active()) {
-			    fprintf(stderr, "c Schedule line #%d.  Attempting to reuse clause #%d\n", line, tp->get_term_id());
+			    fprintf(stdout, "c Schedule line #%d.  Attempting to reuse clause #%d\n", line, tp->get_term_id());
 			    exit(1);
 			}
 			product = conjunct(product, tp);
@@ -720,18 +720,18 @@ public:
 	    case 'q':
 		c = get_numbers(schedfile, numbers);
 		if (c != '\n' && c != EOF) {
-		    fprintf(stderr, "c Schedule line #%d.  Quantify command. Non-numeric argument '%c'\n", line, c);
+		    fprintf(stdout, "c Schedule line #%d.  Quantify command. Non-numeric argument '%c'\n", line, c);
 		    exit(1);
 		}
 		for (int i = 0; i < numbers.size(); i++) {
 		    int vi = numbers[i];
 		    if (vi < 1 || vi > max_variable) {
-			fprintf(stderr, "c Schedule line #%d.  Invalid variable %d\n", line, vi);
+			fprintf(stdout, "c Schedule line #%d.  Invalid variable %d\n", line, vi);
 			exit(1);
 		    }
 		}
 		if (term_stack.size() < 1) {
-		    fprintf(stderr, "c Schedule line #%d.  Cannot quantify.  Stack is empty\n", line);
+		    fprintf(stdout, "c Schedule line #%d.  Cannot quantify.  Stack is empty\n", line);
 		    exit(1);
 		} else {
 		    Term *tp = term_stack.back();
@@ -751,38 +751,38 @@ public:
 		if (isdigit(c)) {
 		    ungetc(c, schedfile);
 		    if (fscanf(schedfile, "%d", &modulus) != 1) {
-			fprintf(stderr, "c Schedule line #%d.  Invalid modulus\n", line);
+			fprintf(stdout, "c Schedule line #%d.  Invalid modulus\n", line);
 			exit(1);
 		    } else if (modulus != 2) {
-			fprintf(stderr, "c Schedule line #%d.  Only support modulus 2\n", line);
+			fprintf(stdout, "c Schedule line #%d.  Only support modulus 2\n", line);
 			exit(1);
 		    }
 		} else {
-		    fprintf(stderr, "c Schedule line #%d.  Modulus required\n", line);
+		    fprintf(stdout, "c Schedule line #%d.  Modulus required\n", line);
 		    exit(1);
 		}
 		if (fscanf(schedfile, "%d", &constant) != 1) {
-		    fprintf(stderr, "c Schedule line #%d.  Constant term required\n", line);
+		    fprintf(stdout, "c Schedule line #%d.  Constant term required\n", line);
 		    exit(1);
 		}
 		if (constant < 0 || constant >= modulus) {
-		    fprintf(stderr, "c Schedule line #%d.  Constant term %d invalid.  Must be between 0 and %d\n", line, constant, modulus-1);
+		    fprintf(stdout, "c Schedule line #%d.  Constant term %d invalid.  Must be between 0 and %d\n", line, constant, modulus-1);
 		    exit(1);
 		}
 		c = get_number_pairs(schedfile, numbers2, numbers, '.');
 		if (c != '\n' && c != EOF) {
-		    fprintf(stderr, "c Schedule line #%d.  Could not parse equation terms\n", line);
+		    fprintf(stdout, "c Schedule line #%d.  Could not parse equation terms\n", line);
 		    exit(1);
 		}
 		for (i = 0; i < numbers2.size(); i++) {
 		    int coeff = numbers2[i];
 		    if (coeff != 1) {
-			fprintf(stderr, "c Schedule line #%d.  Invalid coefficient %d\n", line, coeff);
+			fprintf(stdout, "c Schedule line #%d.  Invalid coefficient %d\n", line, coeff);
 			exit(1);
 		    }
 		}
 		if (term_stack.size() < 1) {
-		    fprintf(stderr, "c Schedule line #%d.  Cannot extract equation.  Stack is empty\n", line);
+		    fprintf(stdout, "c Schedule line #%d.  Cannot extract equation.  Stack is empty\n", line);
 		    exit(1);
 		} else {
 		    Term *tp = term_stack.back();
@@ -799,16 +799,16 @@ public:
 	    case 'g':
 		c = get_numbers(schedfile, numbers);
 		if (c != '\n' && c != EOF) {
-		    fprintf(stderr, "c Schedule line #%d.  Gauss command. Non-numeric argument '%c'\n", line, c);
+		    fprintf(stdout, "c Schedule line #%d.  Gauss command. Non-numeric argument '%c'\n", line, c);
 		    exit(1);
 		}
 		if (numbers.size() < 1) {
-		    fprintf(stderr, "c Schedule line #%d.  Should specify number of equations to sum\n", line);
+		    fprintf(stdout, "c Schedule line #%d.  Should specify number of equations to sum\n", line);
 		    exit(1);
 		} else {
 		    int ecount = numbers[0];
 		    if (ecount < 1 || ecount > term_stack.size()) {
-			fprintf(stderr, 
+			fprintf(stdout, 
 				"Schedule line #%d.  Cannot perform Gaussian elimination on %d equations.  Stack size = %d\n",
 				line, ecount, (int) term_stack.size());
 			exit(1);
@@ -821,7 +821,7 @@ public:
 			int si = term_stack.size() - i - 1;
 			Term *tp = term_stack[si];
 			if (tp->get_equation() == NULL) {
-			    fprintf(stderr, "c Schedule line #%d.  Term %d does not have an associated equation\n", line, tp->get_term_id());
+			    fprintf(stdout, "c Schedule line #%d.  Term %d does not have an associated equation\n", line, tp->get_term_id());
 			    exit(1);
 			}
 			xset.add(*tp->get_equation());
@@ -873,7 +873,7 @@ public:
 		line++;
 		break;
 	    default:
-		fprintf(stderr, "c Schedule line #%d.  Unknown command '%c'\n", line, c);
+		fprintf(stdout, "c Schedule line #%d.  Unknown command '%c'\n", line, c);
 		break;
 	    }
 	}
@@ -923,7 +923,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file,
 		      << cset.max_variable() << " variables" << std::endl;
     PhaseGenerator pg(GENERATE_RANDOM, DEFAULT_SEED);
     Solver solver(&pg);
-    ilist variable_ordering;
+    ilist variable_ordering = NULL;
     if (order_file != NULL) {
 	variable_ordering = ilist_read_file(order_file);
 	if (variable_ordering == NULL) {
