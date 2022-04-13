@@ -1,0 +1,42 @@
+PROBE:Generated size 50 in time 0.126
+PROBE:Running size 50
+PROBE:Ran size 50 in time 1.457
+PROBE:Generated size 100 in time 0.305
+PROBE:Running size 100
+PROBE:Ran size 100 in time 9.762
+PROBE:Generated size 200 in time 1.063
+PROBE:Running size 200
+PROBE:Ran size 200 in time 84.763
+PROBE:Generated size 400 in time 4.312
+PROBE:Running size 400
+PROBE:Ran size 400 in time 1277.608
+PROBE:Generated size 800 in time 17.747
+PROBE:Running size 800
+PROBE:Benchmark did not generate 'UNSAT' for size 800
+PROBE:Generated size 600 in time 9.988
+PROBE:Running size 600
+PROBE:Timed out size 600 after 3600.000
+PROBE:Generated size 500 in time 8.999
+PROBE:Running size 500
+PROBE:Ran size 500 in time 3443.003
+PROBE:Generated size 550 in time 8.251
+PROBE:Running size 550
+PROBE:Timed out size 550 after 3600.000
+PROBE:Generated size 524 in time 9.361
+PROBE:Running size 524
+PROBE:Timed out size 524 after 3600.000
+PROBE:Generated size 512 in time 8.816
+PROBE:Running size 512
+PROBE:Timed out size 512 after 3600.000
+PROBE:Generated size 506 in time 8.802
+PROBE:Running size 506
+PROBE:Timed out size 506 after 3600.000
+PROBE:Generated size 502 in time 8.885
+PROBE:Running size 502
+PROBE:Timed out size 502 after 3600.000
+PROBE:Converged: lsize:500, size:500, hsize:502
+PROBE:Running size 500
+PROBE:Ran size 500 in time 3664.911
+PROBE:Checker did not generate 'VERIFIED' for size 500
+PROBE:Completed size 500 in time 3664.911
+PROBE:Overall time for search: 33140.654
