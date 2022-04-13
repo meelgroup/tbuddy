@@ -18,6 +18,8 @@ TLIMS=900
 TLIML=3600
 ROOT=chew-bucket-$(SEED)
 MSIZE=500
+LSIZE=14000
+HSIZE=16000
 DSIZE=1
 
 gen:
@@ -40,7 +42,7 @@ sprobe:
 	$(INTERP) $(PROBER) -t $(TLIMS) -m $(MSIZE) -d $(DSIZE) -l $(ROOT)-sprobe.data
 
 lprobe:
-	$(INTERP) $(PROBER) -t $(TLIML) -m $(MSIZE) -d $(DSIZE) -l $(ROOT)-lprobe.data
+	$(INTERP) $(PROBER) -t $(TLIML) -m $(LSIZE) -h $(HSIZE) -d $(DSIZE) -l $(ROOT)-lprobe.data
 
 clean:
 	rm -f $(ROOT)-*.{cnf,schedule,order}

@@ -20,6 +20,8 @@ TLIMS=900
 TLIML=3600
 ROOT=chew-pgpbs-$(SEED)
 MSIZE=1000
+LSIZE=9000
+HSIZE=12000
 DSIZE=1
 
 gen:
@@ -43,7 +45,7 @@ sprobe:
 	$(INTERP) $(PROBER) -t $(TLIMS) -m $(MSIZE) -d $(DSIZE) -l $(ROOT)-sprobe.data
 
 lprobe:
-	$(INTERP) $(PROBER) -t $(TLIML) -m $(MSIZE) -d $(DSIZE) -l $(ROOT)-lprobe.data
+	$(INTERP) $(PROBER) -t $(TLIML) -m $(LSIZE) -h $(HSIZE) -d $(DSIZE) -l $(ROOT)-lprobe.data
 
 clean:
 	rm -f $(ROOT)-*.{cnf,schedule,order}

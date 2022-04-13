@@ -20,13 +20,14 @@ import getopt
 
 
 def usage(name):
-    print("Usage: %s [-h] [-v] [-p PATH] [-t TLIM] [-m SMIN] [-d SINCR] [-l LOG]")
+    print("Usage: %s [-h] [-v] [-p PATH] [-t TLIM] [-m SMIN] [-d SINCR] [-h SMAX] [-l LOG]")
     print("  -h         Print this message")
     print("  -v         Print generated results")
     print("  -p PATH    Directory containing benchmark")
     print("  -t TLIM    Time limit")
     print("  -m SMIN    Minimum size parameter")
     print("  -d SINCR   Size increment")
+    print("  -h SMAX    Maximum size)
     print("  -l LOG     Log file")
 
 makePath = "/usr/bin/make"
@@ -66,6 +67,7 @@ def dogenerate(path, size):
     secs = delta.seconds + 1e-6 * delta.microseconds
     wlog("Generated size %d in time %.3f" % (size, secs))
     return secs
+    
 
 def dorun(path, size, timelimit):
     # Allow a little extra so that timeout unambiguous
@@ -96,7 +98,7 @@ def dorun(path, size, timelimit):
     secs = delta.seconds + 1e-6 * delta.microseconds
     wlog("Ran size %d in time %.3f" % (size, secs))
     return secs
-
+    
 def docheck(path, size):
     alist = [makePath, "check", "SIZE=%d" % size]
     start = datetime.datetime.now()
@@ -116,7 +118,7 @@ def docheck(path, size):
     secs = delta.seconds + 1e-6 * delta.microseconds
     wlog("Checked size %d in time %.3f" % (size, secs))
     return secs
-
+    
 def doclear(path, size):
     if size == 0:
         return 0
@@ -125,12 +127,12 @@ def doclear(path, size):
     p = subprocess.Popen(alist)
     p.wait()
     if p.returncode != 0:
-        wlog("ERROR: Checker exited with return code %d" % p.returncode)
+        wlog('ERROR: Checker exited with return code %d' % p.returncode)
         return -1
     delta = datetime.datetime.now() - start
     secs = delta.seconds + 1e-6 * delta.microseconds
     return secs
-
+    
 def dopass(path, size, timelimit):
     if size in resultDict:
         return resultDict[size]
@@ -150,26 +152,35 @@ def nextsize(low, high, incrsize):
     m = (l+h)//2
     return m*incrsize
 
-def probe(path, minsize, incrsize, timelimit):
+# maxsize = None requires scaling up to find upper bound
+def probe(path, minsize, maxsize, incrsize, timelimit):
     start = datetime.datetime.now()
     psize = 0
     size = minsize
     t = 0.0
     # Scale up until exceed bound
-    while True:
-        t = dopass(path, size, timelimit)
-        if t < 0:
-            break
-        psize = size
-        size *= 2
-    if psize == 0:
-        wlog("Failed for minimum size %d" % minsize, True)
-        sys.exit(1)
+    if maxsize is None:
+        while True:
+            t = dopass(path, size, timelimit)
+            if t < 0:
+                break
+            psize = size
+            size *= 2
+        if psize == 0:
+            wlog('Failed for minimum size %d' % minsize, True)
+            sys.exit(1)
+        lsize = psize
+        hsize = size
+    else:
+        wlog('Making sure lower bound of %d is valid' % minsize)
+        if dopass(path, minsize, timelimit) < 0:
+            wlog('Failed for minimum size %d' % minsize, True)        
+            sys.exit(1)
+        lsize = minsize
+        hsize = maxsize
 
     # Binary searching.
     # Invariant: lsize is ok.  hsize is too big
-    lsize = psize
-    hsize = size
     while True:
         size = nextsize(lsize, hsize, incrsize)
         if size == lsize:
@@ -192,10 +203,11 @@ def probe(path, minsize, incrsize, timelimit):
 def run(name, arglist):
     path = '.'
     minsize = 1
+    maxsize = None
     incrsize = 1
     timelimit = 1000.0
     global logfile, verbose
-    optlist, args = getopt.getopt(arglist, "hvp:m:d:t:l:")
+    optlist, args = getopt.getopt(arglist, "hvp:m:d:t:l:h:")
     for (opt, val) in optlist:
         if opt == '-h':
             usage(name)
@@ -206,6 +218,8 @@ def run(name, arglist):
             path = val
         elif opt == '-m':
             minsize = int(val)
+        elif opt == '-h':
+            maxsize = int(val)
         elif opt == '-d':
             incrsize = int(val)
         elif opt == '-t':
@@ -220,7 +234,7 @@ def run(name, arglist):
             print("Unknown option '%s'" % opt)
             usage(name)
             return
-    probe(path, minsize, incrsize, timelimit)
+    probe(path, minsize, maxsize, incrsize, timelimit)
 
 if __name__ == "__main__":
     run(sys.argv[0], sys.argv[1:])
