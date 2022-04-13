@@ -1,29 +1,39 @@
-PROBE:Generated size 32 in time 0.090
-PROBE:Ran size 32 in time 0.561
-PROBE:Generated size 64 in time 0.160
-PROBE:Ran size 64 in time 2.935
-PROBE:Generated size 128 in time 0.485
-PROBE:Ran size 128 in time 21.640
-PROBE:Generated size 256 in time 1.889
-PROBE:Ran size 256 in time 216.630
-PROBE:Generated size 512 in time 7.279
-PROBE:Timed out size 512 after 900.000
-PROBE:Generated size 384 in time 4.951
-PROBE:Timed out size 384 after 900.000
-PROBE:Generated size 320 in time 2.954
-PROBE:Ran size 320 in time 533.697
-PROBE:Generated size 352 in time 3.355
-PROBE:Ran size 352 in time 733.361
-PROBE:Generated size 368 in time 3.695
+PROBE:Generated size 50 in time 0.117
+PROBE:Running size 50
+PROBE:Ran size 50 in time 1.469
+PROBE:Generated size 100 in time 0.314
+PROBE:Running size 100
+PROBE:Ran size 100 in time 10.054
+PROBE:Generated size 200 in time 1.086
+PROBE:Running size 200
+PROBE:Ran size 200 in time 86.818
+PROBE:Generated size 400 in time 4.331
+PROBE:Running size 400
+PROBE:Timed out size 400 after 900.000
+PROBE:Generated size 300 in time 2.585
+PROBE:Running size 300
+PROBE:Ran size 300 in time 402.850
+PROBE:Generated size 350 in time 3.636
+PROBE:Running size 350
+PROBE:Ran size 350 in time 726.552
+PROBE:Generated size 374 in time 3.788
+PROBE:Running size 374
+PROBE:Timed out size 374 after 900.000
+PROBE:Generated size 362 in time 4.768
+PROBE:Running size 362
+PROBE:Ran size 362 in time 812.986
+PROBE:Generated size 368 in time 3.700
+PROBE:Running size 368
 PROBE:Timed out size 368 after 900.000
-PROBE:Generated size 360 in time 4.065
-PROBE:Ran size 360 in time 793.581
-PROBE:Generated size 364 in time 3.690
-PROBE:Ran size 364 in time 819.611
-PROBE:Generated size 366 in time 3.814
-PROBE:Ran size 366 in time 895.355
+PROBE:Generated size 364 in time 4.961
+PROBE:Running size 364
+PROBE:Ran size 364 in time 814.258
+PROBE:Generated size 366 in time 3.651
+PROBE:Running size 366
+PROBE:Ran size 366 in time 882.282
 PROBE:Converged: lsize:366, size:366, hsize:368
-PROBE:Ran size 366 in time 930.688
-PROBE:Checked size 366 in time 367.934
-PROBE:Completed size 366 in time 895.355
-PROBE:Overall time for search: 8057.733
+PROBE:Running size 366
+PROBE:Ran size 366 in time 884.554
+PROBE:Checked size 366 in time 364.120
+PROBE:Completed size 366 in time 884.554
+PROBE:Overall time for search: 7723.990

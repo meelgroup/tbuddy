@@ -1,0 +1,30 @@
+PROBE:Generated size 50 in time 0.091
+PROBE:Running size 50
+PROBE:Ran size 50 in time 79.388
+PROBE:Generated size 100 in time 0.214
+PROBE:Running size 100
+PROBE:Timed out size 100 after 900.000
+PROBE:Generated size 75 in time 0.146
+PROBE:Running size 75
+PROBE:Ran size 75 in time 385.249
+PROBE:Generated size 87 in time 0.174
+PROBE:Running size 87
+PROBE:Ran size 87 in time 696.695
+PROBE:Generated size 93 in time 0.188
+PROBE:Running size 93
+PROBE:Timed out size 93 after 900.000
+PROBE:Generated size 90 in time 0.184
+PROBE:Running size 90
+PROBE:Ran size 90 in time 801.629
+PROBE:Generated size 91 in time 0.186
+PROBE:Running size 91
+PROBE:Ran size 91 in time 842.333
+PROBE:Generated size 92 in time 0.188
+PROBE:Running size 92
+PROBE:Ran size 92 in time 876.883
+PROBE:Converged: lsize:92, size:92, hsize:93
+PROBE:Running size 92
+PROBE:Ran size 92 in time 889.050
+PROBE:Checked size 92 in time 22.141
+PROBE:Completed size 92 in time 889.050
+PROBE:Overall time for search: 6395.044
