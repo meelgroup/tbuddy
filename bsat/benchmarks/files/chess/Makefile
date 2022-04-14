@@ -10,6 +10,9 @@ SOLNS=10
 VLEVEL=1
 RM = rm -f
 
+schess: chess-$(N)
+	make chess-$(N).sdata
+
 chess-$(N): $(GENERATOR)
 	$(INTERP) $(GENERATOR) -n $(N) -r chess-$(N)
 
