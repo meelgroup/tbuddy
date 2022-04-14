@@ -44,7 +44,7 @@ sprobe:
 	$(INTERP) $(PROBER) -t $(TLIMS) -m $(MSIZE) -d $(DSIZE) -l $(ROOT)-sprobe.data
 
 lprobe:
-	$(INTERP) $(PROBER) -t $(TLIML) -m $(MSIZE) -d $(DSIZE) -l $(ROOT)-lprobe.data
+	$(INTERP) $(PROBER) -t $(TLIML) -m $(LSIZE) -u $(HSIZE) -d $(DSIZE) -l $(ROOT)-lprobe.data
 
 clean:
 	rm -f $(ROOT)-*.{cnf,schedule,order}

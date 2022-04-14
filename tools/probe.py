@@ -20,14 +20,14 @@ import getopt
 
 
 def usage(name):
-    print("Usage: %s [-h] [-v] [-p PATH] [-t TLIM] [-m SMIN] [-d SINCR] [-h SMAX] [-l LOG]")
+    print("Usage: %s [-h] [-v] [-p PATH] [-t TLIM] [-m SMIN] [-d SINCR] [-u SMAX] [-l LOG]")
     print("  -h         Print this message")
     print("  -v         Print generated results")
     print("  -p PATH    Directory containing benchmark")
     print("  -t TLIM    Time limit")
     print("  -m SMIN    Minimum size parameter")
     print("  -d SINCR   Size increment")
-    print("  -h SMAX    Maximum size)
+    print("  -u SMAX    Maximum size")
     print("  -l LOG     Log file")
 
 makePath = "/usr/bin/make"
@@ -207,7 +207,7 @@ def run(name, arglist):
     incrsize = 1
     timelimit = 1000.0
     global logfile, verbose
-    optlist, args = getopt.getopt(arglist, "hvp:m:d:t:l:h:")
+    optlist, args = getopt.getopt(arglist, "hvp:m:d:t:l:u:")
     for (opt, val) in optlist:
         if opt == '-h':
             usage(name)
@@ -218,7 +218,7 @@ def run(name, arglist):
             path = val
         elif opt == '-m':
             minsize = int(val)
-        elif opt == '-h':
+        elif opt == '-u':
             maxsize = int(val)
         elif opt == '-d':
             incrsize = int(val)
