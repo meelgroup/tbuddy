@@ -1,18 +1,24 @@
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
+#include "signal.h"
 #include <sys/time.h>
 #include <string.h>
 #include "clause.h"
 
 #include "tbdd.h"
 
+/* Global values */
+
+/* Time limit for execution.  0 = no limit */
+int timelimit = 0;
+
 extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary, int max_solutions);
 
 // BDD-based SAT solver
 
 void usage(char *name) {
-    printf("Usage: %s [-h] [-b] [-v VERB] [-i FILE.cnf] [-o FILE.lrat(b)] [-p FILE.order] [-s FILE.schedule] [-m SOLNS]\n", name);
+    printf("Usage: %s [-h] [-b] [-v VERB] [-i FILE.cnf] [-o FILE.lrat(b)] [-p FILE.order] [-s FILE.schedule] [-m SOLNS] [-t TLIM]\n", name);
     printf("  -h               Print this message\n");
     printf("  -b               Use bucket elimination\n");
     printf("  -v VERB          Set verbosity level (0-3)\n");
@@ -21,7 +27,19 @@ void usage(char *name) {
     printf("  -p FILE.order    Specify variable ordering file\n");
     printf("  -s FILE.schedule Specify schedule file\n");
     printf("  -m SOLNS         Generate up to specified number of solutions\n");
+    printf("  -t TLIM          Set time limit for execution (seconds)\n");
     exit(0);
+}
+
+void sigalrmhandler(int sig) {
+    printf("Timeout after %d seconds\n", timelimit);
+    exit(1);
+}
+
+void set_timeout(int tlim) {
+    timelimit = tlim;
+    signal(SIGALRM, sigalrmhandler);
+    alarm(tlim);
 }
 
 
@@ -53,7 +71,7 @@ int main(int argc, char *argv[]) {
     int c;
     int verb = 1;
     int max_solutions = 1;
-    while ((c = getopt(argc, argv, "hbv:i:o:p:s:m:")) != -1) {
+    while ((c = getopt(argc, argv, "hbv:i:o:p:s:m:t:")) != -1) {
 	char buf[2] = { (char) c, '\0' };
 	char *extension;
 	switch (c) {
@@ -67,6 +85,9 @@ int main(int argc, char *argv[]) {
 	    break;
 	case 'm':
 	    max_solutions = atoi(optarg);
+	    break;
+	case 't':
+	    set_timeout(atoi(optarg));
 	    break;
 	case 'i':
 	    cnf_file = fopen(optarg, "r");
