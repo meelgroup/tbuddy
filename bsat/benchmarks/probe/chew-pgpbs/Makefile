@@ -11,7 +11,6 @@ CDIR = ~/repos/drat-trim
 CHECKER= $(CDIR)/lrat-check
 TDIR= ~/repos/tbuddy/tools
 PROBER=$(TDIR)/probe.py
-WRAP=$(TDIR)/wrap.py
 EDIR= ~/repos/pgbdd/extractor
 EXTRACT=$(EDIR)/xor_extractor.py
 TLIM=10
@@ -30,7 +29,7 @@ gen:
 	$(INTERP) $(EXTRACT) -i $(ROOT)-$(SIZE).cnf -o $(ROOT)-$(SIZE).schedule | tee $(ROOT)-$(SIZE).data
 
 run:
-	$(INTERP) $(WRAP) $(TLIM) $(SOLVER) -v $(VLEVEL) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule -o $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
+	$(SOLVER) -v $(VLEVEL) -t $(TLIM) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule -o $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
 
 check:
 	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
