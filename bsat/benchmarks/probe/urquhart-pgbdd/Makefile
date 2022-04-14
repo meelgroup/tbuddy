@@ -11,7 +11,6 @@ CDIR = ~/repos/drat-trim
 CHECKER= $(CDIR)/lrat-check
 TDIR= ~/repos/tbuddy/tools
 PROBER=$(TDIR)/probe.py
-WRAP=$(TDIR)/wrap.py
 TLIM=10
 TLIMM=30
 TLIMS=900
@@ -24,7 +23,7 @@ gen:
 	$(GENERATOR) -m$(SIZE) -p$(PCT) -f$(ROOT)-$(SIZE).cnf
 
 run:
-	$(INTERP) $(WRAP) $(TLIM) $(SOLVER) -v $(VLEVEL) -i $(ROOT)-$(SIZE).cnf -b -o $(ROOT)-$(SIZE).lrat | tee $(ROOT)-$(SIZE).data
+	$(SOLVER) -v $(VLEVEL) -t $(TLIM) -i $(ROOT)-$(SIZE).cnf -b -o $(ROOT)-$(SIZE).lrat | tee $(ROOT)-$(SIZE).data
 
 check:
 	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
