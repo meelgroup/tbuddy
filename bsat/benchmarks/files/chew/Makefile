@@ -12,6 +12,8 @@ LRAT = ~/repos/drat-trim/lrat-check
 VLEVEL=1
 RM=rm
 
+cnf: chew-$(N)-$(SEED).cnf
+
 bdata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).bdata
 
 rbdata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).rbdata
