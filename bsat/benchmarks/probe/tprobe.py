@@ -103,7 +103,8 @@ def genargs(size, final):
     if final:
         args += ["-o", froot + ".lrat"]
     else:
-        args += ["-o", "/dev/null"]
+        args += ["-o", froot + ".lrat"]
+#        args += ["-o", "/dev/null"]
         args += ["-t", str(timelimit)]
     if useschedule():
         args += ["-s", froot + ".schedule"]

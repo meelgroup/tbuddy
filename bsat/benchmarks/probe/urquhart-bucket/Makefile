@@ -19,6 +19,8 @@ ROOT=urquhart-bucket
 MSIZE=10
 DSIZE=1
 
+grun: gen run clear
+
 gen:
 	$(GENERATOR) -m$(SIZE) -p$(PCT) -f$(ROOT)-$(SIZE).cnf
 
@@ -29,7 +31,7 @@ check:
 	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
 
 clear:
-	rm -f $(ROOT)-$(SIZE).lrat
+	rm -f $(ROOT)-$(SIZE).{lrat,order,schedule,cnf}
 
 mprobe:
 	$(INTERP) $(PROBER) $(VERB) -t $(TLIMM) -m $(MSIZE) -d $(DSIZE) -l $(ROOT)-mprobe.data

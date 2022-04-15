@@ -17,17 +17,19 @@ ROOT=pigeon-scan
 MSIZE=50
 DSIZE=1
 
+grun: gen run clear
+
 gen:
 	$(INTERP) $(GENERATOR) -n $(SIZE) -r $(ROOT)-$(SIZE)
 
-#run:
-#	$(SOLVER) -t $(TLIM) -v $(VLEVEL) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule -o $(ROOT)-$(SIZE).lrat | tee $(ROOT)-$(SIZE).data
+run:
+	$(SOLVER) -t $(TLIM) -v $(VLEVEL) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule -o $(ROOT)-$(SIZE).lrat | tee $(ROOT)-$(SIZE).data
 
 check:
 	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
 
 clear:
-	rm -f $(ROOT)-$(SIZE).lrat
+	rm -f $(ROOT)-$(SIZE).{lrat,order,schedule,cnf}
 
 
 mprobe:

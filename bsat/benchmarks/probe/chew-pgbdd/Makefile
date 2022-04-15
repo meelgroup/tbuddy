@@ -21,18 +21,21 @@ LSIZE=4000
 HSIZE=6000
 DSIZE=1
 
+grun: gen run clear
+
+
 gen:
 	$(GENERATOR) $(SIZE) $(SEED) 
 	mv formula.cnf $(ROOT)-$(SIZE).cnf
 
-#run:
-#	$(SOLVER) -v $(VLEVEL) -t $(TLIM) -i $(ROOT)-$(SIZE).cnf -b -o $(ROOT)-$(SIZE).lrat | tee $(ROOT)-$(SIZE).data
+run:
+	$(SOLVER) -v $(VLEVEL) -t $(TLIM) -i $(ROOT)-$(SIZE).cnf -b -o $(ROOT)-$(SIZE).lrat | tee $(ROOT)-$(SIZE).data
 
 check:
 	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
 
 clear:
-	rm -f $(ROOT)-$(SIZE).lrat
+	rm -f $(ROOT)-$(SIZE).{lrat,order,schedule,cnf}
 
 mprobe:
 	$(INTERP) $(PROBER) -v $(VLEVEL) -b $(BENCH) -t $(TLIMM) -m $(MSIZE) -d $(DSIZE) -s $(SEED) -l $(ROOT)-mprobe.data
