@@ -1,6 +1,5 @@
 INTERP=python3
 SIZE = 08
-SEED=123456
 GDIR=../../generators
 GENERATOR = $(GDIR)/chew-code/parity-cnf
 SDIR = ~/repos/kissat/build
@@ -12,28 +11,43 @@ GRABBER= $(TDIR)/grab_data.py
 TPHRASE=process-time
 TLIM=10
 BENCH=chew-kissat
-ROOT=$(BENCH)-$(SEED)
 
 grun: gen run clear
 
 gen:
-	$(GENERATOR) $(SIZE) $(SEED) 
-	mv formula.cnf $(ROOT)-$(SIZE).cnf
+	$(GENERATOR) $(SIZE) 1
+	mv formula.cnf $(BENCH)-1-$(SIZE).cnf
+	$(GENERATOR) $(SIZE) 2
+	mv formula.cnf $(BENCH)-2-$(SIZE).cnf
+	$(GENERATOR) $(SIZE) 3
+	mv formula.cnf $(BENCH)-3-$(SIZE).cnf
+	$(GENERATOR) $(SIZE) 4
+	mv formula.cnf $(BENCH)-4-$(SIZE).cnf
+	$(GENERATOR) $(SIZE) 5
+	mv formula.cnf $(BENCH)-5-$(SIZE).cnf
 
 run:
-	$(SOLVER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).drat  | tee $(ROOT)-$(SIZE).data
+	$(SOLVER) $(BENCH)-1-$(SIZE).cnf $(BENCH)-1-$(SIZE).drat  | tee $(BENCH)-1-$(SIZE).data
+	$(SOLVER) $(BENCH)-2-$(SIZE).cnf $(BENCH)-2-$(SIZE).drat  | tee $(BENCH)-2-$(SIZE).data
+	$(SOLVER) $(BENCH)-3-$(SIZE).cnf $(BENCH)-3-$(SIZE).drat  | tee $(BENCH)-3-$(SIZE).data
+	$(SOLVER) $(BENCH)-4-$(SIZE).cnf $(BENCH)-4-$(SIZE).drat  | tee $(BENCH)-4-$(SIZE).data
+	$(SOLVER) $(BENCH)-5-$(SIZE).cnf $(BENCH)-5-$(SIZE).drat  | tee $(BENCH)-5-$(SIZE).data
 
 check:
-	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).drat | tee -a $(ROOT)-$(SIZE).data
+	$(CHECKER) $(BENCH)-1-$(SIZE).cnf $(BENCH)-1-$(SIZE).drat | tee -a $(BENCH)-1-$(SIZE).data
+	$(CHECKER) $(BENCH)-2-$(SIZE).cnf $(BENCH)-2-$(SIZE).drat | tee -a $(BENCH)-2-$(SIZE).data
+	$(CHECKER) $(BENCH)-3-$(SIZE).cnf $(BENCH)-3-$(SIZE).drat | tee -a $(BENCH)-3-$(SIZE).data
+	$(CHECKER) $(BENCH)-4-$(SIZE).cnf $(BENCH)-4-$(SIZE).drat | tee -a $(BENCH)-4-$(SIZE).data
+	$(CHECKER) $(BENCH)-5-$(SIZE).cnf $(BENCH)-5-$(SIZE).drat | tee -a $(BENCH)-5-$(SIZE).data
 
 clear:
-	rm -f $(ROOT)-$(SIZE).{drat,cnf,order,schedule}
+	rm -f $(BENCH)-*-$(SIZE).{drat,cnf,order,schedule}
 
 data:
-	$(INTERP) $(GRABBER) 2 $(TPHRASE) *.data > $(ROOT).csv
+	$(INTERP) $(GRABBER) 2 $(TPHRASE) *.data > $(BENCH).csv
 
 clean:
-	rm -f $(ROOT)-*.{cnf,order,schedule}
+	rm -f $(BENCH)-*.{cnf,order,schedule}
 	rm -f *.drat *~
 
 superclean: clean
