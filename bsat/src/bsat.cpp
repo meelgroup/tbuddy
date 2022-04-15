@@ -116,6 +116,11 @@ int main(int argc, char *argv[]) {
 		std::cerr << "Couldn't open file " << optarg << std::endl;
 		exit(1);
 	    }
+	    if (strcmp(optarg, "/dev/null") == 0) {
+		binary = false;
+		ptype = PROOF_LRAT;
+		break;
+	    }
 	    extension = get_extension(optarg);
 	    if (!extension) {
 		std::cerr << "Unknown file type '" << optarg << "'" << std::endl;
