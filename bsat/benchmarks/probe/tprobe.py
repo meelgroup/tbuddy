@@ -95,13 +95,15 @@ def genfroot(size):
     froot += "-" + str(size)
     return froot
 
-def genargs(size, nolimit):
+def genargs(size, final):
     froot = genfroot(size)
     args = [progpath[method], 
             "-v", str(vlevel),
-            "-i", froot + ".cnf", 
-            "-o", froot + ".lrat"]
-    if not nolimit:
+            "-i", froot + ".cnf"]
+    if final:
+        args += ["-o", froot + ".lrat"]
+    else:
+        args += ["-o", "/dev/null"]
         args += ["-t", str(timelimit)]
     if useschedule():
         args += ["-s", froot + ".schedule"]
@@ -184,10 +186,10 @@ def dogenerate(size):
             return -1
     return secs
 
-def dorun(size, nolimit = False):
+def dorun(size, final = False):
     froot = genfroot(size)
     # Allow a little extra so that timeout unambiguous
-    alist = genargs(size, nolimit)
+    alist = genargs(size, final)
     start = datetime.datetime.now()
     ok = runprog(alist, froot, size, sstring=okrunword)
     if not ok:
@@ -231,7 +233,6 @@ def dopass(size):
         wlog("Testing failed.  Exiting", True)
         sys.exit(1)
     t = dorun(size)
-    doclear(size)
     resultDict[size] = t
     return t
 
@@ -282,7 +283,7 @@ def probe(minsize, maxsize, incrsize):
         else:
             lsize = size
     # Final run
-    t = dorun(size, nolimit=True)
+    t = dorun(size, final=True)
     docheck(size)
     doclear(size)
     wlog("Completed size %d in time %.3f" % (size, t), True)
