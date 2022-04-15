@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+import os
 import sys
 import subprocess
 import datetime
@@ -116,32 +117,42 @@ def wlog(msg, strong = False):
     if trace or strong:
         print("PROBE:" + msg)
 
-def runprog(alist, froot = None, size = None, append=True):
+
+# Run specified command, expressed as list with program followed by arguments
+# Log results to data file, either with write or with append.
+# Optionally scan for expected string
+# Return True if execution OK (and string found)
+def runprog(alist, froot, size, append=True, sstring = None):
     logfile = None if froot is None else froot + ".data"
     wlog("Running '%s'" % " ".join(alist))
-    p = subprocess.Popen(alist, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     try:
-        out, err = p.communicate()
-        outs = out.decode('utf8')
-        fname = genfroot(size) + ".data"
-        if verbose:
-            print(outs)
-        if froot is not None:
-            try:
-                mode = 'a' if append else 'w'
-                dout = open(logfile, mode)
-                dout.write(outs)
-                dout.close()
-            except Exception as ex:
-                wlog("Failed to save output data file '%s' (%s)" % (logfile, str(ex)))
-                return None
+        mode = 'a' if append else 'w'
+        dout = open(logfile, mode)
     except Exception as ex:
-        wlog("Execution of program generated exception '%s'" % str(ex))
-        return None
+        wlog("Failed to open output data file '%s' (%s)" % (logfile, str(ex)))
+        return False
+    p = subprocess.Popen(alist, stdout=dout, stderr=subprocess.STDOUT)
+    p.wait()
+    dout.close()
     if p.returncode != 0:
         wlog("ERROR: Program exited with return code %d" % p.returncode, True)
-        return None
-    return outs
+        return False
+    if sstring is not None:
+        try:
+            din = open(logfile, 'r')
+        except Exception as ex:
+            wlog("Failed to open data file '%s' (%s) for reading" % (logfile, str(ex)))
+            return False
+        found = False
+        for line in din:
+            if sstring in line:
+                found = True
+                break
+        din.close()
+        if not found:
+            wlog("String '%s' not found in data file %s" % (sstring, logfile))
+            return False
+    return True
 
 def dogenerate(size):
     froot = genfroot(size)
@@ -156,22 +167,20 @@ def dogenerate(size):
     elif problem == 'urquhart':
         alist += ["-m%s" % size, "-p50", "-f%s.cnf" % froot]
     start = datetime.datetime.now()
-    outs = runprog(alist, froot, size, False)
-    if outs is None:
+    ok = runprog(alist, froot, size, False)
+    if not ok:
         return -1
     if problem == 'chew':
-        alist = [mvPath, "formula.cnf", "%s.cnf" % froot]
-        outs = runprog(alist)
-        if outs is None:
-            return -1
+        ncnf = "%s.cnf" % froot
+        os.rename("formula.cnf", ncnf)
     delta = datetime.datetime.now() - start
     secs = delta.seconds + 1e-6 * delta.microseconds
     wlog("Generated size %d in time %.3f" % (size, secs))
     if method in extractorpath:
         program = extractorpath[method]
         alist = [program, "-i", "%s.cnf" % froot, "-o", "%s.schedule" % froot]
-        outs = runprog(alist, froot, size)
-        if outs is None:
+        ok = runprog(alist, froot, size)
+        if not ok:
             return -1
     return secs
 
@@ -180,11 +189,8 @@ def dorun(size, nolimit = False):
     # Allow a little extra so that timeout unambiguous
     alist = genargs(size, nolimit)
     start = datetime.datetime.now()
-    outs = runprog(alist, froot, size)
-    if outs is None:
-        return -1
-    if okrunword not in outs:
-        wlog("Benchmark did not generate '%s' for size %d" % (okrunword, size))
+    ok = runprog(alist, froot, size, sstring=okrunword)
+    if not ok:
         return -1
     delta = datetime.datetime.now() - start
     secs = delta.seconds + 1e-6 * delta.microseconds
@@ -196,11 +202,8 @@ def docheck(size):
     program = progpath["check"]
     alist = [program, "%s.cnf" % froot, "%s.lrat" % froot]
     start = datetime.datetime.now()
-    outs = runprog(alist, froot, size)
-    if outs is None:
-        return -1
-    if okcheckword not in outs:
-        wlog("Checker did not generate '%s' for size %d" % (okcheckword, size))
+    ok = runprog(alist, froot, size, sstring=okcheckword)
+    if not ok:
         return -1
     delta = datetime.datetime.now() - start
     secs = delta.seconds + 1e-6 * delta.microseconds
