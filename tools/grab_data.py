@@ -72,7 +72,15 @@ def nthNumber(fields, n = 1):
                 if count == n:
                     return val
             except:
-                continue
+                if field[-1] == 's':
+                    field = field[:-1]
+                    try:
+                        val = float(field)
+                        count += 1
+                    except:
+                        continue
+                else:
+                    continue
     return -1
 
 
