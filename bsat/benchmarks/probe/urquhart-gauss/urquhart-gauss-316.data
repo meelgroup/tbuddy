@@ -1,0 +1,89 @@
+File urquhart-gauss-316.cnf: 
+    Equations extracted: 1395456
+    Input clauses: 5581824
+    Non-xor clauses: 0
+    Total variables: 2093184
+    Internal variables: 2093184
+    Extraction seconds: 46.88
+c Read 5581824 clauses.  2093184 variables
+c Garbage collection #1: 2000003 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #2: 3999971 nodes / 0 free / 0 previously freed  / 0.1s / 0.1s total
+c Garbage collection #3: 7999921 nodes / 0 free / 0 previously freed  / 0.1s / 0.2s total
+c Garbage collection #4: 11999903 nodes / 0 free / 0 previously freed  / 0.2s / 0.4s total
+c Garbage collection #5: 15999883 nodes / 992714 free / 685706 previously freed  / 0.5s / 0.9s total
+c Garbage collection #6: 15999883 nodes / 1325732 free / 666036 previously freed  / 0.5s / 1.4s total
+c Garbage collection #7: 15999883 nodes / 1649207 free / 646948 previously freed  / 0.5s / 1.9s total
+c Garbage collection #8: 15999883 nodes / 1963407 free / 628402 previously freed  / 0.5s / 2.4s total
+c Garbage collection #9: 15999883 nodes / 2268602 free / 610390 previously freed  / 0.5s / 2.8s total
+c Garbage collection #10: 15999883 nodes / 2565053 free / 592898 previously freed  / 0.4s / 3.3s total
+c Garbage collection #11: 15999883 nodes / 2853003 free / 575900 previously freed  / 0.4s / 3.7s total
+c Garbage collection #12: 15999883 nodes / 3132697 free / 559390 previously freed  / 0.4s / 4.1s total
+c Garbage collection #13: 15999883 nodes / 3404378 free / 543360 previously freed  / 0.4s / 4.5s total
+c Garbage collection #14: 15999883 nodes / 3668267 free / 527782 previously freed  / 0.4s / 4.9s total
+c Garbage collection #15: 15999883 nodes / 3924598 free / 512658 previously freed  / 0.4s / 5.3s total
+c Garbage collection #16: 15999883 nodes / 4173854 free / 498516 previously freed  / 0.4s / 5.7s total
+c Garbage collection #17: 15999883 nodes / 4417612 free / 487516 previously freed  / 0.4s / 6.1s total
+c Garbage collection #18: 15999883 nodes / 4654329 free / 473434 previously freed  / 0.4s / 6.5s total
+c Garbage collection #19: 15999883 nodes / 4884206 free / 459754 previously freed  / 0.4s / 6.8s total
+c Garbage collection #20: 15999883 nodes / 5107442 free / 446472 previously freed  / 0.4s / 7.2s total
+c Garbage collection #21: 15999883 nodes / 5324229 free / 433574 previously freed  / 0.3s / 7.5s total
+c Garbage collection #22: 15999883 nodes / 5534752 free / 421044 previously freed  / 0.3s / 7.9s total
+c Garbage collection #23: 15999883 nodes / 5739192 free / 408882 previously freed  / 0.3s / 8.2s total
+c Garbage collection #24: 15999883 nodes / 5937726 free / 397068 previously freed  / 0.3s / 8.5s total
+c Garbage collection #25: 15999883 nodes / 6130524 free / 385596 previously freed  / 0.3s / 8.8s total
+c Garbage collection #26: 15999883 nodes / 6317752 free / 374456 previously freed  / 0.3s / 9.1s total
+c Garbage collection #27: 15999883 nodes / 6499572 free / 363638 previously freed  / 0.3s / 9.4s total
+c Garbage collection #28: 15999883 nodes / 6676139 free / 353134 previously freed  / 0.3s / 9.7s total
+c Garbage collection #29: 15999883 nodes / 6847602 free / 342926 previously freed  / 0.3s / 10.0s total
+c Garbage collection #30: 15999883 nodes / 7014112 free / 333022 previously freed  / 0.3s / 10.3s total
+c Garbage collection #31: 15999883 nodes / 7175812 free / 323400 previously freed  / 0.3s / 10.6s total
+c Garbage collection #32: 15999883 nodes / 7332842 free / 314058 previously freed  / 0.3s / 10.8s total
+c Garbage collection #33: 15999883 nodes / 7485332 free / 304982 previously freed  / 0.3s / 11.1s total
+c Performing Gauss-Jordan elimination with 1395456 equations, 2093184  variables (0 external)
+c Garbage collection #34: 15999883 nodes / 5424672 free / 5424672 previously freed  / 2.6s / 13.7s total
+c Garbage collection #35: 15999883 nodes / 3801398 free / 3801398 previously freed  / 1.9s / 15.6s total
+c Garbage collection #36: 15999883 nodes / 2688194 free / 2688194 previously freed  / 1.5s / 17.0s total
+c Garbage collection #37: 19999873 nodes / 4709168 free / 4709168 previously freed  / 2.3s / 19.4s total
+c Garbage collection #38: 19999873 nodes / 3300779 free / 3300779 previously freed  / 1.8s / 21.2s total
+c Garbage collection #39: 23999839 nodes / 5148866 free / 5148866 previously freed  / 2.6s / 23.7s total
+c Garbage collection #40: 23999839 nodes / 3550496 free / 3550496 previously freed  / 1.9s / 25.7s total
+c Garbage collection #41: 27999791 nodes / 5223110 free / 5223110 previously freed  / 2.6s / 28.3s total
+c Gauss-Jordan completed.  1395455 steps.  System infeasible
+s UNSATISFIABLE
+c Unit clauses: Created 11163647.  Deleted 11163645.  Remaining = [488585856 504484115]
+
+c Cache statistics
+c ----------------
+c Unique Access:  91859490
+c Unique Chain:   63574252
+c Unique Hit:     20875828
+c Unique Miss:    70983662
+c => Hit rate =   0.23
+c Operator Hits:  88722645
+c Operator Miss:  104596765
+c => Hit rate =   0.46
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 70983662
+c Input variables: 2093184
+c Input clauses: 5581824
+c Total clauses: 484548938
+c Unused clause IDs: 19935177 (4.1%)
+c Maximum live clauses: 114056086
+c Deleted clauses: 478967114
+c Final live clauses: 5581824
+c Total variables: 73076844
+
+c PseudoBoolean statistics:
+c ----------------
+c Number of XOR constraints used: 2790911
+c Number of unique XOR constraints: 2790911
+c Average (unique) constraint size: 11.96
+c Number of XOR additions performed: 1395455
+c Elapsed seconds: 529.32
+c parsed a formula with 2093184 variables and 5581824 clauses
+c VERIFIED
+c Added clauses = 484548938.  Deleted clauses = 389626027.  Max live clauses = 114056086
+c verification time = 346.95 secs
