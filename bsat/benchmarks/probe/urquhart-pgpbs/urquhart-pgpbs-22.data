@@ -1,0 +1,16 @@
+File urquhart-pgpbs-22.cnf: 6600 equations extracted
+Performing justification of 13199 steps.  Modulus = 2.
+UNSAT
+Input variables: 9900
+Total nodes: 253498
+Maximum live nodes: 78478
+Total apply operations: 691257
+Total GCs performed: 34
+Results from proof generation
+Total Clauses: 1612198
+Input clauses: 26400
+Equation system proved formula UNSAT
+  Solution status: unsolvable
+  Solving: 6599 steps.  5.54 avg pivot degree (max=1163)
+    13198 total equations.  121794 total nonzeros (9.23 avg, 1276 max).  6598 vector operations
+Elapsed time for SAT: 121.15 seconds
