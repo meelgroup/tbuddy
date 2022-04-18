@@ -19,6 +19,8 @@ DSIZE=2
 
 grun: gen run clear
 
+final: gen run check clear
+
 gen:
 	$(INTERP) $(GENERATOR) -n $(SIZE) -r $(ROOT)-$(SIZE)
 

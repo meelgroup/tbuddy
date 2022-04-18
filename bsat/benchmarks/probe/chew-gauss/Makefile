@@ -24,6 +24,7 @@ DSIZE=1
 
 grun: gen run clear
 
+final: gen run check clear
 
 gen:
 	$(GENERATOR) $(SIZE) $(SEED) 

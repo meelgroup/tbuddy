@@ -22,6 +22,8 @@ DSIZE=1
 
 grun: gen run clear
 
+final: gen run check clear
+
 gen:
 	$(GENERATOR) -m$(SIZE) -p$(PCT) -f$(ROOT)-$(SIZE).cnf
 	$(INTERP) $(EXTRACT) -i $(ROOT)-$(SIZE).cnf -o $(ROOT)-$(SIZE).schedule | tee $(ROOT)-$(SIZE).data

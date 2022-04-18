@@ -4,44 +4,47 @@ GDIR=../../generators
 GENERATOR = $(GDIR)/chew-code/parity-cnf
 SDIR = ~/repos/kissat/build
 SOLVER = $(SDIR)/kissat
+SFLAGS = --unsat
 CDIR = ~/repos/drat-trim
 CHECKER= $(CDIR)/drat-trim
 TDIR= ~/repos/tbuddy/tools
 GRABBER= $(TDIR)/grab_data.py
 TPHRASE=process-time
-TLIM=10
+TLIM=4500
 BENCH=chew-kissat
 
 grun: gen run clear
 
+final: gen run check clear
+
 gen:
 	$(GENERATOR) $(SIZE) 1
-	mv formula.cnf $(BENCH)-1-$(SIZE).cnf
+	mv formula.cnf $(BENCH)-$(SIZE)-1.cnf
 	$(GENERATOR) $(SIZE) 2
-	mv formula.cnf $(BENCH)-2-$(SIZE).cnf
+	mv formula.cnf $(BENCH)-$(SIZE)-2.cnf
 	$(GENERATOR) $(SIZE) 3
-	mv formula.cnf $(BENCH)-3-$(SIZE).cnf
+	mv formula.cnf $(BENCH)-$(SIZE)-3.cnf
 	$(GENERATOR) $(SIZE) 4
-	mv formula.cnf $(BENCH)-4-$(SIZE).cnf
+	mv formula.cnf $(BENCH)-$(SIZE)-4.cnf
 	$(GENERATOR) $(SIZE) 5
-	mv formula.cnf $(BENCH)-5-$(SIZE).cnf
+	mv formula.cnf $(BENCH)-$(SIZE)-5.cnf
 
 run:
-	$(SOLVER) $(BENCH)-1-$(SIZE).cnf $(BENCH)-1-$(SIZE).drat  | tee $(BENCH)-1-$(SIZE).data
-	$(SOLVER) $(BENCH)-2-$(SIZE).cnf $(BENCH)-2-$(SIZE).drat  | tee $(BENCH)-2-$(SIZE).data
-	$(SOLVER) $(BENCH)-3-$(SIZE).cnf $(BENCH)-3-$(SIZE).drat  | tee $(BENCH)-3-$(SIZE).data
-	$(SOLVER) $(BENCH)-4-$(SIZE).cnf $(BENCH)-4-$(SIZE).drat  | tee $(BENCH)-4-$(SIZE).data
-	$(SOLVER) $(BENCH)-5-$(SIZE).cnf $(BENCH)-5-$(SIZE).drat  | tee $(BENCH)-5-$(SIZE).data
+	$(SOLVER) $(SFLAGS) $(BENCH)-$(SIZE)-1.cnf $(BENCH)-$(SIZE)-1.drat --time=$(TLIM)  | tee $(BENCH)-$(SIZE)-1.data
+	$(SOLVER) $(SFLAGS) $(BENCH)-$(SIZE)-2.cnf $(BENCH)-$(SIZE)-2.drat --time=$(TLIM)  | tee $(BENCH)-$(SIZE)-2.data
+	$(SOLVER) $(SFLAGS) $(BENCH)-$(SIZE)-3.cnf $(BENCH)-$(SIZE)-3.drat --time=$(TLIM)  | tee $(BENCH)-$(SIZE)-3.data
+	$(SOLVER) $(SFLAGS) $(BENCH)-$(SIZE)-4.cnf $(BENCH)-$(SIZE)-4.drat --time=$(TLIM)  | tee $(BENCH)-$(SIZE)-4.data
+	$(SOLVER) $(SFLAGS) $(BENCH)-$(SIZE)-5.cnf $(BENCH)-$(SIZE)-5.drat --time=$(TLIM)  | tee $(BENCH)-$(SIZE)-5.data
 
 check:
-	$(CHECKER) $(BENCH)-1-$(SIZE).cnf $(BENCH)-1-$(SIZE).drat | tee -a $(BENCH)-1-$(SIZE).data
-	$(CHECKER) $(BENCH)-2-$(SIZE).cnf $(BENCH)-2-$(SIZE).drat | tee -a $(BENCH)-2-$(SIZE).data
-	$(CHECKER) $(BENCH)-3-$(SIZE).cnf $(BENCH)-3-$(SIZE).drat | tee -a $(BENCH)-3-$(SIZE).data
-	$(CHECKER) $(BENCH)-4-$(SIZE).cnf $(BENCH)-4-$(SIZE).drat | tee -a $(BENCH)-4-$(SIZE).data
-	$(CHECKER) $(BENCH)-5-$(SIZE).cnf $(BENCH)-5-$(SIZE).drat | tee -a $(BENCH)-5-$(SIZE).data
+	$(CHECKER) $(BENCH)-$(SIZE)-1.cnf $(BENCH)-$(SIZE)-1.drat | tee -a $(BENCH)-$(SIZE)-1.data
+	$(CHECKER) $(BENCH)-$(SIZE)-2.cnf $(BENCH)-$(SIZE)-2.drat | tee -a $(BENCH)-$(SIZE)-2.data
+	$(CHECKER) $(BENCH)-$(SIZE)-3.cnf $(BENCH)-$(SIZE)-3.drat | tee -a $(BENCH)-$(SIZE)-3.data
+	$(CHECKER) $(BENCH)-$(SIZE)-4.cnf $(BENCH)-$(SIZE)-4.drat | tee -a $(BENCH)-$(SIZE)-4.data
+	$(CHECKER) $(BENCH)-$(SIZE)-5.cnf $(BENCH)-$(SIZE)-5.drat | tee -a $(BENCH)-$(SIZE)-5.data
 
 clear:
-	rm -f $(BENCH)-*-$(SIZE).{drat,cnf,order,schedule}
+	rm -f $(BENCH)-$(SIZE)-*.{drat,cnf,order,schedule}
 
 data:
 	$(INTERP) $(GRABBER) 2 $(TPHRASE) *.data > $(BENCH).csv

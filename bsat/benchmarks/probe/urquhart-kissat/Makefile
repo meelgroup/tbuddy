@@ -15,6 +15,8 @@ ROOT=urquhart-kissat
 
 grun: gen run clear
 
+final: gen run check clear
+
 gen:
 	$(GENERATOR) -m$(SIZE) -p$(PCT) -f$(ROOT)-$(SIZE).cnf
 

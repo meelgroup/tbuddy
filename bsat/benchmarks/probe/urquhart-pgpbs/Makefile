@@ -1,7 +1,7 @@
 INTERP=python3
 SIZE = 08
 VLEVEL = 01
-VERB=
+SEED=123456
 GDIR=../../generators
 GENERATOR = $(GDIR)/urquhart-li-code/generate
 PCT=50
@@ -23,12 +23,14 @@ DSIZE=1
 
 grun: gen run clear
 
+final: gen run check clear
+
 gen:
 	$(GENERATOR) -m$(SIZE) -p$(PCT) -f$(ROOT)-$(SIZE).cnf
 	$(INTERP) $(EXTRACT) -i $(ROOT)-$(SIZE).cnf -o $(ROOT)-$(SIZE).schedule | tee $(ROOT)-$(SIZE).data
 
 run:
-	$(SOLVER) -v $(VLEVEL) -t $(TLIM) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule -o $(ROOT)-$(SIZE).lrat  2>&1 | tee -a $(ROOT)-$(SIZE).data
+	$(SOLVER) -v $(VLEVEL) -t $(TLIM) -r $(SEED) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule -o $(ROOT)-$(SIZE).lrat  2>&1 | tee -a $(ROOT)-$(SIZE).data
 
 check:
 	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
