@@ -5,6 +5,7 @@ GENERATOR = $(GDIR)/urquhart-li-code/generate
 PCT=50
 SDIR = ~/repos/kissat/build
 SOLVER = $(SDIR)/kissat
+SFLAGS = --unsat
 CDIR = ~/repos/drat-trim
 CHECKER= $(CDIR)/drat-trim
 TDIR= ~/repos/tbuddy/tools
@@ -20,8 +21,11 @@ final: gen run check clear
 gen:
 	$(GENERATOR) -m$(SIZE) -p$(PCT) -f$(ROOT)-$(SIZE).cnf
 
+nrun:
+	$(SOLVER) $(SFLAGS) $(ROOT)-$(SIZE).cnf  | tee $(ROOT)-$(SIZE).data
+
 run:
-	$(SOLVER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).drat  | tee $(ROOT)-$(SIZE).data
+	$(SOLVER) $(SFLAGS) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).drat  | tee $(ROOT)-$(SIZE).data
 
 check:
 	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).drat | tee -a $(ROOT)-$(SIZE).data

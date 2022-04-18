@@ -1,0 +1,20 @@
+File chew-pgpbs-123456-2125.cnf: 4246 equations extracted
+Performing justification of 8491 steps.  Modulus = 2.
+UNSAT
+Input variables: 6369
+Total nodes: 3251968
+Maximum live nodes: 50599
+Total apply operations: 11220403
+Total GCs performed: 612
+Results from proof generation
+Total Clauses: 24168975
+Input clauses: 16984
+Equation system proved formula UNSAT
+  Solution status: unsolvable
+  Solving: 4245 steps.  3.45 avg pivot degree (max=30)
+    8490 total equations.  2321603 total nonzeros (273.45 avg, 1598 max).  4244 vector operations
+Elapsed time for SAT: 1173.67 seconds
+c parsed a formula with 6369 variables and 16984 clauses
+c VERIFIED
+c Added clauses = 24168975.  Deleted clauses = 24036050.  Max live clauses = 211369
+c verification time = 19.13 secs
