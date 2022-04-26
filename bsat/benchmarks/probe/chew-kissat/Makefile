@@ -12,10 +12,18 @@ GRABBER= $(TDIR)/grab_data.py
 TPHRASE=process-time
 TLIM=4500
 BENCH=chew-kissat
+SEED=1
 
 grun: gen run clear
 
 final: gen run check clear
+
+final1:
+	$(GENERATOR) $(SIZE) $(SEED)
+	mv formula.cnf $(BENCH)-$(SIZE)-$(SEED).cnf
+	$(SOLVER) $(SFLAGS) $(BENCH)-$(SIZE)-$(SEED).cnf $(BENCH)-$(SIZE)-$(SEED).drat --time=$(TLIM)  | tee $(BENCH)-$(SIZE)-$(SEED).data
+	$(CHECKER) $(BENCH)-$(SIZE)-$(SEED).cnf $(BENCH)-$(SIZE)-$(SEED).drat | tee -a $(BENCH)-$(SIZE)-$(SEED).data
+	rm -f $(BENCH)-$(SIZE)-$(SEED).{drat,cnf,order,schedule}
 
 gen:
 	$(GENERATOR) $(SIZE) 1
