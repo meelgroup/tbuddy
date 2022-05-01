@@ -22,7 +22,7 @@ MSIZE=1000
 LSIZE=9000
 HSIZE=12000
 DSIZE=1
-NZLIM=200000
+NZLIM=800000
 
 grun: gen run clear
 
@@ -83,7 +83,7 @@ lprobe:
 	$(INTERP) $(PROBER) -v $(VLEVEL) -b $(BENCH) -t $(TLIML) -m $(LSIZE) -u $(HSIZE) -d $(DSIZE) -s $(SEED) -l $(ROOT)-lprobe.data
 
 clean:
-	rm -f $(ROOT)-*.{cnf,schedule,order}
+	rm -f *.{cnf,schedule,order}
 	rm -f *.lrat *~
 
 superclean: clean
