@@ -101,7 +101,9 @@ def genParityChain(vars, phase):
         genParityChain(right, phase)
 
 # Generate atMost-k ladder and assert that it holds
-# Only enforce one side of constraints (Plaisted-Greenbaum)
+# When global flag "optimize" set, only enforce one side of
+# constraints (Plaisted-Greenbaum)
+# When not set, use Tseitin encoding
 def enforceAmk(vars, k):
     m = len(vars)
     # Assume 0 <= k < m
