@@ -275,7 +275,6 @@ void tbdd_done() {
     rc_done();
     for (i = 0; i < dfun_count; i++)
 	dfuns[i]();
-    prover_done();
     if (verbosity_level >= 1) {
 	bddStat s;
 	bdd_stats(&s);
@@ -285,6 +284,7 @@ void tbdd_done() {
 	printf("c Total BDD nodes produced: %ld\n", s.produced);
     }
     bdd_done();
+    prover_done();
     if (verbosity_level >= 1) {
 	printf("c Input variables: %d\n", input_variable_count);
 	printf("c Input clauses: %d\n", input_clause_count);

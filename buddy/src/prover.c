@@ -168,7 +168,7 @@ void prover_done() {
 	int ebuf[ILIST_OVHD];
 	ilist elist = ilist_make(ebuf, 0);
 	/* Do final garbage collection to delete remaining clauses */
-	bdd_gbc();
+	//	bdd_gbc();
 	/* Finalize empty clause */
 	if (empty_clause_id != TAUTOLOGY) {
 	    print_proof_comment(2, "Retaining empty clause");
