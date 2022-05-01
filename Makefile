@@ -11,7 +11,7 @@ all:
 install:
 	install -d $(DESTDIR)$(PREFIX)/lib/
 	install -m 644 buddy/lib/libtbuddy.so $(DESTDIR)$(PREFIX)/lib/
-	install -m 644 buddy/lib/tbuddy.a $(DESTDIR)$(PREFIX)/lib/
+	install -m 644 buddy/lib/tbuddy.a $(DESTDIR)$(PREFIX)/lib/libtbuddy.a
 	install -m 644 buddy/lib/buddy.a $(DESTDIR)$(PREFIX)/lib/
 	install -d $(DESTDIR)$(PREFIX)/include/
 	install -m 644 buddy/include/bdd.h $(DESTDIR)$(PREFIX)/include/
