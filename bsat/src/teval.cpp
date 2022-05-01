@@ -312,6 +312,7 @@ public:
 	node_count = 0;
 	if (xor_equation != NULL)
 	    delete xor_equation;
+	xor_equation = NULL;
 	return rval;
     }
 
