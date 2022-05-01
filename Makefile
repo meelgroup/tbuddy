@@ -3,6 +3,11 @@ ifeq ($(PREFIX),)
     PREFIX := /usr/local
 endif
 
+clean:
+	cd buddy/src; make clean
+	cd bsat/src; make clean
+	cd xtree/src; make clean
+
 all:
 	cd buddy/src; make all
 	cd bsat/src; make clean; make all
