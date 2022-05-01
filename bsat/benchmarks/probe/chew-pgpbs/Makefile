@@ -16,7 +16,7 @@ TLIM=10
 TLIMM=30
 TLIMS=900
 TLIML=3600
-BENCH=chew-pgpbs
+BENCH=chew-pgpbs-$(INTERP)
 ROOT=$(BENCH)-$(SEED)
 MSIZE=1000
 LSIZE=9000
@@ -32,28 +32,28 @@ grun5: gen5 run5 clear5
 
 gen:
 	$(GENERATOR) $(SIZE) $(SEED) 
-	mv formula.cnf $(ROOT)-$(SIZE)-$(SEED).cnf
-	$(INTERP) $(EXTRACT) -i $(ROOT)-$(SIZE)-$(SEED).cnf -o $(ROOT)-$(SIZE)-$(SEED).schedule | tee $(ROOT)-$(SIZE)-$(SEED).data
+	mv formula.cnf $(BENCH)-$(SIZE)-$(SEED).cnf
+	$(INTERP) $(EXTRACT) -r $(SEED) -i $(BENCH)-$(SIZE)-$(SEED).cnf -o $(BENCH)-$(SIZE)-$(SEED).schedule | tee $(BENCH)-$(SIZE)-$(SEED).data
 
 run:
-	$(SOLVER) -v $(VLEVEL) -r $(SEED) -t $(TLIM) -Z $(NZLIM) -i $(ROOT)-$(SIZE)-$(SEED).cnf -s $(ROOT)-$(SIZE)-$(SEED).schedule -o $(ROOT)-$(SIZE)-$(SEED).lrat 2>&1 | tee -a $(ROOT)-$(SIZE)-$(SEED).data
+	$(INTERP) $(SOLVER) -v $(VLEVEL) -r $(SEED) -t $(TLIM) -Z $(NZLIM) -i $(BENCH)-$(SIZE)-$(SEED).cnf -s $(BENCH)-$(SIZE)-$(SEED).schedule -o $(BENCH)-$(SIZE)-$(SEED).lrat 2>&1 | tee -a $(BENCH)-$(SIZE)-$(SEED).data
 
 gen5:
 	$(GENERATOR) $(SIZE) 1 
 	mv formula.cnf $(BENCH)-$(SIZE)-1.cnf
-	$(INTERP) $(EXTRACT) -i $(BENCH)-$(SIZE)-1.cnf -o $(BENCH)-$(SIZE)-1.schedule | tee $(BENCH)-$(SIZE)-1.data
+	$(INTERP) $(EXTRACT) -r $(SEED) -i $(BENCH)-$(SIZE)-1.cnf -o $(BENCH)-$(SIZE)-1.schedule | tee $(BENCH)-$(SIZE)-1.data
 	$(GENERATOR) $(SIZE) 2 
 	mv formula.cnf $(BENCH)-$(SIZE)-2.cnf
-	$(INTERP) $(EXTRACT) -i $(BENCH)-$(SIZE)-2.cnf -o $(BENCH)-$(SIZE)-2.schedule | tee $(BENCH)-$(SIZE)-2.data
+	$(INTERP) $(EXTRACT) -r $(SEED) -i $(BENCH)-$(SIZE)-2.cnf -o $(BENCH)-$(SIZE)-2.schedule | tee $(BENCH)-$(SIZE)-2.data
 	$(GENERATOR) $(SIZE) 3 
 	mv formula.cnf $(BENCH)-$(SIZE)-3.cnf
-	$(INTERP) $(EXTRACT) -i $(BENCH)-$(SIZE)-3.cnf -o $(BENCH)-$(SIZE)-3.schedule | tee $(BENCH)-$(SIZE)-3.data
+	$(INTERP) $(EXTRACT) -r $(SEED) -i $(BENCH)-$(SIZE)-3.cnf -o $(BENCH)-$(SIZE)-3.schedule | tee $(BENCH)-$(SIZE)-3.data
 	$(GENERATOR) $(SIZE) 4 
 	mv formula.cnf $(BENCH)-$(SIZE)-4.cnf
-	$(INTERP) $(EXTRACT) -i $(BENCH)-$(SIZE)-4.cnf -o $(BENCH)-$(SIZE)-4.schedule | tee $(BENCH)-$(SIZE)-4.data
+	$(INTERP) $(EXTRACT) -r $(SEED) -i $(BENCH)-$(SIZE)-4.cnf -o $(BENCH)-$(SIZE)-4.schedule | tee $(BENCH)-$(SIZE)-4.data
 	$(GENERATOR) $(SIZE) 5 
 	mv formula.cnf $(BENCH)-$(SIZE)-5.cnf
-	$(INTERP) $(EXTRACT) -i $(BENCH)-$(SIZE)-5.cnf -o $(BENCH)-$(SIZE)-5.schedule | tee $(BENCH)-$(SIZE)-5.data
+	$(INTERP) $(EXTRACT) -r $(SEED) -i $(BENCH)-$(SIZE)-5.cnf -o $(BENCH)-$(SIZE)-5.schedule | tee $(BENCH)-$(SIZE)-5.data
 
 
 run5:
@@ -64,30 +64,30 @@ run5:
 	$(SOLVER) -v $(VLEVEL) -r 5 -t $(TLIM) -Z $(NZLIM) -i $(BENCH)-$(SIZE)-5.cnf -s $(BENCH)-$(SIZE)-5.schedule -o $(BENCH)-$(SIZE)-5.lrat 2>&1 | tee -a $(BENCH)-$(SIZE)-5.data
 
 clear5:
-	rm -f $(BENCH)-$(SIZE)-*.{lrat,order,schedule,cnf}
+	rm -f $(BENCH)-$(SIZE)-*.{lrat}
 
 
 check:
-	$(CHECKER) $(ROOT)-$(SIZE)-$(SEED).cnf $(ROOT)-$(SIZE)-$(SEED).lrat | tee -a $(ROOT)-$(SIZE)-$(SEED).data
+	$(CHECKER) $(BENCH)-$(SIZE)-$(SEED).cnf $(BENCH)-$(SIZE)-$(SEED).lrat | tee -a $(BENCH)-$(SIZE)-$(SEED).data
 
 clear:
-	rm -f $(ROOT)-$(SIZE)-*.{lrat,order,schedule,cnf}
+	rm -f $(BENCH)-$(SIZE)-*.{lrat}
 
 mprobe:
-	$(INTERP) $(PROBER) -v $(VLEVEL) -b $(BENCH) -t $(TLIMM) -m $(MSIZE) -d $(DSIZE) -s $(SEED) -l $(ROOT)-mprobe.data
+	$(INTERP) $(PROBER) -v $(VLEVEL) -b $(BENCH) -t $(TLIMM) -m $(MSIZE) -d $(DSIZE) -s $(SEED) -l $(BENCH)-mprobe.data
 
 sprobe:
-	$(INTERP) $(PROBER) -v $(VLEVEL) -b $(BENCH) -t $(TLIMS) -m $(LSIZE) -u $(HSIZE) -d $(DSIZE) -s $(SEED) -l $(ROOT)-sprobe.data
+	$(INTERP) $(PROBER) -v $(VLEVEL) -b $(BENCH) -t $(TLIMS) -m $(LSIZE) -u $(HSIZE) -d $(DSIZE) -s $(SEED) -l $(BENCH)-sprobe.data
 
 lprobe:
-	$(INTERP) $(PROBER) -v $(VLEVEL) -b $(BENCH) -t $(TLIML) -m $(LSIZE) -u $(HSIZE) -d $(DSIZE) -s $(SEED) -l $(ROOT)-lprobe.data
+	$(INTERP) $(PROBER) -v $(VLEVEL) -b $(BENCH) -t $(TLIML) -m $(LSIZE) -u $(HSIZE) -d $(DSIZE) -s $(SEED) -l $(BENCH)-lprobe.data
 
 clean:
 	rm -f *.{cnf,schedule,order}
 	rm -f *.lrat *~
 
 superclean: clean
-	rm -f $(ROOT)-*.data
+	rm -f $(BENCH)-*.data
 
 
 
