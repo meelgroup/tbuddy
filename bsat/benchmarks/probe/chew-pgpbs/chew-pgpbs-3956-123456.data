@@ -1,4 +1,4 @@
-File chew-pgpbs-python3-3956-123456.cnf: 7908 equations extracted
+File chew-pgpbs-3956-123456.cnf: 7908 equations extracted
 Attempting proof generation.  NZ count = 188960
 Performing justification of 15815 steps.  Modulus = 2.
 UNSAT
@@ -14,4 +14,8 @@ Equation system proved formula UNSAT
   Solution status: unsolvable
   Solving: 7907 steps.  5.81 avg pivot degree (max=1807)
     15814 total equations.  188960 total nonzeros (11.95 avg, 1887 max).  7906 vector operations
-Elapsed time for SAT: 203.68 seconds (status = UNSOLVABLE)
+Elapsed time for SAT: 203.78 seconds (status = UNSOLVABLE)
+c parsed a formula with 11862 variables and 31632 clauses
+c VERIFIED
+c Added clauses = 2647230.  Deleted clauses = 2425815.  Max live clauses = 392173
+c verification time = 1.93 secs

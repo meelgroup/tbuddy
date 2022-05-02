@@ -16,7 +16,7 @@ TLIM=10
 TLIMM=30
 TLIMS=900
 TLIML=3600
-BENCH=chew-pgpbs-$(INTERP)
+BENCH=chew-pgpbs
 ROOT=$(BENCH)-$(SEED)
 MSIZE=1000
 LSIZE=9000
@@ -71,7 +71,7 @@ check:
 	$(CHECKER) $(BENCH)-$(SIZE)-$(SEED).cnf $(BENCH)-$(SIZE)-$(SEED).lrat | tee -a $(BENCH)-$(SIZE)-$(SEED).data
 
 clear:
-	rm -f $(BENCH)-$(SIZE)-*.{lrat}
+	rm -f $(BENCH)-$(SIZE)-*.{lrat,cnf,schedule}
 
 mprobe:
 	$(INTERP) $(PROBER) -v $(VLEVEL) -b $(BENCH) -t $(TLIMM) -m $(MSIZE) -d $(DSIZE) -s $(SEED) -l $(BENCH)-mprobe.data
