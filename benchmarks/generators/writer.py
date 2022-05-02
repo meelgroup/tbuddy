@@ -35,9 +35,11 @@ class Writer:
     verbose = False
     expectedVariableCount = None
     isNull = False
+    froot = ""
 
     def __init__(self, count, froot, suffix = None, verbose = False, isNull = False):
         self.expectedVariableCount = count
+        self.froot = froot
         self.verbose = verbose
         self.isNull = isNull
         if isNull:
@@ -55,6 +57,9 @@ class Writer:
         while len(line) > 0 and line[-1] == '\n':
             line = line[:-1]
         return line
+
+    def vcount(self):
+        return self.expectedVariableCount
 
     def show(self, line):
         if self.isNull:
@@ -84,7 +89,7 @@ class CnfWriter(Writer):
     def __init__(self, count, froot, verbose = False):
         Writer.__init__(self, count, froot, suffix = "cnf", verbose = verbose)
         self.clauseCount = 0
-        self.ouputList = []
+        self.outputList = []
 
     # With CNF, must accumulate all of the clauses, since the file header
     # requires providing the number of clauses.
@@ -181,6 +186,9 @@ class LazyCnfWriter:
             return self.permuter.reverse(self.variableCount)
         else:
             return self.variableCount
+
+    def vcount(self):
+        return self.variableCount
 
     def newVariables(self, n):
         return [self.newVariable() for i in range(n)]
@@ -328,4 +336,5 @@ class OrderWriter(Writer):
         for (e, a) in zip(expected, self.variableList):
             if e != a:
                raise WriterException("Mismatch in ordering.  Expected %d.  Got %d" % (e, a))
+        print("c File '%s.order' written" % (self.froot))
         Writer.finish(self)

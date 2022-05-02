@@ -14,13 +14,14 @@ import writer
 
 
 def usage(name):
-    print("Usage: %s [-h] [-v] [-x] [-f] [-a] [-O] [-n N] [-m M] [-k K] [-t T] [-s SEED][-X XARGS]" % name)
+    print("Usage: %s [-h] [-v] [-x] [-f] [-a] [-O] [-p] [-n N] [-m M] [-k K] [-t T] [-s SEED][-X XARGS]" % name)
     print("  -h       Print this message")
     print("  -v       Put comments in file")
     print("  -x       Exclude expected solution (should make formula unsatisfiable")
     print("  -f       Use fixed solution and corruption bits")
     print("  -a       Anonymize.  Don't include solution information in file")
     print("  -O       Optimize.  Use Plaisted-Greenbaum encoding")
+    print("  -p       Generate permutation file for BDD variable ordering")
     print("  -n N     Number of variables")
     print("  -m M     Number of samples (default = 2*N)")
     print("  -k K     Number of corrupted samples (default = M/8)")
@@ -44,8 +45,8 @@ verbose = False
 seed = 123456
 numVariables = 8
 numSamples = 16
-numCorrupt = 4
-numTolerated = 4
+numCorrupt = 2
+numTolerated = 2
 
 # Bit vectors
 solutionBits = []
@@ -252,6 +253,20 @@ def generate(exclude):
         cwriter.doComment("Exclude target solution")
         cwriter.doClause(xclause)
 
+# Generate ordering file
+def generateOrder(pwriter):
+    # Place amk variables, from highest to lowest
+    klist = sorted(amkVariables.keys())
+    klist.reverse()
+    for k in klist:
+        pwriter.doOrder(amkVariables[k])
+    # Place the corruption variables
+    pwriter.doOrder(corruptionVariables)
+    # Place the Xor Variables
+    pwriter.doOrder(xorVariables)
+    # Place the solution variables
+    pwriter.doOrder(solutionVariables)
+    pwriter.finish()
 
 def run(name, args):
     global verbose, numVariables, numSamples, numCorrupt, numTolerated, seed
@@ -263,7 +278,9 @@ def run(name, args):
     numCorrupt = -1
     numTolerated = -1
     exclude = False
-    optlist, args = getopt.getopt(args, "hvxfaOn:m:k:t:s:X:")
+    order = False
+
+    optlist, args = getopt.getopt(args, "hvxfaOpn:m:k:t:s:X:")
     for (opt, val) in optlist:
         if opt == '-h':
             usage(name)
@@ -278,6 +295,8 @@ def run(name, args):
             anonymous = True
         elif opt == '-O':
             optimize = True
+        elif opt == '-p':
+            order = True
         elif opt == '-n':
             numVariables = int(val)
         elif opt == '-m':
@@ -312,14 +331,11 @@ def run(name, args):
     initVariables()
     document(anonymous, exclude)
     generate(exclude)
+    vcount = cwriter.vcount()
     cwriter.finish()
-    xlist = [str(v) for v in xorVariables]
-    print("c Intermediate Xor variables: [%s]" % " ".join(xlist))
-    klist = sorted(amkVariables.keys())
-    print("c Itermediate AMK variables, ranked by max input variable:")
-    for k in klist:
-        alist = [str(v) for v in amkVariables[k]]
-        print("c   %d: [%s]" % (k, " ".join(alist)))
+    if order:
+        pwriter = writer.OrderWriter(vcount, root)
+        generateOrder(pwriter)
 
 
 if __name__ == "__main__":

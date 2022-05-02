@@ -37,10 +37,10 @@ cnf: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf
 xcnf: mdparity-x-n$(N)-k$(K)-t$(T)-s$(SEED).cnf
 
 mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf:
-	$(GENERATOR) -n $(N) -k $(K) -t $(T) -s $(SEED)
+	$(GENERATOR) -n $(N) -k $(K) -t $(T) -s $(SEED) -p
 
 mdparity-x-n$(N)-k$(K)-t$(T)-s$(SEED).cnf:
-	$(GENERATOR) -x -n $(N) -k $(K) -t $(T) -s $(SEED)
+	$(GENERATOR) -x -n $(N) -k $(K) -t $(T) -s $(SEED) -p
 
 .SUFFIXES: .cnf .cms_data .cmsx_data .cmsx_nocheck_data .cms_noproof_data \
 	.tbsat_bucket_data .tbsat_noproof_bucket_data .tbsat_gaussian_data .tbsat_noproof_gaussian_data 
@@ -66,30 +66,30 @@ mdparity-x-n$(N)-k$(K)-t$(T)-s$(SEED).cnf:
 	$(CHECKER) $< $@ | tee -a $@
 
 .cnf.tbsat_bucket_data:
-	$(TBSAT) -b -v $(VLEVEL) -i $<  -o $*-tbsat.lrat | tee $@
+	$(TBSAT) -b -v $(VLEVEL) -i $< -p $*.order -o $*-tbsat.lrat | tee $@
 	$(LRAT) $< $*-tbsat.lrat | tee -a $@
 	ls -l $*-tbsat.lrat
 	$(RM) $*-tbsat.lrat
 
 .cnf.tbsat_noproof_bucket_data:
-	$(TBSAT) -v $(VLEVEL) -b -i $< -m $(SOLNS) | tee $@
+	$(TBSAT) -v $(VLEVEL) -b -i $< -p $*.order -m $(SOLNS) | tee $@
 	$(CHECKER) $< $@ | tee -a $@
 
 .cnf.tbsat_gaussian_data:
 	$(EXTRACT) -i $< -o $*.schedule | tee $@
-	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -o $*-tgbsat.lrat | tee -a $@
+	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -p $*.order -o $*-tgbsat.lrat | tee -a $@
 	$(LRAT) $< $*-tgbsat.lrat | tee -a $@
 	ls -l $*-tgbsat.lrat
 	$(RM) $*-tgbsat.lrat
 
 .cnf.tbsat_noproof_gaussian_data:
 	$(EXTRACT) -i $< -o $*.schedule | tee $@
-	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -m $(SOLNS) | tee -a $@
+	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -p $*.order -m $(SOLNS) | tee -a $@
 	$(CHECKER) $< $@ | tee -a $@
 
 clean:
 	rm -f *~
-	rm -f *.cnf *.schedule *.lrat
+	rm -f *.cnf *.schedule *.lrat *.order
 
 superclean: clean
 	rm -f *.*data
