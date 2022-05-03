@@ -23,6 +23,11 @@ CDIR = ~/repos/cryptominisat
 CMS = $(CDIR)/cryptominisat5
 CFLAGS = --maxmatrixrows 50000
 
+KDIR = ~/repos/kissat/build
+KISSAT = $(KDIR)/kissat
+KFLAGS = --unsat
+
+
 N=8
 K=2
 T=2
@@ -43,7 +48,8 @@ mdparity-x-n$(N)-k$(K)-t$(T)-s$(SEED).cnf:
 	$(GENERATOR) -x -n $(N) -k $(K) -t $(T) -s $(SEED) -p
 
 .SUFFIXES: .cnf .cms_data .cmsx_data .cmsx_nocheck_data .cms_noproof_data \
-	.tbsat_bucket_data .tbsat_noproof_bucket_data .tbsat_gaussian_data .tbsat_noproof_gaussian_data 
+	.tbsat_bucket_data .tbsat_noproof_bucket_data .tbsat_gaussian_data .tbsat_noproof_gaussian_data \
+	.kissat_data
 
 .cnf.cms_data:
 	$(CMS) $(CFLAGS)  $< $*-cms.drat | tee $@
@@ -64,6 +70,12 @@ mdparity-x-n$(N)-k$(K)-t$(T)-s$(SEED).cnf:
 .cnf.cms_noproof_data:
 	$(CMS) $(CFLAGS)  $< | tee $@
 	$(CHECKER) $< $@ | tee -a $@
+
+.cnf.kissat_data:
+	$(KISSAT) $(KFLAGS)  $< $*-kissat.drat | tee $@
+	$(DRAT) $< $*-kissat.drat | tee -a $@
+	ls -l $*-kissat.drat
+	$(RM) $*-kissat.drat 
 
 .cnf.tbsat_bucket_data:
 	$(TBSAT) -b -v $(VLEVEL) -i $< -p $*.order -o $*-tbsat.lrat | tee $@
