@@ -4,8 +4,8 @@ ifeq ($(PREFIX),)
 endif
 
 all:
-	cd buddy/src; make all
-	cd bsat/src; make clean; make all
+	cd buddy/src; make clean; make all
+	cd tbsat/src; make clean; make all
 	cd xtree/src; make clean; make all
 
 install:
