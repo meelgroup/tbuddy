@@ -1,0 +1,162 @@
+File mdparity-n40-k10-t9-s1.cnf: 
+    Equations extracted: 791
+    Input clauses: 8934
+    Non-xor clauses: 2757
+    Total variables: 1539
+    Internal variables: 750
+    Extraction seconds: 0.08
+c Read 8934 clauses.  1539 variables
+c Performing Gauss-Jordan elimination with 791 equations, 831  variables (81 external)
+c Gauss-Jordan completed.  791 steps.  41 final equations
+c Placed 2798 terms into 720 buckets.
+c Bucket 36 Reduced to term with 81 nodes
+c Bucket 72 Reduced to term with 106 nodes
+c Bucket 108 Reduced to term with 142 nodes
+c Bucket 144 Reduced to term with 190 nodes
+c Garbage collection #1: 2000003 nodes / 1973767 free / 69172 previously freed  / 0.0s / 0.0s total
+c Bucket 180 Reduced to term with 210 nodes
+c Bucket 216 Reduced to term with 262 nodes
+c Bucket 252 Reduced to term with 286 nodes
+c Bucket 288 Reduced to term with 322 nodes
+c Bucket 324 Reduced to term with 370 nodes
+c Garbage collection #2: 2000003 nodes / 1961554 free / 4069 previously freed  / 0.0s / 0.0s total
+c Bucket 360 Reduced to term with 390 nodes
+c Bucket 396 Reduced to term with 442 nodes
+c Bucket 432 Reduced to term with 466 nodes
+c Garbage collection #3: 2000003 nodes / 1952864 free / 2923 previously freed  / 0.0s / 0.0s total
+c Bucket 468 Reduced to term with 502 nodes
+c Bucket 504 Reduced to term with 550 nodes
+c Garbage collection #4: 2000003 nodes / 1945691 free / 2394 previously freed  / 0.0s / 0.1s total
+c Bucket 540 Reduced to term with 570 nodes
+c Bucket 576 Reduced to term with 622 nodes
+c Garbage collection #5: 2000003 nodes / 1939436 free / 2071 previously freed  / 0.0s / 0.1s total
+c Bucket 612 Reduced to term with 646 nodes
+c Bucket 648 Reduced to term with 682 nodes
+c Garbage collection #6: 2000003 nodes / 1934116 free / 1849 previously freed  / 0.0s / 0.1s total
+c Bucket 684 Reduced to term with 702 nodes
+c Garbage collection #7: 2000003 nodes / 1125277 free / 23594 previously freed  / 0.0s / 0.1s total
+c Garbage collection #8: 2000003 nodes / 1194578 free / 103167 previously freed  / 0.1s / 0.2s total
+c Garbage collection #9: 2000003 nodes / 1874029 free / 686947 previously freed  / 0.3s / 0.4s total
+s UNSATISFIABLE
+c Unit clauses: Created 19689.  Deleted 16140.  Remaining = [75955 75960 75969 75974 75979 75988 75993 75998 76007 76012 76017 76026 76031 76036 76045 76050 76055 76064 76069 76074 ...]
+
+c Cache statistics
+c ----------------
+c Unique Access:  155898064
+c Unique Chain:   750141
+c Unique Hit:     3377355
+c Unique Miss:    1026154
+c => Hit rate =   0.77
+c Operator Hits:  31657204
+c Operator Miss:  156006522
+c => Hit rate =   0.17
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 1026154
+c Input variables: 1539
+c Input clauses: 8934
+c Total clauses: 269989733
+c Unused clause IDs: 645496 (0.2%)
+c Maximum live clauses: 152067235
+c Deleted clauses: 269980799
+c Final live clauses: 8934
+c Total variables: 1027691
+
+c PseudoBoolean statistics:
+c ----------------
+c Number of XOR constraints used: 2647
+c Number of unique XOR constraints: 2647
+c Average (unique) constraint size: 13.35
+c Number of XOR additions performed: 1856
+c Elapsed seconds: 266.24
+c Set table to size 26802
+c Set table to size 40203
+c Set table to size 60304
+c parsed a formula with 1539 variables and 8934 clauses
+c Set table to size 90456
+c Set table to size 135684
+c Set table to size 203526
+c Set table to size 305289
+c Set table to size 457933
+c Set table to size 686899
+c Set table to size 1030348
+c compress at index 203105: tableSize reduced from 691038 to 568309
+c Set table to size 1545522
+c compress at index 352476: tableSize reduced from 1207090 to 967046
+c Set table to size 2318283
+c compress at index 545417: tableSize reduced from 1793302 to 1444529
+c compress at index 729734: tableSize reduced from 2168137 to 1779056
+c compress at index 729734: tableSize reduced from 1779056 to 1475152
+c compress at index 729734: tableSize reduced from 1475152 to 1221888
+c compress at index 729734: tableSize reduced from 1221888 to 1012172
+c compress at index 729750: tableSize reduced from 1012224 to 391520
+c compress at index 838218: tableSize reduced from 794525 to 566758
+c compress at index 915800: tableSize reduced from 854994 to 691876
+c compress at index 1034755: tableSize reduced from 1133921 to 940855
+c compress at index 1274112: tableSize reduced from 1877114 to 1545463
+c Set table to size 3477424
+c Set table to size 5216136
+c compress at index 1977701: tableSize reduced from 4327000 to 3423232
+c Set table to size 7824204
+c compress at index 2677983: tableSize reduced from 5892274 to 4821853
+c Set table to size 11736306
+c compress at index 3607618: tableSize reduced from 8012914 to 6512457
+c compress at index 4918973: tableSize reduced from 11013831 to 8890143
+c Set table to size 17604459
+c compress at index 6724812: tableSize reduced from 15104002 to 12127510
+c Set table to size 26406688
+c topTable reallocation from 1024 to 1536
+c increasing the number of buckets from 1024 to 1536
+c compress at index 9241665: tableSize reduced from 20787227 to 16625888
+c Set table to size 39610032
+c topTable reallocation from 1536 to 2304
+c increasing the number of buckets from 1536 to 2304
+c compress at index 12764820: tableSize reduced from 28740208 to 22921303
+c Set table to size 59415048
+c compress at index 17672326: tableSize reduced from 39805443 to 31675687
+c topTable reallocation from 2304 to 3456
+c increasing the number of buckets from 2304 to 3456
+c compress at index 24396856: tableSize reduced from 54839198 to 43564006
+c topTable reallocation from 3456 to 5184
+c increasing the number of buckets from 3456 to 5184
+c Set table to size 89122572
+c compress at index 33639187: tableSize reduced from 75416358 to 59829707
+c Set table to size 133683858
+c topTable reallocation from 5184 to 7776
+c increasing the number of buckets from 5184 to 7776
+c compress at index 46345324: tableSize reduced from 103643784 to 82133241
+c Set table to size 200525787
+c topTable reallocation from 7776 to 11664
+c increasing the number of buckets from 7776 to 11664
+c compress at index 63845288: tableSize reduced from 142478813 to 112820420
+c compress at index 88192377: tableSize reduced from 196704826 to 155687731
+c topTable reallocation from 11664 to 17496
+c increasing the number of buckets from 11664 to 17496
+c Set table to size 300788680
+c compress at index 121467031: tableSize reduced from 270417723 to 213931195
+c topTable reallocation from 17496 to 26244
+c increasing the number of buckets from 17496 to 26244
+c Set table to size 451183020
+c compress at index 167166442: tableSize reduced from 371511301 to 293796175
+c Set table to size 676774530
+c topTable reallocation from 26244 to 39366
+c increasing the number of buckets from 26244 to 39366
+c compress at index 230034819: tableSize reduced from 510586223 to 403649602
+c compress at index 263550589: tableSize reduced from 519144062 to 12219838
+c compress at index 270496940: tableSize reduced from 33757197 to 12232657
+c compress at index 270507429: tableSize reduced from 12268036 to 9952036
+c compress at index 270585812: tableSize reduced from 10204007 to 8503355
+c compress at index 270585812: tableSize reduced from 8503355 to 7084173
+c compress at index 270585812: tableSize reduced from 7084173 to 5902718
+c compress at index 270585812: tableSize reduced from 5902718 to 4918586
+c compress at index 270585812: tableSize reduced from 4918586 to 4099362
+c compress at index 270585812: tableSize reduced from 4099362 to 3417075
+c compress at index 270585812: tableSize reduced from 3417075 to 2849447
+c compress at index 270585812: tableSize reduced from 2849447 to 2376976
+c compress at index 270585812: tableSize reduced from 2376976 to 1981656
+c VERIFIED
+c allocated 39366 676774530 172712421
+c Added clauses = 269989733.  Deleted clauses = 269509409.  Max live clauses = 152067235
+c verification time = 331.16 secs
