@@ -1,0 +1,76 @@
+File chew-gauss-009000.cnf: 
+    Equations extracted: 17996
+    Input clauses: 71984
+    Non-xor clauses: 0
+    Total variables: 26994
+    Internal variables: 26994
+    Extraction seconds: 0.57
+c Read 71984 clauses.  26994 variables
+c Garbage collection #1: 2000003 nodes / 1830887 free / 57690 previously freed  / 0.0s / 0.0s total
+c Garbage collection #2: 2000003 nodes / 1859732 free / 57692 previously freed  / 0.0s / 0.1s total
+c Garbage collection #3: 2000003 nodes / 1888579 free / 57694 previously freed  / 0.0s / 0.1s total
+c Performing Gauss-Jordan elimination with 17996 equations, 26994  variables (0 external)
+c Gauss-Jordan completed.  17995 steps.  System infeasible
+s UNSATISFIABLE
+c Unit clauses: Created 143967.  Deleted 143965.  Remaining = [5293330 5489440]
+
+c Cache statistics
+c ----------------
+c Unique Access:  1022712
+c Unique Chain:   114435
+c Unique Hit:     243542
+c Unique Miss:    779170
+c => Hit rate =   0.24
+c Operator Hits:  899554
+c Operator Miss:  1114029
+c => Hit rate =   0.45
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 779170
+c Input variables: 26994
+c Input clauses: 71984
+c Total clauses: 5237496
+c Unused clause IDs: 251944 (4.8%)
+c Maximum live clauses: 2668920
+c Deleted clauses: 5165512
+c Final live clauses: 71984
+c Total variables: 806162
+
+c PseudoBoolean statistics:
+c ----------------
+c Number of XOR constraints used: 35991
+c Number of unique XOR constraints: 35991
+c Average (unique) constraint size: 9.71
+c Number of XOR additions performed: 17995
+c Elapsed seconds: 4.73
+c Set table to size 215952
+c Set table to size 323928
+c Set table to size 485892
+c parsed a formula with 26994 variables and 71984 clauses
+c Set table to size 728838
+c Set table to size 1093257
+c Set table to size 1639885
+c Set table to size 2459827
+c Set table to size 3689740
+c compress at index 1126176: tableSize reduced from 3167230 to 2564297
+c compress at index 1126189: tableSize reduced from 2564349 to 2074162
+c compress at index 1316566: tableSize reduced from 2829901 to 2367231
+c compress at index 1316566: tableSize reduced from 2367231 to 1953678
+c compress at index 1506956: tableSize reduced from 2709469 to 2265453
+c compress at index 1506956: tableSize reduced from 2265453 to 1889924
+c compress at index 1506963: tableSize reduced from 1889951 to 1543383
+c Set table to size 5534610
+c compress at index 2100318: tableSize reduced from 4001254 to 3242493
+c Set table to size 8301915
+c compress at index 2753961: tableSize reduced from 5992616 to 4855975
+c compress at index 3502271: tableSize reduced from 8028962 to 6515719
+c Set table to size 12452872
+c compress at index 4394926: tableSize reduced from 10308437 to 8378143
+c Set table to size 18679308
+c compress at index 5450776: tableSize reduced from 12876497 to 10476371
+c VERIFIED
+c allocated 1024 18679308 269940
+c Added clauses = 5237496.  Deleted clauses = 2584002.  Max live clauses = 2668920
+c verification time = 5.50 secs

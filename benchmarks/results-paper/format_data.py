@@ -182,6 +182,8 @@ def grab(experiment, measurement, mdict):
         print("ERROR: Couldn't open file '%s'" % fname)
         return
     c = csv.reader(f)
+    klist = mdict.keys()
+    ddict = { k : False for k in klist }
     for fields in c:
         if len(fields) < 1:
             continue
@@ -190,7 +192,12 @@ def grab(experiment, measurement, mdict):
         if key not in mdict:
             mdict[key] = [key]
         for arg in args[1:]:
+            ddict[key] = True
             mdict[key].append(arg)
+    # Fill in missing entries
+    for k in klist:
+        if not ddict[k]:
+            mdict[k].append('  ?  ')
     f.close()
     
 def process(experiment):

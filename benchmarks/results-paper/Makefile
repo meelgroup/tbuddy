@@ -15,6 +15,14 @@ run:
 	echo "EXPERIMENTAL RESULTS:"
 	$(INTERP) $(FORMAT) | tee results-measured.txt
 
+krun:
+	cd chess-kissat; $(SH) run.sh
+	cd pigeon-kissat; $(SH) run.sh
+	cd chew-kissat; $(SH) run.sh
+	echo "EXPERIMENTAL RESULTS:"
+	$(INTERP) $(FORMAT) | tee results-measured.txt
+
+
 clean:
 	cd chess-kissat; make clean
 	cd chess-scan; make clean
