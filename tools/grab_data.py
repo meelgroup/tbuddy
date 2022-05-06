@@ -59,6 +59,9 @@ def lineSplit(s):
 
 def nthNumber(fields, n = 1):
     count = 0
+    if n < 0:
+        fields.reverse()
+        n = -n
     for field in fields:
         try:
             val = int(field)

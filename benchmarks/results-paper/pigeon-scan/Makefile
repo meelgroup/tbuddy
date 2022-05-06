@@ -23,7 +23,7 @@ check:
 	$(CHECKER) $(ROOT)-$(SIZE).cnf $(ROOT)-$(SIZE).lrat | tee -a $(ROOT)-$(SIZE).data
 
 clear:
-	rm -f $(ROOT)-$(SIZE).{lrat,order,schedule}
+	rm -f $(ROOT)-$(SIZE).{cnf,lrat,order,schedule}
 
 
 data:

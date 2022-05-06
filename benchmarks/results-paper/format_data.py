@@ -27,8 +27,11 @@ import csv
 # Extracts problem size from file name
 
 experiments = [
+    "chess-kissat",
     "chess-scan",
+    "pigeon-kissat",
     "pigeon-scan",
+    "chew-kissat",
     "chew-bucket",
     "chew-gauss",
     "urquhart-bucket",
@@ -51,9 +54,9 @@ widths = [
     len('urquhart-bucket') + 2,
     8,
     10,
-    12,
+    13,
     10,
-    12,
+    15,
     10
 ]
 
