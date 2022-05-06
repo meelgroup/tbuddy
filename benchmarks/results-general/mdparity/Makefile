@@ -41,6 +41,10 @@ GRAB = $(INTERP) $(TOOLDIR)/grab_data.py
 cnf: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf
 xcnf: mdparity-x-n$(N)-k$(K)-t$(T)-s$(SEED).cnf
 
+krun: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).kissat_data
+knrun: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).kissat_noproof_data
+tgrun: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).tbsat_gaussian_data
+
 mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf:
 	$(GENERATOR) -n $(N) -k $(K) -t $(T) -s $(SEED) -p
 
@@ -49,7 +53,7 @@ mdparity-x-n$(N)-k$(K)-t$(T)-s$(SEED).cnf:
 
 .SUFFIXES: .cnf .cms_data .cmsx_data .cmsx_nocheck_data .cms_noproof_data \
 	.tbsat_bucket_data .tbsat_noproof_bucket_data .tbsat_gaussian_data .tbsat_noproof_gaussian_data \
-	.kissat_data
+	.kissat_data .kissat_noproof_data
 
 .cnf.cms_data:
 	$(CMS) $(CFLAGS)  $< $*-cms.drat | tee $@
@@ -76,6 +80,9 @@ mdparity-x-n$(N)-k$(K)-t$(T)-s$(SEED).cnf:
 	$(DRAT) $< $*-kissat.drat | tee -a $@
 	ls -l $*-kissat.drat
 	$(RM) $*-kissat.drat 
+
+.cnf.kissat_noproof_data:
+	$(KISSAT) $< | tee $@
 
 .cnf.tbsat_bucket_data:
 	$(TBSAT) -b -v $(VLEVEL) -i $< -p $*.order -o $*-tbsat.lrat | tee $@
