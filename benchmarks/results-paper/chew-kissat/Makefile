@@ -29,8 +29,8 @@ clear:
 	rm -f $(ROOT)-$(SIZE).{drat,cnf,order,schedule}
 
 data:
-	$(INTERP) $(GRAB) "parsing input formula" *.data > $(ROOT)-input-clauses.csv
-	$(INTERP) $(GRAB) 2 "parsing input formula" *.data > $(ROOT)-input-variables.csv
+	$(INTERP) $(GRAB) 2 "parsing input formula" *.data > $(ROOT)-input-clauses.csv
+	$(INTERP) $(GRAB) 1 "parsing input formula" *.data > $(ROOT)-input-variables.csv
 	$(INTERP) $(GRAB) -1 "process-time" *.data > $(ROOT)-sat-seconds.csv
 	$(INTERP) $(GRAB) "verification time" *.data > $(ROOT)-check-seconds.csv
 	$(INTERP) $(GRAB) "proof_added" *.data > $(ROOT)-proof-clauses.csv
