@@ -3,11 +3,11 @@ INTERP = python3
 FORMAT = ./format_data.py
 
 run:
-	cd chess-kissat; $(SH) run.sh
+#	cd chess-kissat; $(SH) run.sh
 	cd chess-scan; $(SH) run.sh
-	cd pigeon-kissat; $(SH) run.sh
+#	cd pigeon-kissat; $(SH) run.sh
 	cd pigeon-scan; $(SH) run.sh
-	cd chew-kissat; $(SH) run.sh
+#	cd chew-kissat; $(SH) run.sh
 	cd chew-bucket; $(SH) run.sh
 	cd chew-gauss; $(SH) run.sh
 	cd urquhart-bucket; $(SH) run.sh

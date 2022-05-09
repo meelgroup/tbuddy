@@ -1,5 +1,7 @@
 INTERP=python3
 TROOT=~/repos/tbuddy
+TLIM=5000
+
 
 GDIR=$(TROOT)/benchmarks/generators
 GENERATOR = $(INTERP) $(GDIR)/mdparity.py
@@ -19,13 +21,13 @@ CXDIR = ~/repos/cms-dev/cryptominisat/build
 CMSX = $(CXDIR)/cryptominisat5
 CXFLAGS = --presimp 1 --maxmatrixrows 50000 --maxmatrixcols 50000
 
-CDIR = ~/repos/cryptominisat
+CDIR = ~/repos/cryptominisat/build
 CMS = $(CDIR)/cryptominisat5
 CFLAGS = --maxmatrixrows 50000
 
 KDIR = ~/repos/kissat/build
 KISSAT = $(KDIR)/kissat
-KFLAGS = --unsat
+KFLAGS = --unsat --seconds $(TLIM)
 
 
 N=8
@@ -44,6 +46,8 @@ xcnf: mdparity-x-n$(N)-k$(K)-t$(T)-s$(SEED).cnf
 krun: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).kissat_data
 knrun: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).kissat_noproof_data
 tgrun: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).tbsat_gaussian_data
+tgnrun: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).tbsat_noproof_gaussian_data
+cnrun:  mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cms_noproof_data
 
 mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf:
 	$(GENERATOR) -n $(N) -k $(K) -t $(T) -s $(SEED) -p

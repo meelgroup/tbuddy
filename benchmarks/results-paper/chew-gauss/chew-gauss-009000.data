@@ -44,7 +44,7 @@ c Number of XOR constraints used: 35991
 c Number of unique XOR constraints: 35991
 c Average (unique) constraint size: 9.71
 c Number of XOR additions performed: 17995
-c Elapsed seconds: 4.73
+c Elapsed seconds: 4.78
 c Set table to size 215952
 c Set table to size 323928
 c Set table to size 485892
@@ -73,4 +73,4 @@ c compress at index 5450776: tableSize reduced from 12876497 to 10476371
 c VERIFIED
 c allocated 1024 18679308 269940
 c Added clauses = 5237496.  Deleted clauses = 2584002.  Max live clauses = 2668920
-c verification time = 5.50 secs
+c verification time = 5.46 secs

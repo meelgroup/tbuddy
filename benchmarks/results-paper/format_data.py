@@ -60,6 +60,9 @@ widths = [
     10
 ]
 
+# For formatting .tex tables
+filler = ' & '
+
 # Generate fixed width representations of int's, floats, and strings
 class Justify:
     left, right, center = range(3)
@@ -67,6 +70,7 @@ class Justify:
     decimals = 1
     insertCommas = True
     justification = None
+    # For generating .tex tables
 
     def __init__(self, width = None, decimals = None, commas = None, defaultJustification = None):
         if width is not None:
@@ -138,7 +142,7 @@ def header():
         m = measurements[idx]
         width = widths[idx]
         field = m[1]
-        s += jfy.format(field, width = width)
+        s += filler + jfy.format(field, width = width)
     return s
     
 def delimiter(symbol = '-'):
@@ -146,7 +150,7 @@ def delimiter(symbol = '-'):
     s = ""
     for idx in range(len(measurements)):
         width = widths[idx]
-        s += jfy.delimit(symbol = symbol, width = width)
+        s += filler + jfy.delimit(symbol = symbol, width = width)
     return s
 
 def formatLine(args):
@@ -155,7 +159,7 @@ def formatLine(args):
     for idx in range(len(args)):
         arg = args[idx]
         width =  widths[idx]
-        s += jfy.format(arg, width = width)
+        s += filler + jfy.format(arg, width = width)
     return s
     
 def csvName(experiment, measurement):
