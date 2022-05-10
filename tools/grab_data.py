@@ -27,7 +27,7 @@ import re
 
 def usage(name):
     print("Usage: %s [nth] tphrase file ...")
-    print(" nth: Look for nth numeric field in line (count from 1)")
+    print(" nth: Look for nth numeric field in line (count from 1).  -n to count from end backward")
 
 
 # Will grep for line containing trigger phrase.
