@@ -1,7 +1,6 @@
 INTERP=python3
-TROOT=~/repos/tbuddy
+TROOT=../../..
 TLIM=5000
-
 
 GDIR=$(TROOT)/benchmarks/generators
 GENERATOR = $(INTERP) $(GDIR)/mdparity.py
@@ -12,6 +11,7 @@ TBSAT = $(TBDIR)/tbsat
 
 TLDIR = $(TROOT)/tools
 EXTRACT = $(INTERP) $(TLDIR)/xor_extractor.py
+GRAB = $(INTERP) $(TOOLDIR)/grab_data.py
 
 DDIR = ~/repos/drat-trim
 DRAT = $(DDIR)/drat-trim
@@ -31,81 +31,85 @@ KFLAGS = --unsat --seconds $(TLIM)
 
 
 N=8
-K=2
-T=2
+M=16
+Y=125
 SEED=1
 SOLNS=10
 VLEVEL=1
 RM=rm
 
-GRAB = $(INTERP) $(TOOLDIR)/grab_data.py
+tsrun: mdp-sat-n$(N)-m$(M)-Y$(Y)-s$(SEED).tbsat_sat_data
 
-cnf: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf
-xcnf: mdparity-x-n$(N)-k$(K)-t$(T)-s$(SEED).cnf
+tprun: mdp-nosat-n$(N)-m$(M)-Y$(Y)-s$(SEED).tbsat_proof_data
 
-krun: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).kissat_data
-knrun: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).kissat_noproof_data
-tgrun: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).tbsat_gaussian_data
-tgnrun: mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).tbsat_noproof_gaussian_data
-cnrun:  mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cms_noproof_data
+turun: mdp-unique-n$(N)-m$(M)-Y$(Y)-s$(SEED).tbsat_proof_data
 
-mdparity-n$(N)-k$(K)-t$(T)-s$(SEED).cnf:
-	$(GENERATOR) -n $(N) -k $(K) -t $(T) -s $(SEED) -p
 
-mdparity-x-n$(N)-k$(K)-t$(T)-s$(SEED).cnf:
-	$(GENERATOR) -x -n $(N) -k $(K) -t $(T) -s $(SEED) -p
+mdp-nosat-n$(N)-m$(M)-Y$(Y)-s$(SEED).cnf:
+	$(GENERATOR) -r mdp-nosat-n$(N)-m$(M)-Y$(Y)-s$(SEED) -p -n $(N) -m $(M) -y 0.$(Y) -t -1 -s $(SEED)
 
-.SUFFIXES: .cnf .cms_data .cmsx_data .cmsx_nocheck_data .cms_noproof_data \
-	.tbsat_bucket_data .tbsat_noproof_bucket_data .tbsat_gaussian_data .tbsat_noproof_gaussian_data \
-	.kissat_data .kissat_noproof_data
+mdp-sat-n$(N)-m$(M)-Y$(Y)-s$(SEED).cnf:
+	$(GENERATOR) -r mdp-sat-n$(N)-m$(M)-Y$(Y)-s$(SEED) -p -n $(N) -m $(M) -y 0.$(Y) -t 0 -s $(SEED)
 
-.cnf.cms_data:
+mdp-unique-n$(N)-m$(M)-Y$(Y)-s$(SEED).cnf:
+	$(GENERATOR) -r mdp-unique-n$(N)-m$(M)-Y$(Y)-s$(SEED) -p -x -n $(N) -m $(M) -y 0.$(Y) -t 0 -s $(SEED)
+
+.SUFFIXES: .cnf .cms_proof_data .cms_noproof_data .cms_sat_data \
+	.cmsx_proof_data .cmsx_sat_data \
+	.kissat_proof_data .kissat_noproof_data .kissat_sat_data \
+	.tbsat_proof_data .tbsat_noproof_data .tbsat_sat_data 
+
+.cnf.cms_proof_data:
 	$(CMS) $(CFLAGS)  $< $*-cms.drat | tee $@
 	$(DRAT) $< $*-cms.drat | tee -a $@
-	ls -l $*-cms.drat
+	ls -l $*-cms.drat | tee -a $@
 	$(RM) $*-cms.drat 
+
+.cnf.cms_noproof_data:
+	$(CMS) $(CFLAGS)  $< | tee $@
+
+.cnf.cms_sat_data:
+	$(CMS) $(CFLAGS)  $< | tee $@
+	$(CHECKER) $< $@ | tee -a $@
 
 .cnf.cmsx_data:
 	$(CMSX) $(CXFLAGS)  $< $*-cmsx.drat | tee $@
 	$(DRAT) $< $*-cmsx.drat | tee -a $@
-	ls -l $*-cmsx.drat
+	ls -l $*-cmsx.drat | tee -a $@
 	$(RM) $*-cmsx.drat 
 
-.cnf.cmsx_nocheck_data:
-	$(CMSX) $(CXFLAGS)  $< $*-cmsx.drat | tee $@
-	ls -l $*-cmsx.drat
+.cnf.cmsx_noproof_data:
+	$(CMSX) $(CFLAGS)  $< | tee $@
 
-.cnf.cms_noproof_data:
-	$(CMS) $(CFLAGS)  $< | tee $@
+.cnf.cmsx_sat_data:
+	$(CMSX) $(CFLAGS)  $< | tee $@
 	$(CHECKER) $< $@ | tee -a $@
 
-.cnf.kissat_data:
+.cnf.kissat_proof_data:
 	$(KISSAT) $(KFLAGS)  $< $*-kissat.drat | tee $@
 	$(DRAT) $< $*-kissat.drat | tee -a $@
-	ls -l $*-kissat.drat
+	ls -l $*-kissat.drat | tee -a $@
 	$(RM) $*-kissat.drat 
 
 .cnf.kissat_noproof_data:
-	$(KISSAT) $< | tee $@
+	$(KISSAT) $(KFLAGS) $< | tee $@
 
-.cnf.tbsat_bucket_data:
-	$(TBSAT) -b -v $(VLEVEL) -i $< -p $*.order -o $*-tbsat.lrat | tee $@
-	$(LRAT) $< $*-tbsat.lrat | tee -a $@
-	ls -l $*-tbsat.lrat
-	$(RM) $*-tbsat.lrat
-
-.cnf.tbsat_noproof_bucket_data:
-	$(TBSAT) -v $(VLEVEL) -b -i $< -p $*.order -m $(SOLNS) | tee $@
+.cnf.kissat_sat_data:
+	$(KISSAT) $(KFLAGS) $< | tee $@
 	$(CHECKER) $< $@ | tee -a $@
 
-.cnf.tbsat_gaussian_data:
+.cnf.tbsat_proof_data:
 	$(EXTRACT) -i $< -o $*.schedule | tee $@
-	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -p $*.order -o $*-tgbsat.lrat | tee -a $@
-	$(LRAT) $< $*-tgbsat.lrat | tee -a $@
-	ls -l $*-tgbsat.lrat
-	$(RM) $*-tgbsat.lrat
+	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -p $*.order -o $*-tbsat.lrat | tee -a $@
+	$(LRAT) $< $*-tbsat.lrat | tee -a $@
+	ls -l $*-tbsat.lrat | tee -a $@
+	$(RM) $*-tbsat.lrat
 
-.cnf.tbsat_noproof_gaussian_data:
+.cnf.tbsat_noproof_data:
+	$(EXTRACT) -i $< -o $*.schedule | tee $@
+	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -p $*.order -m $(SOLNS) | tee -a $@
+
+.cnf.tbsat_sat_data:
 	$(EXTRACT) -i $< -o $*.schedule | tee $@
 	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -p $*.order -m $(SOLNS) | tee -a $@
 	$(CHECKER) $< $@ | tee -a $@

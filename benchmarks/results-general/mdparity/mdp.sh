@@ -1,18 +1,10 @@
 #!/bin/bash
-N=32
-K=$((N/4))
-T=$((K))
-T1=$((T-1))
+N=20
+M=$((5*N/2))
 
-for S in {10..14}
+for S in {10..11}
 do
-    make cnf N=$N K=$K T=$T SEED=$S
-    make knrun N=$N K=$K T=$T SEED=$S
-    make cnrun N=$N K=$K T=$T SEED=$S
-    make tgnrun N=$N K=$K T=$T SEED=$S
-
-    make cnf N=$N K=$K T=$T1 SEED=$S
-    make knrun N=$N K=$K T=$T1 SEED=$S
-    make cnrun N=$N K=$K T=$T1 SEED=$S
-    make tgnrun N=$N K=$K T=$T1 SEED=$S
+    make tsrun N=$N M=$M SEED=$S
+    make tprun N=$N M=$M SEED=$S
+    make turun N=$N M=$M SEED=$S
 done
