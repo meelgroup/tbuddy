@@ -6,7 +6,6 @@
 # - Incorporate constants directly into encoding
 # - Use unary counter for at-most-k constraint
 
-import random
 import sys
 import getopt
 
@@ -14,11 +13,12 @@ import writer
 
 
 def usage(name):
-    print("Usage: %s [-h] [-v] [-x] [-f] [-a] [-O] [-p] [-n N] [-m M] [-k K] [-y CPROB] [-t T] [-s SEED][-X XARGS]" % name)
+    print("Usage: %s [-h] [-v] [-x] [-f] [-a] [-O] [-p] [-r ROOT] -n N [-m M] [-k K] [-y CPROB] [-t T] [-s SEED] [-X XARGS]" % name)
     print("  -h       Print this message")
     print("  -v       Put comments in file")
     print("  -x       Exclude expected solution (should make formula unsatisfiable")
     print("  -f       Use fixed solution and corruption bits")
+    print("  -r ROOT  Set root of output file.  Will generate ROOT.cnf and possible ROOT.order")
     print("  -a       Anonymize.  Don't include solution information in file")
     print("  -O       Optimize.  Use Plaisted-Greenbaum encoding")
     print("  -p       Generate permutation file for BDD variable ordering")
@@ -71,8 +71,83 @@ xorVariables = []
 # where index specifies max input
 amkVariables = {}
 
-def randomBits(length):
-    return [random.randint(0, 1) for i in range(length)]
+# Keep RNG as global
+rng = None
+
+# Different phases where RNG gets used
+rngPhaseCount = 5
+rngPhaseInit, rngPhaseCounting, rngPhaseSelection, rngPhaseBits, rngPhaseSamples = range(rngPhaseCount)
+
+
+def initRng(seed):
+    global rng
+    rng = RNG(rngPhaseCount)
+
+
+# The following random number generator isn't especially good, but it
+# provides control over the seed, and it can be easily translated into
+# other languages.
+
+# CONSTANTS
+# These are the parameters used in the C++ minstd_rand random number
+# generator It is based on a class of linear congruential generators
+# due to D. H. Lehmer The parameters were suggested by Stephen K. Park
+# and Keith W. Miller, and Paul K. Stockmeyer in CACM, July 1988.
+
+GROUPSIZE = 2147483647 # 2^31 - 1, a prime number
+MVAL = 48271
+VVAL = 16807
+INITSEED = 418
+DEFAULTSEED = 618
+
+class RNG:
+    # Maintain set of seeds, allowing them to be used independently
+    # Seed 0 used to generate other seeds
+    # Other seeds can be used for application
+    seedList = [INITSEED]
+
+    def __init__(self, seed = DEFAULTSEED, seedCount = 10):
+        self.seedList[0] = seed
+        for i in range(seedCount):
+            self.seedList.append(self.next(sidx=0))
+
+    def next(self, sidx = 0):
+        val = (VVAL + self.seedList[sidx] * MVAL) % GROUPSIZE
+        self.seedList[sidx] = val
+        return val
+
+    # Return random float, distributed uniformly in interval [0, upperLimit)
+    def randFloat(self, upperLimit = 1.0, sidx = 0):
+        val = self.next(sidx)
+        rval = (float(val)/GROUPSIZE) * upperLimit
+        return rval
+
+    # Return random integer, distributed uniformly in interval [lower, upper]
+    def randInt(self, lower, upper, sidx = 0):
+        rval = self.randFloat(sidx=sidx)
+        return lower + int(rval * (upper + 1 - lower))
+
+    # Choose maxSample elements (without replacement) from sequence at random
+    # and return as list.
+    def sample(self, seq, maxSample, sidx = 0):
+        if len(seq) <= maxSample:
+            return seq
+        result = [0] * maxSample
+        swaps = [0] * maxSample
+        for i in range(maxSample):
+            w = self.randFloat(sidx = sidx)
+            idx = i + int(w * float(len(seq)-i))
+            swaps[i] = idx
+            result[i] = seq[idx]
+            seq[idx], seq[i] = seq[i], seq[idx]
+        # Use list of swaps to restore input sequence
+        for i in range(maxSample-1, -1, -1):
+            idx = swaps[i]
+            seq[idx], seq[i] = seq[i], seq[idx]
+        return result
+
+    def randomBits(self, length, sidx = 0):
+        return [self.randInt(0, 1, sidx) for i in range(length)]
 
 def vectorParity(vec):
     parity = 0
@@ -192,8 +267,8 @@ def initData(fixed):
         solutionBits = [i%2 for i in range(numVariables)]
         corruptionBits = [1 if i < numCorrupt else 0 for i in range(numSamples)]
     else:
-        solutionBits = randomBits(numVariables)
-        corruptionVars = random.sample(range(numSamples), numCorrupt)
+        solutionBits = rng.randomBits(numVariables, rngPhaseBits)
+        corruptionVars = rng.sample(list(range(numSamples)), numCorrupt, rngPhaseSelection)
         corruptionBits = [1 if i in corruptionVars else 0 for i in range(numSamples)]
 
     sampleBitSet = []
@@ -201,7 +276,7 @@ def initData(fixed):
     phaseBits = []
 
     for i in range(numSamples):
-        sbits = randomBits(numVariables)
+        sbits = rng.randomBits(numVariables, rngPhaseSamples)
         sampleBitSet.append(sbits)
         samples = [solve & sample for solve, sample in zip(solutionBits, sbits)]
         parity = vectorParity(samples)
@@ -282,8 +357,9 @@ def run(name, args):
     probCorrupt = None
     exclude = False
     order = False
+    root = None
 
-    optlist, args = getopt.getopt(args, "hvxfaOpn:m:k:t:s:X:y:")
+    optlist, args = getopt.getopt(args, "hvxfaOpr:n:m:k:t:s:X:y:")
     for (opt, val) in optlist:
         if opt == '-h':
             usage(name)
@@ -300,6 +376,8 @@ def run(name, args):
             optimize = True
         elif opt == '-p':
             order = True
+        elif opt == '-r':
+            root = val
         elif opt == '-n':
             numVariables = int(val)
         elif opt == '-m':
@@ -319,6 +397,8 @@ def run(name, args):
         return
     if numSamples is None:
         numSamples = 2*numVariables
+    initRng(seed)
+
     if numCorrupt is None:
         if probCorrupt is None:
             # Crawford states that he used k = m / 8 for his benchmarks.
@@ -328,7 +408,7 @@ def run(name, args):
             while True:
                 numCorrupt = 0
                 for i in range(numSamples):
-                    if random.random() <= probCorrupt:
+                    if rng.randFloat(sidx=rngPhaseCounting) <= probCorrupt:
                         numCorrupt += 1
                 if numCorrupt != 0:
                     break
@@ -337,13 +417,13 @@ def run(name, args):
     elif numTolerated <= 0:
         numTolerated += numCorrupt
 
-    base = "mdparity"
-    if fixed:
-        base += "-fixed"
-    if exclude:
-        base += "-x"
-    root = "%s-n%d-k%d-t%d-s%d" % (base, numVariables, numCorrupt, numTolerated, seed)
-    random.seed(seed)
+    if root is None:
+        base = "mdparity"
+        if fixed:
+            base += "-fixed"
+        if exclude:
+            base += "-x"
+        root = "%s-n%d-m%d-k%d-t%d-s%d" % (base, numVariables, numSamples, numCorrupt, numTolerated, seed)
     initData(fixed)
 
     cwriter = writer.LazyCnfWriter(root, verbose=False)
