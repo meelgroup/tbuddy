@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # Generate CNF encoding of Crawford's Minimal Disagreement Parity benchmark
 # http://www.cs.cornell.edu/selman/docs/crawford-parity.pdf
@@ -14,7 +14,7 @@ import writer
 
 
 def usage(name):
-    print("Usage: %s [-h] [-v] [-x] [-f] [-a] [-O] [-p] [-n N] [-m M] [-k K] [-t T] [-s SEED][-X XARGS]" % name)
+    print("Usage: %s [-h] [-v] [-x] [-f] [-a] [-O] [-p] [-n N] [-m M] [-k K] [-y CPROB] [-t T] [-s SEED][-X XARGS]" % name)
     print("  -h       Print this message")
     print("  -v       Put comments in file")
     print("  -x       Exclude expected solution (should make formula unsatisfiable")
@@ -24,8 +24,9 @@ def usage(name):
     print("  -p       Generate permutation file for BDD variable ordering")
     print("  -n N     Number of variables")
     print("  -m M     Number of samples (default = 2*N)")
-    print("  -k K     Number of corrupted samples (default = M/8)")
-    print("  -t T     Number of mismatches tolerated (default = K)")
+    print("  -y CPROP Probability of corrupting sample")
+    print("  -k K     Number of corrupted samples (default = M/8 if -y not given)")
+    print("  -t T     Number of mismatches tolerated (default = K).  When T <= 0 tolerate K+T mismatches")
     print("  -s SEED  Set random seed")
     print("  -X XARGS  Set maximum Xor size (must be >= 3)")
 
@@ -43,10 +44,10 @@ maxArgs = 4
 # Parameters
 verbose = False
 seed = 123456
-numVariables = 8
-numSamples = 16
-numCorrupt = 2
-numTolerated = 2
+numVariables = None
+numSamples = None
+numCorrupt = None
+numTolerated = None
 
 # Bit vectors
 solutionBits = []
@@ -274,13 +275,15 @@ def run(name, args):
     global cwriter
     fixed = False
     anonymous = False
-    numSamples = -1
-    numCorrupt = -1
-    numTolerated = -1
+    numVariables = None
+    numSamples = None
+    numCorrupt = None
+    numTolerated = None
+    probCorrupt = None
     exclude = False
     order = False
 
-    optlist, args = getopt.getopt(args, "hvxfaOpn:m:k:t:s:X:")
+    optlist, args = getopt.getopt(args, "hvxfaOpn:m:k:t:s:X:y:")
     for (opt, val) in optlist:
         if opt == '-h':
             usage(name)
@@ -303,20 +306,36 @@ def run(name, args):
             numSamples = int(val)
         elif opt == '-k':
             numCorrupt = int(val)
+        elif opt == '-y':
+            probCorrupt = float(val)
         elif opt == '-t':
             numTolerated = int(val)
         elif opt == '-s':
             seed = int(val)
         elif opt == '-X':
             maxArgs = int(val)
-    if numSamples < 0:
+    if numVariables is None:
+        print("Must specify number of variables with -n option")
+        return
+    if numSamples is None:
         numSamples = 2*numVariables
-    if numCorrupt < 0:
-        # Crawford states that he used k = m / 8 for his benchmarks.
-        # This seems to be a good number.  Larger values admit too many solutions
-        numCorrupt = numSamples // 8
-    if numTolerated < 0:
+    if numCorrupt is None:
+        if probCorrupt is None:
+            # Crawford states that he used k = m / 8 for his benchmarks.
+            # This seems to be a good number.  Larger values admit too many solutions
+            numCorrupt = numSamples // 8
+        else:
+            while True:
+                numCorrupt = 0
+                for i in range(numSamples):
+                    if random.random() <= probCorrupt:
+                        numCorrupt += 1
+                if numCorrupt != 0:
+                    break
+    if numTolerated is None:
         numTolerated = numCorrupt
+    elif numTolerated <= 0:
+        numTolerated += numCorrupt
 
     base = "mdparity"
     if fixed:
