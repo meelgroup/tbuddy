@@ -453,7 +453,13 @@ int generate_clause(ilist literals, ilist hints) {
 	/* Must store copy of clause */
 	if (cid >= alloc_clause_count) {
 	    /* must expand */
-	    int new_alloc_clause_count = alloc_clause_count * 2;
+	    double efactor = 2.0;
+	    int new_alloc_clause_count = (int) (alloc_clause_count * efactor);
+	    while (new_alloc_clause_count < cid && efactor > 1.0) {
+		/* Expanding by too much causes overflow */
+		efactor = 1.0 + (efactor-1.0)/2.0;
+		new_alloc_clause_count = (int) (alloc_clause_count * efactor);
+	    }
 	    int i;
 	    all_clauses = realloc(all_clauses, new_alloc_clause_count * sizeof(ilist));
 	    if (all_clauses == NULL)
