@@ -2,10 +2,10 @@ INTERP=python3
 N = 08
 GDIR=../../generators
 GENERATOR = $(GDIR)/chess.py
-BSAT = ../../../src/bsat
-TBSAT = ../../../src/tbsat
+TBSAT = ../../../tbsat/src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
 CHECK = ../../../src/sat_check
+GRAB = ../../../tools/grab_data.py
 SOLNS=10
 VLEVEL=1
 RM = rm -f
@@ -57,6 +57,12 @@ chess-sat-$(N): $(GENERATOR)
 
 .cnf.fsdata:
 	$(BSAT) -v $(VLEVEL) -i $< -s $*.schedule | tee $@
+
+data:
+	$(INTERP) $(GRAB) "Total clauses" *.bdata > chess-tbsat-bucket-clauses.csv
+	$(INTERP) $(GRAB) "Total clauses" *.sdata > chess-tbsat-scan-clauses.csv
+	$(INTERP) $(GRAB) "Elapsed" *.bdata > chess-tbsat-bucket-seconds.csv
+	$(INTERP) $(GRAB) "Elapsed" *.sdata > chess-tbsat-scan-seconds.csv
 
 clean:
 	rm -f chess-*.{cnf,schedule,order}
