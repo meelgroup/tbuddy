@@ -6,6 +6,8 @@ TBSAT = ../../../tbsat/src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
 CHECK = ../../../src/sat_check
 GRAB = ../../../tools/grab_data.py
+LINEARIZE=../../../tools/linearize.py
+
 SOLNS=10
 VLEVEL=1
 RM = rm -f
@@ -20,7 +22,7 @@ chess-sat-$(N): $(GENERATOR)
 	$(INTERP) $(GENERATOR) -c -n $(N) -r chess-sat-$(N)
 
 
-.SUFFIXES: .cnf .ldata .bdata .bsdata .sdata .ssdata .fldata .fbdata .fsdata
+.SUFFIXES: .cnf .ldata .bdata .bsdata .sdata .ssdata .fldata .fbdata .fsdata .ldata
 
 .cnf.ldata:
 	$(TBSAT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
@@ -59,8 +61,10 @@ chess-sat-$(N): $(GENERATOR)
 	$(BSAT) -v $(VLEVEL) -i $< -s $*.schedule | tee $@
 
 data:
+	$(INTERP) $(GRAB) "Total clauses" *.ldata > chess-tbsat-linear-clauses.csv
 	$(INTERP) $(GRAB) "Total clauses" *.bdata > chess-tbsat-bucket-clauses.csv
 	$(INTERP) $(GRAB) "Total clauses" *.sdata > chess-tbsat-scan-clauses.csv
+	$(INTERP) $(GRAB) "Elapsed" *.ldata > chess-tbsat-linear-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed" *.bdata > chess-tbsat-bucket-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed" *.sdata > chess-tbsat-scan-seconds.csv
 
