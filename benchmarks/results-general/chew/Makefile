@@ -5,7 +5,8 @@ GDIR=../../generators
 GENERATOR = $(GDIR)/chew-code/parity-cnf
 KDIR=~/repos/kissat/build
 KISSAT=$(KDIR)/kissat
-KFLAGS = --unsat --no-binary
+TLIM=900
+KFLAGS = --unsat --no-binary --time=$(TLIM)
 TBSAT = ../../../tbsat/src/tbsat
 TOOLDIR = ../../../tools
 EXTRACT = $(TOOLDIR)/xor_extractor.py
@@ -21,7 +22,7 @@ cnf: chew-$(N)-$(SEED).cnf
 
 kdata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).kdata
 
-ldata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).ldata
+ddata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).ddata
 
 bdata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).bdata
 
@@ -32,7 +33,7 @@ chew-$(N)-$(SEED).cnf: $(GENERATOR)
 	$(GENERATOR) $(N) $(SEED) 
 	mv formula.cnf chew-$(N)-$(SEED).cnf
 
-.SUFFIXES: .cnf .kdata .ldata .bdata .gdata 
+.SUFFIXES: .cnf .kdata .ddata .bdata .gdata 
 
 .cnf.kdata:
 	$(KISSAT) $(KFLAGS) $< $*.drat | tee $@
@@ -40,8 +41,8 @@ chew-$(N)-$(SEED).cnf: $(GENERATOR)
 	$(DRAT) $< $*.drat | tee -a $@
 	$(RM) $*.drat
 
-.cnf.ldata:
-	$(TBSAT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
+.cnf.ddata:
+	$(TBSAT) -v $(VLEVEL) -t $(TLIM) -i $< -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
@@ -62,11 +63,11 @@ chew-$(N)-$(SEED).cnf: $(GENERATOR)
 
 data:
 	$(INTERP) $(GRAB) "proof_added" chew-*-*.kdata > chew-kissat-clauses.csv
-	$(INTERP) $(GRAB) "Total clauses" chew-*-*.ldata > chew-tbsat-linear-clauses.csv
+	$(INTERP) $(GRAB) "Total clauses" chew-*-*.ddata > chew-tbsat-direct-clauses.csv
 	$(INTERP) $(GRAB) "Total clauses" chew-*-*.bdata > chew-tbsat-bucket-clauses.csv
 	$(INTERP) $(GRAB) "Total clauses" chew-*-*.gdata > chew-tbsat-gauss-clauses.csv
 	$(INTERP) $(GRAB) -1 "process-time" chew-*-*.kdata > chew-kissat-seconds.csv
-	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.ldata > chew-tbsat-linear-seconds.csv
+	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.ddata > chew-tbsat-direct-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.bdata > chew-tbsat-bucket-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.gdata > chew-tbsat-gauss-seconds.csv
 
@@ -76,5 +77,5 @@ clean:
 	rm -f *~ *.lrat *.drat
 
 superclean: clean
-	rm -f *.kdata *.ldata *.bdata *.gdata
+	rm -f *.kdata *.ddata *.bdata *.gdata
 
