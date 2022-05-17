@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
     double start = tod();
     if (solve(cnf_file, proof_file, order_file, sched_file, bucket, verb, ptype, binary, max_solutions)) {
 	if (verb >= 1) {
-	    printf("c Elapsed seconds: %.2f\n", tod()-start);
+	    printf("c Elapsed seconds: %.3f\n", tod()-start);
 	}
     }
     if (proof_file != NULL)
