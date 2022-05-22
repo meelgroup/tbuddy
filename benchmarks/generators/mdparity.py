@@ -81,7 +81,7 @@ rngPhaseInit, rngPhaseCounting, rngPhaseSelection, rngPhaseBits, rngPhaseSamples
 
 def initRng(seed):
     global rng
-    rng = RNG(rngPhaseCount)
+    rng = RNG(seed=seed, seedCount = rngPhaseCount)
 
 
 # The following random number generator isn't especially good, but it
