@@ -1,12 +1,11 @@
 INTERP=python3
 M = 03
-TOOLDIR = ../../../../tools
+TOOLDIR = ../../../tools
 GDIR=../../generators
 PCT=50
 GENERATOR = $(GDIR)/urquhart-li-code/generate
-BSAT = ../../../src/bsat
-TBSAT = ../../../src/tbsat
-EXTRACT = ../../../../tools/xor_extractor.py
+TBSAT = ../../../tbsat/src/tbsat
+EXTRACT = $(TOOLDIR)/xor_extractor.py
 LRAT = ~/repos/drat-trim/lrat-check
 VLEVEL=1
 RM=rm
