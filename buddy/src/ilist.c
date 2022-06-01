@@ -108,6 +108,7 @@ ilist ilist_resize(ilist ils, int nlength) {
     if (nlength > true_max_length) {
 	if (list_max_length < 0) {
 	    int *p = ILIST_BASE(ils);
+	    int old_tml = true_max_length;
 	    /* Dynamically resize */
 	    true_max_length *= 2;
 	    if (nlength > true_max_length)
@@ -115,6 +116,8 @@ ilist ilist_resize(ilist ils, int nlength) {
 	    p = realloc(p, (true_max_length + ILIST_OVHD) * sizeof(int));
 	    if (p == NULL) {
 		/* Need to throw error here */
+		fprintf(stderr, "Failed to grow ilist allocation from %d to %d\n",
+			old_tml, true_max_length);
 		return ilist_error("resize (dynamic)");
 	    }
 	    ils = p+ILIST_OVHD;

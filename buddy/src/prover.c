@@ -97,6 +97,13 @@ static size_t dest_buf_len = 0;
 // How many clauses should allocated for clauses
 #define INITIAL_CLAUSE_COUNT 1000
 
+/*
+  Maxima
+ */
+#define MAX_CLAUSE 4
+#define MAX_HINT 8
+
+
 
 /* Useful static functions */
 
@@ -369,7 +376,7 @@ int generate_clause(ilist literals, ilist hints) {
 	return TAUTOLOGY;
     ilist clause = clean_clause(literals);
     int cid = ++(*clause_id_counter);
-    if (cid < 0) {
+    if ((cid+MAX_CLAUSE) < 0) {
 	fprintf(ERROUT, "ERROR: Overflowed clause counter\n");
 	bdd_error(TBDD_PROOF);
     }
@@ -675,11 +682,6 @@ ilist defining_clause(ilist ils, dclause_t dtype, int nid, int vid, int hid, int
 
 /******* Support for Apply Proof generation *****/
 
-/*
-  Maxima
- */
-#define MAX_CLAUSE 4
-#define MAX_HINT 8
 
 /*
   Enumerated type for the hint types
