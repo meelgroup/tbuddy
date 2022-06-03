@@ -37,6 +37,8 @@ int bdd_error(int);
 #define ILIST_ALLOC (-23)
 #endif
 
+#define ERROUT stdout
+
 /*============================================
    Integer lists
 ============================================*/
@@ -49,7 +51,7 @@ int bdd_error(int);
 #define ILIST_MAXLENGTH(ils) (IABS(ILIST_MAXLENGTHFIELD(ils)))
 
 static ilist ilist_error(char *fname) {
-    fprintf(stderr, "ilist error in %s\n", fname);
+    fprintf(ERROUT, "ilist error in %s\n", fname);
 #if ENABLE_TBDD
     bdd_error(ILIST_ALLOC);
 #else
@@ -116,7 +118,7 @@ ilist ilist_resize(ilist ils, int nlength) {
 	    p = realloc(p, (true_max_length + ILIST_OVHD) * sizeof(int));
 	    if (p == NULL) {
 		/* Need to throw error here */
-		fprintf(stderr, "Failed to grow ilist allocation from %d to %d\n",
+		fprintf(ERROUT, "Failed to grow ilist allocation from %d to %d\n",
 			old_tml, true_max_length);
 		return ilist_error("resize (dynamic)");
 	    }
