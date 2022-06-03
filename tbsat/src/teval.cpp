@@ -44,6 +44,12 @@ using namespace trustbdd;
 // Minimum fraction of dead:total nodes to trigger GC
 #define COLLECT_FRACTION 0.10
 
+// Reporting information
+// Give bucket status ~20 times
+#define REPORT_BUCKET 20
+// Indicate Clause ID every 100 million clauses
+#define REPORT_CLAUSE (100*1000*1000)
+
 // Functions to aid parsing of schedule lines
 
 
@@ -564,10 +570,11 @@ public:
 	    std::cout << "c Placed " << tcount << " terms into " << bcount << " buckets." << std::endl;
 
 	// Report status ~20 times during bucket elimination
-	int report_level = bcount / 20;
+	int report_level = bcount / REPORT_BUCKET;
 	if (report_level == 0)
 	    report_level = 1;
 
+	int last_clause_epoch = *clause_id_counter/REPORT_CLAUSE;
 	for (int blevel = 1 ; blevel <= max_variable; blevel++) {
 	    int next_idx = 0;
 	    int bvar = bdd_level2var(blevel);
@@ -584,6 +591,12 @@ public:
 		continue;
 	    }
 	    while (next_idx < buckets[blevel].size() - 1) {
+		/* Report incremental progress */
+		int clause_epoch = *clause_id_counter/REPORT_CLAUSE;
+		if (verblevel >= 1 && clause_epoch > last_clause_epoch) {
+		    std::cout << "c In bucket " << blevel << ", have surpassed " << *clause_id_counter << " proof clauses" << std::endl;
+		    last_clause_epoch = clause_epoch;
+		}
 		Term *tp1 = terms[buckets[blevel][next_idx++]];
 		Term *tp2 = terms[buckets[blevel][next_idx++]];
 		Term *tpn = conjunct(tp1, tp2);
