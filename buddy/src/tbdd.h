@@ -144,6 +144,12 @@ void tbdd_add_done_fun(tbdd_done_fun f);
 */
 extern void tbdd_set_verbose(int level);
 
+/* 
+   Set limit on the number of input+proof clauses.
+   Setting to 0 will keep at default limit (1<<30).
+ */
+extern void tbdd_set_clause_limit(int clim);
+
 /*============================================
  Creation and manipulation of trusted BDDs
 ============================================*/

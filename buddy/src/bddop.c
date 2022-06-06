@@ -142,6 +142,9 @@ static int firstReorder;            /* Used instead of local variable in order
 				       to avoid compiler warning about 'first'
 				       being clobbered by setjmp */
 
+static int this_apply_counter;    /* Keep track of number of calls to current apply operation */
+#define THIS_APPLY_REPORT 50000   /* How often should program report apply operations */
+
 static char*            allsatProfile; /* Variable profile for bdd_allsat() */
 static bddallsathandler allsatHandler; /* Callback handler for bdd_allsat() */
 
@@ -523,6 +526,7 @@ DESCR   {* The {\tt bdd\_apply} function performs all of the basic
 BDD bdd_apply(BDD l, BDD r, int op)
 {
    BDD res;
+   this_apply_counter = 0;
    firstReorder = 1;
    
    CHECKa(l, bddfalse);
@@ -630,6 +634,11 @@ static BDD apply_rec(BDD l, BDD r)
       bddcachestats.opMiss++;
 #endif
       
+      this_apply_counter++;
+      if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+	  fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
+      }
+
       if (LEVEL(l) == LEVEL(r))
       {
 	 PUSHREF( apply_rec(LOW(l), LOW(r)) );
@@ -760,7 +769,7 @@ pcbdd pcbdd_tautology() {
 
 
 /*
-NAME    {* tbdd\_apply *}
+NAME    {* bdd\_applyj *}
 SECTION {* operator *}
 SHORT   {* basic bdd operations, with proof generation  *}
 PROTO   {* pcbdd bdd_applyj(BDD left, BDD right, int opr) *}
@@ -786,6 +795,7 @@ static pcbdd bdd_applyj(BDD l, BDD r, int op)
 {
    pcbdd res;
 
+   this_apply_counter = 0;
    firstReorder = 1;
    
    CHECKa(l, pcbdd_null());
@@ -840,6 +850,7 @@ static pcbdd bdd_apply_aij(BDD l, BDD r, BDD t)
    pcbdd res;
 
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(l, pcbdd_null());
    CHECKa(r, pcbdd_null());
@@ -908,7 +919,7 @@ static pcbdd applyj_rec(BDD l, BDD r)
 	   /* Implication cannot hold for all arguments */
 	   { 
 	       tres.root = BDDZERO;
-	       fprintf(stderr, "Implication failure.  N%d -/-> N%d\n", bdd_nameid(l), bdd_nameid(r));
+	       fprintf(ERROUT, "Implication failure.  N%d -/-> N%d\n", bdd_nameid(l), bdd_nameid(r));
 	       bdd_error(TBDD_PROOF);
 	       return tres;
 	   }
@@ -916,7 +927,7 @@ static pcbdd applyj_rec(BDD l, BDD r)
 	   /* Implication cannot hold for all arguments */
 	   { 
 	       tres.root = BDDZERO;
-	       fprintf(stderr, "Implication failure.  N%d -/-> N%d\n", bdd_nameid(l), bdd_nameid(r));
+	       fprintf(ERROUT, "Implication failure.  N%d -/-> N%d\n", bdd_nameid(l), bdd_nameid(r));
 	       bdd_error(TBDD_PROOF);
 	       return tres;
 	   }
@@ -952,6 +963,11 @@ static pcbdd applyj_rec(BDD l, BDD r)
       pcbdd tresl;
       int splitVar;
       int splitLevel;
+
+      this_apply_counter++;
+      if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+	  fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
+      }
 
       if (LEVEL(l) == LEVEL(r))
       {
@@ -1069,6 +1085,11 @@ static pcbdd apply_aij_rec(BDD l, BDD r, BDD t)
       pcbdd tresl;
       int splitVar;
       int splitLevel;
+
+      this_apply_counter++;
+      if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+	  fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
+      }
 
       if (LEVEL(l) == LEVEL(r))
       {
@@ -1239,6 +1260,7 @@ BDD bdd_ite(BDD f, BDD g, BDD h)
 {
    BDD res;
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(f, bddfalse);
    CHECKa(g, bddfalse);
@@ -1297,6 +1319,11 @@ static BDD ite_rec(BDD f, BDD g, BDD h)
    bddcachestats.opMiss++;
 #endif
       
+   this_apply_counter++;
+   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+       fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
+   }
+
    if (LEVEL(f) == LEVEL(g))
    {
       if (LEVEL(f) == LEVEL(h))
@@ -1514,6 +1541,7 @@ BDD bdd_constrain(BDD f, BDD c)
 {
    BDD res;
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(f,bddfalse);
    CHECKa(c,bddfalse);
@@ -1569,6 +1597,12 @@ static BDD constrain_rec(BDD f, BDD c)
 #ifdef CACHESTATS
    bddcachestats.opMiss++;
 #endif
+
+   this_apply_counter++;
+   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+       fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
+   }
+
 
    if (LEVEL(f) == LEVEL(c))
    {
@@ -1641,6 +1675,7 @@ BDD bdd_replace(BDD r, bddPair *pair)
 {
    BDD res;
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(r, bddfalse);
    
@@ -1692,6 +1727,11 @@ static BDD replace_rec(BDD r)
    bddcachestats.opMiss++;
 #endif
 
+   this_apply_counter++;
+   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+       fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
+   }
+
    PUSHREF( replace_rec(LOW(r)) );
    PUSHREF( replace_rec(HIGH(r)) );
 
@@ -1724,6 +1764,11 @@ static BDD bdd_correctify(int level, BDD l, BDD r)
    {
       bdd_error(BDD_REPLACE);
       return 0;
+   }
+
+   this_apply_counter++;
+   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+       fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
    }
 
    if (LEVEL(l) == LEVEL(r))
@@ -1767,6 +1812,7 @@ BDD bdd_compose(BDD f, BDD g, int var)
 {
    BDD res;
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(f, bddfalse);
    CHECKa(g, bddfalse);
@@ -1822,6 +1868,12 @@ static BDD compose_rec(BDD f, BDD g)
 #ifdef CACHESTATS
    bddcachestats.opMiss++;
 #endif
+
+   this_apply_counter++;
+   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+       fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
+   }
+
 
    if (LEVEL(f) < composelevel)
    {
@@ -1891,6 +1943,7 @@ BDD bdd_veccompose(BDD f, bddPair *pair)
 {
    BDD res;
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(f, bddfalse);
    
@@ -1941,6 +1994,12 @@ static BDD veccompose_rec(BDD f)
 #ifdef CACHESTATS
    bddcachestats.opMiss++;
 #endif
+
+   this_apply_counter++;
+   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+       fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
+   }
+
 
    PUSHREF( veccompose_rec(LOW(f)) );
    PUSHREF( veccompose_rec(HIGH(f)) );
@@ -2095,6 +2154,7 @@ BDD bdd_exist(BDD r, BDD var)
 {
    BDD res;
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(r, bddfalse);
    CHECKa(var, bddfalse);
@@ -2146,6 +2206,7 @@ BDD bdd_forall(BDD r, BDD var)
 {
    BDD res;
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(r, bddfalse);
    CHECKa(var, bddfalse);
@@ -2200,6 +2261,7 @@ BDD bdd_unique(BDD r, BDD var)
 {
    BDD res;
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(r, bddfalse);
    CHECKa(var, bddfalse);
@@ -2257,6 +2319,11 @@ static int quant_rec(int r)
    bddcachestats.opMiss++;
 #endif
 
+   this_apply_counter++;
+   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+       fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
+   }
+
    PUSHREF( quant_rec(LOW(r)) );
    PUSHREF( quant_rec(HIGH(r)) );
    
@@ -2305,6 +2372,7 @@ BDD bdd_appex(BDD l, BDD r, int opr, BDD var)
 {
    BDD res;
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(l, bddfalse);
    CHECKa(r, bddfalse);
@@ -2371,6 +2439,7 @@ BDD bdd_appall(BDD l, BDD r, int opr, BDD var)
 {
    BDD res;
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(l, bddfalse);
    CHECKa(r, bddfalse);
@@ -2437,6 +2506,7 @@ BDD bdd_appuni(BDD l, BDD r, int opr, BDD var)
 {
    BDD res;
    firstReorder = 1;
+   this_apply_counter = 0;
    
    CHECKa(l, bddfalse);
    CHECKa(r, bddfalse);
@@ -2551,6 +2621,11 @@ static int appquant_rec(int l, int r)
 #ifdef CACHESTATS
       bddcachestats.opMiss++;
 #endif
+
+      this_apply_counter++;
+      if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+	  fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
+      }
 
       if (LEVEL(l) == LEVEL(r))
       {

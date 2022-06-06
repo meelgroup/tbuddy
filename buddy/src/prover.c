@@ -39,6 +39,7 @@ proof_type_t proof_type = PROOF_FRAT;
 int verbosity_level = 1;
 int *variable_counter = NULL;
 int *clause_id_counter = NULL;
+int clause_limit = CLAUSE_LIMIT_LRAT;
 int total_clause_count = 0;
 int input_clause_count = 0;
 int input_variable_count = 0;
@@ -103,7 +104,10 @@ static size_t dest_buf_len = 0;
 #define MAX_CLAUSE 4
 #define MAX_HINT 8
 
-
+/*
+  With what frequency should proof size be announced
+ */
+#define CLAUSE_REPORT_RATIO 20
 
 /* Useful static functions */
 
@@ -376,10 +380,12 @@ int generate_clause(ilist literals, ilist hints) {
 	return TAUTOLOGY;
     ilist clause = clean_clause(literals);
     int cid = ++(*clause_id_counter);
-    if ((cid+MAX_CLAUSE) < 0) {
-	fprintf(ERROUT, "ERROR: Overflowed clause counter\n");
+    if ((cid+MAX_CLAUSE) > clause_limit) {
+	fprintf(ERROUT, "ERROR: Exceeding clause limit %d\n", clause_limit);
 	bdd_error(TBDD_PROOF);
     }
+    if (cid % (clause_limit / CLAUSE_REPORT_RATIO) == 0)
+	fprintf(ERROUT, "Have reached proof clause #%d\n", cid);
     int rval = 0;
     hints = clean_hints(hints);
     unsigned char *d = dest_buf;

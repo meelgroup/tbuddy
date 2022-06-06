@@ -229,21 +229,29 @@ int tbdd_init_lrat_binary(FILE *pfile, int variable_count, int clause_count, ili
 int tbdd_init_drat(FILE *pfile, int variable_count) {
     last_variable = variable_count;
     last_clause_id = 0;
-    return tbdd_init(pfile, &last_variable, &last_clause_id, NULL, NULL, PROOF_DRAT, false);
+    int result = tbdd_init(pfile, &last_variable, &last_clause_id, NULL, NULL, PROOF_DRAT, false);
+    tbdd_set_clause_limit(CLAUSE_LIMIT_DRAT);
+    return result;
 }
 
 int tbdd_init_drat_binary(FILE *pfile, int variable_count) {
     last_variable = variable_count;
     last_clause_id = 0;
-    return tbdd_init(pfile, &last_variable, &last_clause_id, NULL, NULL, PROOF_DRAT, true);
+    int result = tbdd_init(pfile, &last_variable, &last_clause_id, NULL, NULL, PROOF_DRAT, true);
+    tbdd_set_clause_limit(CLAUSE_LIMIT_DRAT);
+    return result;
 }
 
 int tbdd_init_frat(FILE *pfile, int *variable_counter, int *clause_id_counter) {
-    return tbdd_init(pfile, variable_counter, clause_id_counter, NULL, NULL, PROOF_FRAT, false);
+    int result = tbdd_init(pfile, variable_counter, clause_id_counter, NULL, NULL, PROOF_FRAT, false);
+    tbdd_set_clause_limit(CLAUSE_LIMIT_FRAT);
+    return result;
 }
 
 int tbdd_init_frat_binary(FILE *pfile, int *variable_counter, int *clause_id_counter) {
-    return tbdd_init(pfile, variable_counter, clause_id_counter, NULL, NULL, PROOF_FRAT, false);
+    int result = tbdd_init(pfile, variable_counter, clause_id_counter, NULL, NULL, PROOF_FRAT, false);
+    tbdd_set_clause_limit(CLAUSE_LIMIT_FRAT);
+    return result;
 }
 
 int tbdd_init_noproof(int variable_count) {
@@ -253,6 +261,14 @@ int tbdd_init_noproof(int variable_count) {
 
 void tbdd_set_verbose(int level) {
     verbosity_level = level;
+}
+
+void tbdd_set_clause_limit(int clim) {
+    if (clim <= 0)
+	return;
+    if (clim > INT_MAX-4)
+	clim = INT_MAX-4;
+    clause_limit = clim;
 }
 
 void tbdd_done() {

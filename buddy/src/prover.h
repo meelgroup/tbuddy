@@ -34,6 +34,12 @@
 
 #include <stdarg.h>
 
+/* Size limits */
+/* Maximum number of clauses for each proof type */
+#define CLAUSE_LIMIT_LRAT (1<<30)
+#define CLAUSE_LIMIT_FRAT (1<<17)
+#define CLAUSE_LIMIT_DRAT (1<<15)
+
 /* Allow this headerfile to define C++ constructs if requested */
 #ifdef __cplusplus
 #define CPLUSPLUS
@@ -46,6 +52,7 @@ extern "C" {
 /* Global variables exported by prover */
 extern proof_type_t proof_type;
 extern int verbosity_level;
+extern int clause_limit;
 extern int *variable_counter;
 extern int *clause_id_counter;
 extern int total_clause_count;
