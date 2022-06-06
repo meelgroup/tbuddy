@@ -423,7 +423,7 @@ private:
 
 public:
 
-    TermSet(CNF &cnf, FILE *proof_file, ilist variable_ordering, int verb, proof_type_t ptype, bool binary, Solver *sol) {
+    TermSet(CNF &cnf, FILE *proof_file, ilist variable_ordering, int verb, proof_type_t ptype, bool binary, Solver *sol, int clause_limit) {
 	verblevel = verb;
 	proof_type = ptype;
 	tbdd_set_verbose(verb);
@@ -445,6 +445,8 @@ public:
 	    fprintf(stdout, "c Initialization failed.  Return code = %d\n", rcode);
 	    exit(1);
 	}
+	if (clause_limit > 0)
+	    tbdd_set_clause_limit(clause_limit);
 	// Want to number terms starting at 1
 	terms.resize(1, NULL);
 	for (int i = 1; i <= clause_count; i++) {
@@ -948,7 +950,8 @@ public:
 
 };
 
-bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary, int max_solutions) {
+bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, bool bucket,
+	   int verblevel, proof_type_t ptype, bool binary, int max_solutions, int clause_limit) {
     CNF cset = CNF(cnf_file);
     fclose(cnf_file);
     if (cset.failed()) {
@@ -970,7 +973,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file,
 	    return false;
 	}
     }
-    TermSet tset(cset, proof_file, variable_ordering, verblevel, ptype, binary, &solver);
+    TermSet tset(cset, proof_file, variable_ordering, verblevel, ptype, binary, &solver, clause_limit);
     tbdd tr = tbdd_tautology();
     if (sched_file != NULL)
 	tr = tset.schedule_reduce(sched_file);

@@ -38,12 +38,12 @@
 /* Time limit for execution.  0 = no limit */
 int timelimit = 0;
 
-extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary, int max_solutions);
+extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary, int max_solutions, int clause_limit);
 
 // BDD-based SAT solver
 
 void usage(char *name) {
-    printf("Usage: %s [-h] [-b] [-v VERB] [-i FILE.cnf] [-o FILE.lrat(b)] [-p FILE.order] [-s FILE.schedule] [-m SOLNS] [-t TLIM]\n", name);
+    printf("Usage: %s [-h] [-b] [-v VERB] [-i FILE.cnf] [-o FILE.lrat(b)] [-p FILE.order] [-s FILE.schedule] [-m SOLNS] [-t TLIM] [-c CLIM]\n", name);
     printf("  -h               Print this message\n");
     printf("  -b               Use bucket elimination\n");
     printf("  -v VERB          Set verbosity level (0-3)\n");
@@ -53,6 +53,7 @@ void usage(char *name) {
     printf("  -s FILE.schedule Specify schedule file\n");
     printf("  -m SOLNS         Generate up to specified number of solutions\n");
     printf("  -t TLIM          Set time limit for execution (seconds)\n");
+    printf("  -c CLIM          Set limit on number of input+proof clauses\n");
     exit(0);
 }
 
@@ -96,7 +97,8 @@ int main(int argc, char *argv[]) {
     int c;
     int verb = 1;
     int max_solutions = 1;
-    while ((c = getopt(argc, argv, "hbv:i:o:p:s:m:t:")) != -1) {
+    int clause_limit = 0;
+    while ((c = getopt(argc, argv, "hbv:i:o:p:s:m:t:c:")) != -1) {
 	char buf[2] = { (char) c, '\0' };
 	char *extension;
 	switch (c) {
@@ -114,6 +116,8 @@ int main(int argc, char *argv[]) {
 	case 't':
 	    set_timeout(atoi(optarg));
 	    break;
+	case 'c':
+	    clause_limit = atoi(optarg);
 	case 'i':
 	    cnf_file = fopen(optarg, "r");
 	    if (cnf_file == NULL) {
@@ -174,7 +178,7 @@ int main(int argc, char *argv[]) {
 	}
     }
     double start = tod();
-    if (solve(cnf_file, proof_file, order_file, sched_file, bucket, verb, ptype, binary, max_solutions)) {
+    if (solve(cnf_file, proof_file, order_file, sched_file, bucket, verb, ptype, binary, max_solutions, clause_limit)) {
 	if (verb >= 1) {
 	    printf("c Elapsed seconds: %.3f\n", tod()-start);
 	}
