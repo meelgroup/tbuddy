@@ -180,7 +180,7 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
     int *varlist = NULL;
     if (variable_ordering != NULL) {
 	if (ilist_length(variable_ordering) != input_variable_count) {
-	    fprintf(ERROUT, "Invalid variable ordering.  Given ordering for %d variables.  Must have %d\n",
+	    fprintf(ERROUT, "c Invalid variable ordering.  Given ordering for %d variables.  Must have %d\n",
 		    ilist_length(variable_ordering), input_variable_count);
 	    return bdd_error(BDD_DECVNUM);
 	}
@@ -381,11 +381,11 @@ int generate_clause(ilist literals, ilist hints) {
     ilist clause = clean_clause(literals);
     int cid = ++(*clause_id_counter);
     if ((cid+MAX_CLAUSE) > clause_limit) {
-	fprintf(ERROUT, "ERROR: Exceeding clause limit %d\n", clause_limit);
+	fprintf(ERROUT, "c ERROR: Exceeding clause limit %d\n", clause_limit);
 	bdd_error(TBDD_PROOF);
     }
     if (cid % (clause_limit / CLAUSE_REPORT_RATIO) == 0)
-	fprintf(ERROUT, "Have reached proof clause #%d\n", cid);
+	fprintf(ERROUT, "c Have reached proof clause #%d\n", cid);
     int rval = 0;
     hints = clean_hints(hints);
     unsigned char *d = dest_buf;
