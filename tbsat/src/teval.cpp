@@ -378,6 +378,7 @@ private:
     int clause_count;
     int32_t max_variable;
     int verblevel;
+    unsigned seed = DEFAULT_SEED;
     proof_type_t proof_type;
     // Estimated total number of nodes
     int total_count;
@@ -423,8 +424,10 @@ private:
 
 public:
 
-    TermSet(CNF &cnf, FILE *proof_file, ilist variable_ordering, int verb, proof_type_t ptype, bool binary, Solver *sol, int clause_limit) {
+    TermSet(CNF &cnf, FILE *proof_file, ilist variable_ordering, int verb, proof_type_t ptype,
+	    bool binary, Solver *sol, int clause_limit, unsigned s) {
 	verblevel = verb;
+	seed = s;
 	proof_type = ptype;
 	tbdd_set_verbose(verb);
 	total_count = dead_count = 0;
@@ -858,6 +861,7 @@ public:
 		    for (int i = 1; i < numbers.size(); i++)
 			ivars.insert(numbers[i]);
 		    xor_set xset;
+		    xset.set_seed(seed);
 		    for (i = 0; i < ecount; i++) {
 			int si = term_stack.size() - i - 1;
 			Term *tp = term_stack[si];
@@ -936,8 +940,8 @@ public:
     void show_statistics() {
 	bddStat s;
 	bdd_stats(s);
-	std::cout << and_count << " conjunctions, " << quant_count << " quantifications." << std::endl;
-	std::cout << equation_count << " equations" << std::endl;
+	std::cout << "c " << and_count << " conjunctions, " << quant_count << " quantifications." << std::endl;
+	std::cout << "c " << equation_count << " equations" << std::endl;
 	bdd_printstat();
 	std::cout << "c Total BDD nodes: " << s.produced <<std::endl;
 	std::cout << "c Max BDD size: " << max_bdd << std::endl;
@@ -951,7 +955,7 @@ public:
 };
 
 bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, bool bucket,
-	   int verblevel, proof_type_t ptype, bool binary, int max_solutions, int clause_limit) {
+	   int verblevel, proof_type_t ptype, bool binary, int max_solutions, int clause_limit, unsigned seed) {
     CNF cset = CNF(cnf_file);
     fclose(cnf_file);
     if (cset.failed()) {
@@ -960,9 +964,11 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file,
 	return false;
     }
     if (verblevel >= 1)
-	if (verblevel >= 1)
+	if (verblevel >= 1) {
 	    std::cout << "c Read " << cset.clause_count() << " clauses.  " 
 		      << cset.max_variable() << " variables" << std::endl;
+	    std::cout << "c Breaking ties randomly with seed " << seed << std::endl;
+	}
     PhaseGenerator pg(GENERATE_RANDOM, DEFAULT_SEED);
     Solver solver(&pg);
     ilist variable_ordering = NULL;
@@ -973,7 +979,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file,
 	    return false;
 	}
     }
-    TermSet tset(cset, proof_file, variable_ordering, verblevel, ptype, binary, &solver, clause_limit);
+    TermSet tset(cset, proof_file, variable_ordering, verblevel, ptype, binary, &solver, clause_limit, seed);
     tbdd tr = tbdd_tautology();
     if (sched_file != NULL)
 	tr = tset.schedule_reduce(sched_file);
