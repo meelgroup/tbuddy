@@ -74,6 +74,8 @@ class xor_constraint {
     ilist variables;
     int phase;
     tbdd validation;
+    // How many clauses were added to justify this clause?
+    int generated_clause_count;
 
  public:
     // Empty constraint represents a tautology
@@ -118,17 +120,21 @@ class xor_constraint {
 
     int get_phase() { return phase; }
 
+    int get_length() { return ilist_length(variables); }
+
     // Print a representation of the constraint to the file
     void show(FILE *out);
 
     // Get ID for BDD representation of constraint
     int get_nameid() { return tbdd_nameid(validation); }
 
+    // How many clauses were added to create/justify this clause?
+    int get_clause_count() { return generated_clause_count; }
 
     // Generate an Xor constraint as the sum of two constraints
     friend xor_constraint *xor_plus(xor_constraint *arg1, xor_constraint *arg2);
     // Compute the sum of a list of Xors.  Used by the xor_set class
-    friend xor_constraint *xor_sum_list(xor_constraint **xlist, int len, int maxvar);
+    friend xor_constraint *xor_sum_list(xor_constraint **xlist, int len, int maxvar, unsigned seed);
 };
 
 // Generate an Xor constraint as the sum of two constraints
@@ -141,6 +147,7 @@ xor_constraint *xor_sum_list(xor_constraint **xlist, int len, int maxvar);
 class xor_set {
  private:
     int maxvar;
+    unsigned seed;
 
  public:
     // Vector of constraints
@@ -150,6 +157,8 @@ class xor_set {
     xor_set() { maxvar = 0; }
 
     ~xor_set();
+
+    void set_seed(unsigned s) { seed = s; }
 
     // Add an xor constraint to the set.
     // The code makes a copy of the constraint, and so

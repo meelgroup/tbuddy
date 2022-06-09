@@ -36,6 +36,11 @@
 
 using namespace trustbdd;
 
+// Enable code/printing to evaluate performance
+#ifndef INSTRUMENT
+#define INSTRUMENT 0
+#endif
+
 #define BUFLEN 2048
 // For formatting information
 static char ibuf[BUFLEN];
@@ -180,16 +185,20 @@ xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun) {
     pseudo_xor_created ++;
     variables = vars;
     phase = p;
+    int initial_count = total_clause_count;
     bdd xfun = build_constraint_bdd(vars, p);
     validation = tbdd_validate(xfun, vfun);
+    generated_clause_count = total_clause_count - initial_count;
 }
 
 xor_constraint::xor_constraint(ilist vars, int p, tbdd &vfun1, tbdd &vfun2) {
     pseudo_xor_created ++;
     variables = vars;
     phase = p;
+    int initial_count = total_clause_count;
     bdd xfun = build_constraint_bdd(vars, p);
     validation = tbdd_validate_with_and(xfun, vfun1, vfun2);
+    generated_clause_count = total_clause_count - initial_count;
 }
 
 // When generating DRAT proof, either reuse or generate validation
@@ -197,8 +206,9 @@ xor_constraint::xor_constraint(ilist vars, int p) {
     pseudo_xor_created ++;
     variables = vars;
     phase = p;
-    int start_clause = total_clause_count;
+    int initial_count = total_clause_count;
     validation = tbdd_from_xor(variables, phase);
+    generated_clause_count = total_clause_count - initial_count;
 }
 
 int xor_constraint::validate_clause(ilist clause) {
@@ -385,6 +395,12 @@ public:
     }
 
     xor_constraint *get_sum() {
+#if INSTRUMENT
+	static int sum_count = 0;
+	int added_clauses = 0;
+	long operations = 0;
+	int score = 0;
+#endif
 	// Reduce the graph
 	while (edges.size() > 0) {
 	    sgraph_edge *e = edges.begin()->second;
@@ -392,6 +408,11 @@ public:
 	    int n1 = e->node1;
 	    int n2 = e->node2;
 	    xor_constraint *xc = xor_plus(nodes[n1], nodes[n2]);
+#if INSTRUMENT
+	    score = lower(e->cost);
+	    operations += (long) nodes[n1]->get_length() * nodes[n2]->get_length();
+	    added_clauses += xc->get_clause_count();
+#endif
 	    delete nodes[n1];
 	    delete nodes[n2];
 	    nodes[n2] = NULL;
@@ -419,6 +440,10 @@ public:
 	for (int n = 0; n < node_count; n++) {
 	    if (nodes[n] != NULL) {
 		xor_constraint *nsum = xor_plus(sum, nodes[n]);
+#if INSTRUMENT
+		operations += (long) sum->get_length() * nodes[n]->get_length();
+		added_clauses += nsum->get_clause_count();
+#endif
 		delete sum;
 		delete nodes[n];
 		sum = nsum;
@@ -426,6 +451,9 @@ public:
 		real_node_count--;
 	    }
 	}	
+#if INSTRUMENT
+	printf("COST,%d,%d,%ld,%d\n", ++sum_count, score, operations, added_clauses);
+#endif
 	return sum;
     }
 
@@ -585,11 +613,11 @@ static xor_constraint *xor_sum_list_bf(xor_constraint **xlist, int len) {
 }
 
 // Chosen method for computing sum
-xor_constraint *trustbdd::xor_sum_list(xor_constraint **xlist, int len, int maxvar) {
+xor_constraint *trustbdd::xor_sum_list(xor_constraint **xlist, int len, int maxvar, unsigned seed) {
     if (len <= 4)
  	return xor_sum_list_linear(xlist, len);
     //    return xor_sum_list_bf(xlist, len);
-    sum_graph g(xlist, len, maxvar, DEFAULT_SEED);
+    sum_graph g(xlist, len, maxvar, seed);
     return g.get_sum();
 }
 
@@ -613,8 +641,14 @@ public:
     int64_t cost;
 
     void show(const char *prefix) {
-	printf("c %s: Pivot Eid = %d.  Var = %d.  Cost = %d/%d\n", prefix, equation_id, variable, upper(cost), lower(cost));
+	printf("c %s: Pivot Eid = %d.  Var = %d.  Cost = %d / %d\n", prefix, equation_id, variable, upper(cost), lower(cost));
     }
+
+#if INSTRUMENT
+    int score() {
+	return upper(cost);
+    }
+#endif
 };
 
 class gauss {
@@ -792,11 +826,18 @@ private:
     bool gauss_step() {
 	std::set<int> touched;  // Track variables that are involved
 	pivot *piv = pivot_selector.begin()->second;
+	// Temporarily tabulate pivots
 	if (verbosity_level >= 2) {
-	    piv->show("Using");
+	    piv->show("Pivoting");
 	}
 	int peid = piv->equation_id;
 	int pvar = piv->variable;
+#if INSTRUMENT
+	static int step_count = 0;
+	int score = piv->score();
+	int added_clauses = 0;
+	long operations = 0;
+#endif
 	pivot_selector.erase(piv->cost);
 	pivot_list[pvar-1] = NULL;
 	delete piv;
@@ -826,6 +867,10 @@ private:
 	    }
 	    // Add the equations
 	    xor_constraint *neq = xor_plus(peq, eq);
+#if INSTRUMENT
+	    added_clauses += neq->get_clause_count();
+	    operations += (long) peq->get_length() * eq->get_length();
+#endif
 	    delete eq;
 	    if (neq->is_infeasible()) {
 		equations[eid] = NULL;
@@ -853,6 +898,9 @@ private:
 		}
 	    }
 	}
+#if INSTRUMENT
+	printf("COST,%d,%d,%ld,%d\n", ++step_count, score, operations, added_clauses);
+#endif
 	imap[pvar-1].clear();
 	if (internal_variables.count(pvar) == 0)
 	    external_equations.push_back(peq);
@@ -917,7 +965,7 @@ void xor_set::add(xor_constraint &con) {
 }
 
 xor_constraint *xor_set::sum() {
-    xor_constraint *xsum = xor_sum_list(xlist.data(), xlist.size(), maxvar);
+    xor_constraint *xsum = xor_sum_list(xlist.data(), xlist.size(), maxvar, seed);
     clear();
     return xsum;
 }
@@ -938,6 +986,6 @@ void xor_set::clear() {
 }
 
 ilist xor_set::gauss_jordan(std::unordered_set<int> &internal_variables, xor_set &eset, xor_set &iset) {
-    gauss g(xlist.data(), xlist.size(), internal_variables, maxvar, 1);
+    gauss g(xlist.data(), xlist.size(), internal_variables, maxvar, seed);
     return g.gauss_jordan(eset, iset);
 }
