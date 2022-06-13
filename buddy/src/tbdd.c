@@ -243,6 +243,7 @@ int tbdd_init_drat_binary(FILE *pfile, int variable_count) {
 }
 
 int tbdd_init_frat(FILE *pfile, int *variable_counter, int *clause_id_counter) {
+    printf("c INITIALIZING TBDD\n");
     int result = tbdd_init(pfile, variable_counter, clause_id_counter, NULL, NULL, PROOF_FRAT, false);
     tbdd_set_clause_limit(CLAUSE_LIMIT_FRAT);
     return result;
@@ -260,7 +261,9 @@ int tbdd_init_noproof(int variable_count) {
 }
 
 void tbdd_set_verbose(int level) {
-    verbosity_level = level;
+    // Temporary
+    if (level > 0)
+	verbosity_level = level;
 }
 
 void tbdd_set_clause_limit(int clim) {
@@ -301,15 +304,17 @@ void tbdd_done() {
 	print_proof_comment(2, "Delete remaining unit clauses");
 	delete_clauses(live_unit_clauses);
     }
-    printf("c Unit clauses: Created %d.  Deleted %d.  Remaining = [",
-	   ilist_length(created_unit_clauses), ilist_length(dead_unit_clauses));
-    if (ilist_length(live_unit_clauses) > 20) {
-	ilist_resize(live_unit_clauses, 20);
-	ilist_print(live_unit_clauses, stdout, " ");
-	printf(" ...]\n");
-    } else {
-	ilist_print(live_unit_clauses, stdout, " ");
-	printf("]\n");
+    if (verbosity_level >= 2) {
+	printf("c Unit clauses: Created %d.  Deleted %d.  Remaining = [",
+	       ilist_length(created_unit_clauses), ilist_length(dead_unit_clauses));
+	if (ilist_length(live_unit_clauses) > 20) {
+	    ilist_resize(live_unit_clauses, 20);
+	    ilist_print(live_unit_clauses, stdout, " ");
+	    printf(" ...]\n");
+	} else {
+	    ilist_print(live_unit_clauses, stdout, " ");
+	    printf("]\n");
+	}
     }
 
     ilist_free(created_unit_clauses);
@@ -336,7 +341,7 @@ void tbdd_done() {
 	printf("c Total clauses: %d\n", total_clause_count);
 	int unused = *clause_id_counter - total_clause_count;
 	double upct = 100.0 * (double) unused/total_clause_count;
-	printf("c Unused clause IDs: %d (%.1f%%)\n", unused, upct);
+	printf("c Unused+non-BDD clause IDs: %d (%.1f%%)\n", unused, upct);
 	printf("c Maximum live clauses: %d\n", max_live_clause_count);
 	printf("c Deleted clauses: %d\n", deleted_clause_count);
 	printf("c Final live clauses: %d\n", total_clause_count-deleted_clause_count);

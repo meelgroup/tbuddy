@@ -384,8 +384,8 @@ int generate_clause(ilist literals, ilist hints) {
 	fprintf(ERROUT, "c ERROR: Exceeding clause limit %d\n", clause_limit);
 	bdd_error(TBDD_PROOF);
     }
-    if (cid % (clause_limit / CLAUSE_REPORT_RATIO) == 0)
-	fprintf(ERROUT, "c Have reached proof clause #%d\n", cid);
+    if (verbosity_level >= 1 && cid % (clause_limit / CLAUSE_REPORT_RATIO) == 0)
+	printf("c Have reached proof clause #%d\n", cid);
     int rval = 0;
     hints = clean_hints(hints);
     unsigned char *d = dest_buf;
