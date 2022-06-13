@@ -10,6 +10,12 @@ INC = -I..
 LDIR = ../lib
 IDIR = ../include
 
+# PREFIX is environment variable, but if it is not set, then set default value
+ifeq ($(PREFIX),)
+    PREFIX := /usr/local
+endif
+
+
 FILES = bddio.o bddop.o bvec.o cache.o fdd.o ilist.o imatrix.o kernel.o pairs.o prime.o reorder.o tree.o cppext.o
 
 TFILES = tbdd.to prover.to \
@@ -29,6 +35,15 @@ all: buddy.a tbuddy.a libtbuddy.so
 	cp -p prover.h $(IDIR)
 	cp -p pseudoboolean.h $(IDIR)
 	cp -p libtbuddy.so $(LDIR)
+
+install: all
+	install -m 644 libtbuddy.so $(PREFIX)/lib/
+	install -m 644 bdd.h $(PREFIX)/include/
+	install -m 644 ilist.h $(PREFIX)/include/
+	install -m 644 prover.h $(PREFIX)/include/
+	install -m 644 pseudoboolean.h $(PREFIX)/include/
+	install -m 644 tbdd.h $(PREFIX)/include/
+
 
 buddy.a: $(FILES)
 	ar cr buddy.a $(FILES)
