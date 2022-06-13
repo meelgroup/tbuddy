@@ -25,7 +25,7 @@ CFLAGS =
 
 CXDIR = ~/repos/cms-dev/cryptominisat/build
 CMSX = $(CXDIR)/cryptominisat5
-CXFLAGS = --presimp 1 --maxmatrixrows 500000
+CXFLAGS = --presimp 1 --maxmatrixcols 10000 --maxmatrixrows 10000
 
 TDIR = ../../bsat/src
 TBSAT = $(TDIR)/tbsat
@@ -70,7 +70,8 @@ $(ROOT)-$(N).frat:
 	$(GEN) -v $(VLEVEL) -n $(N) -s $(SEED) -m f -r $(ROOT)-$(N) | tee $(ROOT)-$(N).frat_gen_data
 
 
-.SUFFIXES: .cnf .drat .frat .drat_check_data .frat_check_data .kissat_data .cms_data .cmsx_data .cms_noproof_data \
+.SUFFIXES: .cnf .drat .frat .drat_check_data .frat_check_data .kissat_data .cms_data .cmsx_data \
+		.cmsxf_data .cms_noproof_data \
 		.tbsat_bucket_data .tbsat_gaussian_data .tbsat_bucket_noproof_data .tbsat_gaussian_noproof_data \
 		.pgbdd_bucket_data
 
@@ -103,6 +104,15 @@ $(ROOT)-$(N).frat:
 	$(DRAT) $< $*-cmsx.drat | tee -a $@
 	ls -l $*-cmsx.drat
 	$(RM) $*-cmsx.drat 
+
+.cnf.cmsxf_data:
+	$(CMSX) $(CXFLAGS)  $< $*-cmsx.frat | tee $@
+	{ /usr/bin/time -lp $(FRAT) elab $< $*-cmsx.frat $*.lrat 2>&1 ; } | tee -a $@
+	$(LRAT) $*.cnf $*.lrat	| tee -a $@
+	$(RM) $*-cmsx.frat
+	$(RM) $*-cmsx.frat.temp
+	$(RM) $*.lrat
+
 
 .cnf.cms_noproof_data:
 	$(CMS) $(CFLAGS)  --maxmatrixrows 500000 $< | tee $@
