@@ -17,9 +17,12 @@ DDIR = ~/repos/drat-trim
 DRAT = $(DDIR)/drat-trim
 LRAT = $(DDIR)/lrat-check
 
+FDIR = ~/repos/frat
+FRAT = $(FDIR)/frat-rs
+
 CXDIR = ~/repos/cms-dev/cryptominisat/build
 CMSX = $(CXDIR)/cryptominisat5
-CXFLAGS = --presimp 1 --maxmatrixrows 50000 --maxmatrixcols 50000
+CXFLAGS = --presimp 1 --maxmatrixrows 10000 --maxmatrixcols 10000
 
 CDIR = ~/repos/cryptominisat/build
 CMS = $(CDIR)/cryptominisat5
@@ -44,6 +47,9 @@ tprun: mdp-nosat-n$(N)-m$(M)-Y$(Y)-s$(SEED).tbsat_proof_data
 
 turun: mdp-unique-n$(N)-m$(M)-Y$(Y)-s$(SEED).tbsat_proof_data
 
+cxprun: mdp-nosat-n$(N)-m$(M)-Y$(Y)-s$(SEED).cmsx_proof_data
+
+cxurun: mdp-unique-n$(N)-m$(M)-Y$(Y)-s$(SEED).cmsx_proof_data
 
 mdp-nosat-n$(N)-m$(M)-Y$(Y)-s$(SEED).cnf:
 	$(GENERATOR) -r mdp-nosat-n$(N)-m$(M)-Y$(Y)-s$(SEED) -p -n $(N) -m $(M) -y 0.$(Y) -t -1 -s $(SEED)
@@ -72,11 +78,13 @@ mdp-unique-n$(N)-m$(M)-Y$(Y)-s$(SEED).cnf:
 	$(CMS) $(CFLAGS)  $< | tee $@
 	$(CHECKER) $< $@ | tee -a $@
 
-.cnf.cmsx_data:
-	$(CMSX) $(CXFLAGS)  $< $*-cmsx.drat | tee $@
-	$(DRAT) $< $*-cmsx.drat | tee -a $@
-	ls -l $*-cmsx.drat | tee -a $@
-	$(RM) $*-cmsx.drat 
+.cnf.cmsx_proof_data:
+	$(CMSX) $(CXFLAGS)  $< $*-cmsx.frat | tee $@
+	{ /usr/bin/time -lp $(FRAT) elab $< $*-cmsx.frat $*.lrat 2>&1 ; } | tee -a $@
+	$(LRAT) $*.cnf $*.lrat	| tee -a $@
+	$(RM) $*-cmsx.frat
+	$(RM) $*-cmsx.frat.temp
+	$(RM) $*.lrat
 
 .cnf.cmsx_noproof_data:
 	$(CMSX) $(CFLAGS)  $< | tee $@
