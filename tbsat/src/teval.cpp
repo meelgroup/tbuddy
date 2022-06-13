@@ -26,6 +26,7 @@
 // Trusted SAT evaluation
 
 #include <ctype.h>
+#include <algorithm>
 
 #include "tbdd.h"
 #include "prover.h"
@@ -51,7 +52,6 @@ using namespace trustbdd;
 #define REPORT_CLAUSE (100*1000*1000)
 
 // Functions to aid parsing of schedule lines
-
 
 // Skip line.  Return either \n or EOF
 static int skip_line(FILE *infile) {
@@ -151,6 +151,13 @@ static int get_number_pairs(FILE *infile, std::vector<int> &numbers1, std::vecto
 	numbers2.push_back(val);
     }
     return c;
+}
+
+// Global variables and functions to aid in pseudo-random number generation
+Sequencer global_sequencer;
+
+int next_pseudo_int(int m) {
+    return global_sequencer.pseudo_int(m);
 }
 
 /*
@@ -551,6 +558,7 @@ public:
 
     tbdd bucket_reduce() {
 	std::vector<int> *buckets = new std::vector<int>[max_variable+1];
+	global_sequencer.set_seed(seed);
 	int tcount = 0;
 	int bcount = 0;
 	for (int i = min_active; i < terms.size(); i++) {
@@ -595,6 +603,8 @@ public:
 		    std::cout << "c Bucket " << blevel << " empty.  Skipping" << std::endl;
 		continue;
 	    }
+	    // Randomize ordering of initial terms in bucket
+	    std::random_shuffle(buckets[blevel].begin(), buckets[blevel].end(), next_pseudo_int);
 	    while (next_idx < buckets[blevel].size() - 1) {
 		/* Report incremental progress */
 		int clause_epoch = *clause_id_counter/REPORT_CLAUSE;
