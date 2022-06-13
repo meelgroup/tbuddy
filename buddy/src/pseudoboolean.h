@@ -58,6 +58,12 @@ public:
 
     uint32_t next() { seed = (seed * mval) % groupsize; return seed; }
 
+    // Return next pseudo random value in interval [0.0, 1.0)
+    double pseudo_double() { uint32_t val = next(); return (double) val / (double) groupsize; }
+
+    // Return next pseudo random value in range [0, m)
+    int pseudo_int(int m) { return (int) (m * pseudo_double()); }
+
 private:
     uint64_t seed;
     const uint64_t mval = 48271;

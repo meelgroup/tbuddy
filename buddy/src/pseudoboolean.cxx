@@ -37,8 +37,12 @@
 using namespace trustbdd;
 
 // Enable code/printing to evaluate performance
-#ifndef INSTRUMENT
-#define INSTRUMENT 0
+#ifdef INSTRUMENT
+#define INSTRUMENT_SUM 1
+#define INSTRUMENT_GAUSS 1
+#else
+#define INSTRUMENT_SUM 0
+#define INSTRUMENT_GAUSS 0
 #endif
 
 #define BUFLEN 2048
@@ -395,7 +399,7 @@ public:
     }
 
     xor_constraint *get_sum() {
-#if INSTRUMENT
+#if INSTRUMENT_SUM
 	static int sum_count = 0;
 	int added_clauses = 0;
 	long operations = 0;
@@ -408,8 +412,9 @@ public:
 	    int n1 = e->node1;
 	    int n2 = e->node2;
 	    xor_constraint *xc = xor_plus(nodes[n1], nodes[n2]);
-#if INSTRUMENT
-	    score = lower(e->cost);
+#if INSTRUMENT_SUM
+	    score = upper(e->cost);
+	    printf("c Len1: %d, Len2: %d, score: %d\n", nodes[n1]->get_length(), nodes[n2]->get_length(), score);
 	    operations += (long) nodes[n1]->get_length() * nodes[n2]->get_length();
 	    added_clauses += xc->get_clause_count();
 #endif
@@ -440,7 +445,7 @@ public:
 	for (int n = 0; n < node_count; n++) {
 	    if (nodes[n] != NULL) {
 		xor_constraint *nsum = xor_plus(sum, nodes[n]);
-#if INSTRUMENT
+#if INSTRUMENT_SUM
 		operations += (long) sum->get_length() * nodes[n]->get_length();
 		added_clauses += nsum->get_clause_count();
 #endif
@@ -451,8 +456,8 @@ public:
 		real_node_count--;
 	    }
 	}	
-#if INSTRUMENT
-	printf("COST,%d,%d,%ld,%d\n", ++sum_count, score, operations, added_clauses);
+#if INSTRUMENT_SUM
+	printf("DATA:SUM,%d,%d,%ld,%d\n", ++sum_count, score, operations, added_clauses);
 #endif
 	return sum;
     }
@@ -644,7 +649,7 @@ public:
 	printf("c %s: Pivot Eid = %d.  Var = %d.  Cost = %d / %d\n", prefix, equation_id, variable, upper(cost), lower(cost));
     }
 
-#if INSTRUMENT
+#if INSTRUMENT_GAUSS
     int score() {
 	return upper(cost);
     }
@@ -832,7 +837,7 @@ private:
 	}
 	int peid = piv->equation_id;
 	int pvar = piv->variable;
-#if INSTRUMENT
+#if INSTRUMENT_GAUSS
 	static int step_count = 0;
 	int score = piv->score();
 	int added_clauses = 0;
@@ -867,7 +872,7 @@ private:
 	    }
 	    // Add the equations
 	    xor_constraint *neq = xor_plus(peq, eq);
-#if INSTRUMENT
+#if INSTRUMENT_GAUSS
 	    added_clauses += neq->get_clause_count();
 	    operations += (long) peq->get_length() * eq->get_length();
 #endif
@@ -898,8 +903,8 @@ private:
 		}
 	    }
 	}
-#if INSTRUMENT
-	printf("COST,%d,%d,%ld,%d\n", ++step_count, score, operations, added_clauses);
+#if INSTRUMENT_GAUSS
+	printf("DATA:GAUSS,%d,%d,%ld,%d\n", ++step_count, score, operations, added_clauses);
 #endif
 	imap[pvar-1].clear();
 	if (internal_variables.count(pvar) == 0)
