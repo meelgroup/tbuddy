@@ -41,7 +41,7 @@ using namespace trustbdd;
 // GC Parameters
 // Minimum number of dead nodes to trigger GC
 #define COLLECT_MIN_LRAT 150000
-#define COLLECT_MIN_DRAT  20000
+#define COLLECT_MIN_DRAT  50000
 // Minimum fraction of dead:total nodes to trigger GC
 #define COLLECT_FRACTION 0.10
 
@@ -410,7 +410,7 @@ private:
     int max_bdd;
 
     void check_gc() {
-	int collect_min = proof_type == PROOF_LRAT ? COLLECT_MIN_LRAT : COLLECT_MIN_DRAT;
+	int collect_min = (proof_type == PROOF_LRAT || proof_type == PROOF_NONE) ? COLLECT_MIN_LRAT : COLLECT_MIN_DRAT;
 	if (dead_count >= collect_min && (double) dead_count / total_count >= COLLECT_FRACTION) {
 	    if (verbosity_level >= 2) {
 		std::cout << "c Initiating GC.  Estimated total nodes = " << total_count << ".  Estimated dead nodes = " << dead_count << std::endl;
