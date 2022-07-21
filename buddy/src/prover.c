@@ -172,9 +172,10 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
     deferred_deletion_list = ilist_new(100);
 
 
-    int bnodes = input_clause_count < BUDDY_THRESHOLD ? BUDDY_NODES_SMALL : BUDDY_NODES_LARGE;
+    bool small = input_clause_count > 0  && input_clause_count < BUDDY_THRESHOLD;
+    int bnodes = small ? BUDDY_NODES_SMALL : BUDDY_NODES_LARGE;
     int bcache = bnodes/BUDDY_CACHE_RATIO;
-    int bincrease = input_clause_count < BUDDY_THRESHOLD ? BUDDY_INCREASE_SMALL : BUDDY_INCREASE_LARGE;
+    int bincrease = small ? BUDDY_INCREASE_SMALL : BUDDY_INCREASE_LARGE;
     int rval = bdd_init(bnodes, bcache);
 
     int *varlist = NULL;
