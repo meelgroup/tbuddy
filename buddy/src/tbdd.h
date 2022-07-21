@@ -120,6 +120,12 @@ extern int tbdd_init_noproof(int variable_count);
 extern void tbdd_done();
 
 /*
+  Report statistics for BDDs and TBDDs
+ */    
+extern void bdd_report();
+extern void tbdd_report();
+
+/*
   Functions that can be added to provide more data on exit.
   Function takes verbosity level as argument.
  */

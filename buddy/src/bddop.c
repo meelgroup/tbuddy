@@ -143,7 +143,7 @@ static int firstReorder;            /* Used instead of local variable in order
 				       being clobbered by setjmp */
 
 static int this_apply_counter;    /* Keep track of number of calls to current apply operation */
-#define THIS_APPLY_REPORT 50000   /* How often should program report apply operations */
+#define THIS_APPLY_REPORT 1000000   /* How often should program report apply operations */
 
 static char*            allsatProfile; /* Variable profile for bdd_allsat() */
 static bddallsathandler allsatHandler; /* Callback handler for bdd_allsat() */

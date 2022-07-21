@@ -382,6 +382,8 @@ int generate_clause(ilist literals, ilist hints) {
     int cid = ++(*clause_id_counter);
     if ((cid+MAX_CLAUSE) > clause_limit) {
 	fprintf(ERROUT, "c ERROR: Exceeding clause limit %d\n", clause_limit);
+	bdd_report();
+	tbdd_report();
 	bdd_error(TBDD_PROOF);
     }
     if (verbosity_level >= 1 && cid % (clause_limit / CLAUSE_REPORT_RATIO) == 0)

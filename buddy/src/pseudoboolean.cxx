@@ -38,11 +38,13 @@ using namespace trustbdd;
 
 // Enable code/printing to evaluate performance
 #ifdef INSTRUMENT
-#define INSTRUMENT_SUM 1
-#define INSTRUMENT_GAUSS 1
+#define INSTRUMENT_SUM 0
+#define INSTRUMENT_GAUSS 0
+#define INSTRUMENT_BOUNDS 1
 #else
 #define INSTRUMENT_SUM 0
 #define INSTRUMENT_GAUSS 0
+#define INSTRUMENT_BOUNDS 0
 #endif
 
 #define BUFLEN 2048
@@ -73,6 +75,11 @@ static int pseudo_xor_created = 0;
 static int pseudo_xor_unique = 0;
 static int pseudo_total_length = 0;
 static int pseudo_plus_computed = 0;
+/* Accumulate upper bound on number of BDD operations from pseudo-Boolean ops */
+#if INSTRUMENT_BOUNDS
+static long unsigned wc_bdd_ops = 0;
+static long unsigned actual_bdd_ops = 0;
+#endif
 
 static int show_xor_buf(char *buf, ilist variables, int phase, int maxlen);
 static void pseudo_info_fun(int vlevel);
@@ -82,6 +89,10 @@ static bool initialized = false;
 static void pseudo_init() {
     if (!initialized) {
 	tbdd_add_info_fun(pseudo_info_fun);
+#if INSTRUMENT_BOUNDS
+	wc_bdd_ops = 0;
+#endif
+
     }
     initialized = true;
 }
@@ -96,6 +107,10 @@ static void pseudo_info_fun(int vlevel) {
     if (pseudo_xor_unique > 0)
 	printf("c Average (unique) constraint size: %.2f\n", (double) pseudo_total_length / pseudo_xor_unique);
     printf("c Number of XOR additions performed: %d\n", pseudo_plus_computed);
+#if INSTRUMENT_BOUNDS
+    printf("c Upper bound on number of BDD ops for PB: %lu\n", wc_bdd_ops);
+    printf("c Actual number of BDD ops for PB: %lu\n", actual_bdd_ops);
+#endif
 }
 
 /*
@@ -170,6 +185,54 @@ static ilist coefficient_sum(ilist list1, ilist list2) {
     return result;
 }
 
+#if INSTRUMENT_BOUNDS
+static unsigned long estimate_ops1(ilist list1, ilist list2) {
+    int len1 = ilist_length(list1);
+    int len2 = ilist_length(list2);
+    return len1 * len2;
+}
+
+/* 
+  Compute upper bound on total number of BDD operations that will be
+  performed when AND'ing two PB constraints.
+
+  Idea: Traversing two graphs that are of width 1 at top and bottom,
+  but at width 2 in-between.  Assume maximum number of argument pairs (1, 2, or 4)
+  at each level.
+ */
+static unsigned long estimate_ops2(ilist list1, ilist list2) {
+    unsigned long result = 0;
+    int i1 = 0;
+    int w1 = 1;
+    int i2 = 0;
+    int w2 = 1;
+    int len1 = ilist_length(list1);
+    int len2 = ilist_length(list2);
+    while (i1 < len1 && i2 < len2) {
+	int v1 = list1[i1];
+	int v2 = list2[i2];
+	result += w1 * w2;
+	if (v1 < v2) {
+	    w1 = 2; // No longer at root of G1
+	    i1++;
+	} else if (v2 < v1) {
+	    w2 = 2; // No longer at root of G2
+	    i2++;
+	} else {
+	    w1 = w2 = 2;
+	    i1++; i2++;
+	}
+    }
+    /* When reach end of one, will simply return rest of other */
+    return result;
+}
+
+static unsigned long estimate_ops(ilist list1, ilist list2) {
+    return estimate_ops2(list1, list2);
+}
+
+#endif /* INSTRUMENT_BOUNDS */
+
 /*
   Generate BDD representation of constraint
  */
@@ -228,7 +291,20 @@ xor_constraint* trustbdd::xor_plus(xor_constraint *arg1, xor_constraint *arg2) {
     ilist nvariables = coefficient_sum(arg1->variables, arg2->variables);
     int nphase = arg1->phase ^ arg2->phase;
     pseudo_plus_computed++;
-    return new xor_constraint(nvariables, nphase, arg1->validation, arg2->validation);
+#if INSTRUMENT_BOUNDS
+    bddCacheStat cstat;
+    bdd_cachestats(&cstat);
+    unsigned long start_ops = cstat.opMiss;
+    wc_bdd_ops += ilist_length(arg1->variables) * ilist_length(arg2->variables);
+#endif
+    xor_constraint * result = new xor_constraint(nvariables, nphase, arg1->validation, arg2->validation);
+#if INSTRUMENT_BOUNDS
+    bdd_cachestats(&cstat);
+    unsigned long finish_ops = cstat.opMiss;
+    wc_bdd_ops += estimate_ops(arg1->variables, arg2->variables);
+    actual_bdd_ops += finish_ops - start_ops;
+#endif
+    return result;
 }
 
 
@@ -649,11 +725,6 @@ public:
 	printf("c %s: Pivot Eid = %d.  Var = %d.  Cost = %d / %d\n", prefix, equation_id, variable, upper(cost), lower(cost));
     }
 
-#if INSTRUMENT_GAUSS
-    int score() {
-	return upper(cost);
-    }
-#endif
 };
 
 class gauss {

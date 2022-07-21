@@ -274,6 +274,38 @@ void tbdd_set_clause_limit(int clim) {
     clause_limit = clim;
 }
 
+void bdd_report() {
+    if (verbosity_level >= 1) {
+	bddStat s;
+	bdd_stats(&s);
+	bdd_printstat();
+	printf("\nc BDD statistics\n");
+	printf("c ----------------\n");
+	printf("c Total BDD nodes produced: %ld\n", s.produced);
+    }
+}
+
+void tbdd_report() {
+    int i;
+    if (verbosity_level >= 1) {
+	printf("c Input variables: %d\n", input_variable_count);
+	printf("c Input clauses: %d\n", input_clause_count);
+	printf("c Total clauses: %d\n", total_clause_count);
+	int unused = *clause_id_counter - total_clause_count;
+	double upct = 100.0 * (double) unused/total_clause_count;
+	printf("c Unused+non-BDD clause IDs: %d (%.1f%%)\n", unused, upct);
+	printf("c Maximum live clauses: %d\n", max_live_clause_count);
+	printf("c Deleted clauses: %d\n", deleted_clause_count);
+	printf("c Final live clauses: %d\n", total_clause_count-deleted_clause_count);
+	if (variable_counter)
+	    printf("c Total variables: %d\n", *variable_counter);
+    }
+    for (i = 0; i < ifun_count; i++) {
+	ifuns[i](verbosity_level);
+    }
+}
+
+
 void tbdd_done() {
     /* Find difference of the created/dead unit clauses */
     ilist_sort(created_unit_clauses);
@@ -325,32 +357,10 @@ void tbdd_done() {
     rc_done();
     for (i = 0; i < dfun_count; i++)
 	dfuns[i]();
-    if (verbosity_level >= 1) {
-	bddStat s;
-	bdd_stats(&s);
-	bdd_printstat();
-	printf("\nc BDD statistics\n");
-	printf("c ----------------\n");
-	printf("c Total BDD nodes produced: %ld\n", s.produced);
-    }
+    bdd_report();
     bdd_done();
     prover_done();
-    if (verbosity_level >= 1) {
-	printf("c Input variables: %d\n", input_variable_count);
-	printf("c Input clauses: %d\n", input_clause_count);
-	printf("c Total clauses: %d\n", total_clause_count);
-	int unused = *clause_id_counter - total_clause_count;
-	double upct = 100.0 * (double) unused/total_clause_count;
-	printf("c Unused+non-BDD clause IDs: %d (%.1f%%)\n", unused, upct);
-	printf("c Maximum live clauses: %d\n", max_live_clause_count);
-	printf("c Deleted clauses: %d\n", deleted_clause_count);
-	printf("c Final live clauses: %d\n", total_clause_count-deleted_clause_count);
-	if (variable_counter)
-	    printf("c Total variables: %d\n", *variable_counter);
-    }
-    for (i = 0; i < ifun_count; i++) {
-	ifuns[i](verbosity_level);
-    }
+    tbdd_report();
 }
 
 void tbdd_add_info_fun(tbdd_info_fun f) {
