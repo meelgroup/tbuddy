@@ -177,6 +177,7 @@ int prover_init(FILE *pfile, int *var_counter, int *cls_counter, ilist *input_cl
     int bcache = bnodes/BUDDY_CACHE_RATIO;
     int bincrease = small ? BUDDY_INCREASE_SMALL : BUDDY_INCREASE_LARGE;
     int rval = bdd_init(bnodes, bcache);
+    fprintf(ERROUT, "c Buddy parameters: %d, %d\n", bnodes, bcache);
 
     int *varlist = NULL;
     if (variable_ordering != NULL) {
