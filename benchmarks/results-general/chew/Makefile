@@ -14,6 +14,9 @@ GRAB = $(TOOLDIR)/grab_data.py
 RANDOMIZE = $(TOOLDIR)/randomizer.py
 DDIR=~/repos/drat-trim
 DRAT= $(DDIR)/drat-trim
+PDIR=~/repos/pgbdd
+PGBDD=$(PDIR)/prototype/solver.py
+PEXTRACT=$(PDIR)/extractor/xor_extractor.py
 LRAT = $(DDIR)/lrat-check
 VLEVEL=1
 RM=rm
@@ -28,12 +31,19 @@ bdata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).bdata
 
 gdata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).gdata
 
+nbdata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).nbdata
+
+ngdata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).ngdata
+
+pbdata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).pbdata
+
+pgdata: chew-$(N)-$(SEED).cnf chew-$(N)-$(SEED).pgdata
 
 chew-$(N)-$(SEED).cnf: $(GENERATOR)
 	$(GENERATOR) $(N) $(SEED) 
 	mv formula.cnf chew-$(N)-$(SEED).cnf
 
-.SUFFIXES: .cnf .kdata .ddata .bdata .gdata 
+.SUFFIXES: .cnf .kdata .ddata .bdata .gdata .pbdata .pgdata .nbdata .ngdata
 
 .cnf.kdata:
 	$(KISSAT) $(KFLAGS) $< $*.drat | tee $@
@@ -61,6 +71,29 @@ chew-$(N)-$(SEED).cnf: $(GENERATOR)
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
 
+.cnf.nbdata:
+	$(RANDOMIZE) $< $(SEED) 
+	$(TBSAT) -v $(VLEVEL) -b -i $< -p $*.order | tee $@
+
+.cnf.ngdata:
+	$(INTERP) $(EXTRACT) -i $< -o $*.schedule | tee $@
+	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule | tee -a $@
+
+
+.cnf.pbdata:
+	$(RANDOMIZE) $< $(SEED) 
+	$(INTERP) $(PGBDD) -v $(VLEVEL) -b -i $< -p $*.order -o $*.lrat 2>&1 | tee $@
+	ls -l $*.lrat | tee -a $@
+	$(LRAT) $< $*.lrat | tee -a $@
+	$(RM) $*.lrat
+
+.cnf.pgdata:
+	$(INTERP) $(PEXTRACT) -i $< -o $*.schedule | tee $@
+	$(INTERP) $(PGBDD) -v $(VLEVEL) -i $< -s $*.schedule -o $*.lrat 2>&1 | tee -a $@
+	ls -l $*.lrat | tee -a $@
+	$(LRAT) $< $*.lrat | tee -a $@
+	$(RM) $*.lrat
+
 data:
 	$(INTERP) $(GRAB) "proof_added" chew-*-*.kdata > chew-kissat-clauses.csv
 	$(INTERP) $(GRAB) "Total clauses" chew-*-*.ddata > chew-tbsat-direct-clauses.csv
@@ -70,6 +103,11 @@ data:
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.ddata > chew-tbsat-direct-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.bdata > chew-tbsat-bucket-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.gdata > chew-tbsat-gauss-seconds.csv
+	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.nbdata > chew-tbsat-bucket-noproof-seconds.csv
+	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.ngdata > chew-tbsat-gauss-noproof-seconds.csv
+	$(INTERP) $(GRAB) "Elapsed time" chew-*-*.pgdata > chew-pgpbs-seconds.csv
+	$(INTERP) $(GRAB) "Elapsed time" chew-*-*.pbdata > chew-pgbdd-seconds.csv
+
 
 
 clean:

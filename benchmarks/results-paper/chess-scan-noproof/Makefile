@@ -17,7 +17,7 @@ gen:
 	$(INTERP) $(GENERATOR) -n $(SIZE) -r $(ROOT)-$(SIZE)
 
 run:
-	$(SOLVER) -v $(VLEVEL) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule -o $(ROOT)-$(SIZE).lrat | tee $(ROOT)-$(SIZE).data
+	$(SOLVER) -v $(VLEVEL) -i $(ROOT)-$(SIZE).cnf -s $(ROOT)-$(SIZE).schedule | tee $(ROOT)-$(SIZE).data
 
 check:
 	$(CHECKER) $(ROOT)-$(SIZE).cnf | tee -a $(ROOT)-$(SIZE).data

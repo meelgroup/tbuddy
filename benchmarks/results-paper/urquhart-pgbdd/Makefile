@@ -5,8 +5,10 @@ GDIR=../../generators
 GENERATOR = $(GDIR)/urquhart-li-code/generate
 PCT=50
 FDIR=../../files
-SDIR = ~/repos/pgbdd/prototype
-SOLVER=$(SDIR)/solver.py
+#SDIR = ~/repos/pgbdd/prototype
+SDIR = ~/repos/pgpbs-artifact/src
+#SOLVER=$(SDIR)/solver.py
+SOLVER=$(SDIR)/pgbdd.py
 CDIR=~/repos/drat-trim
 CHECKER=$(CDIR)/lrat-check
 TDIR=../../../tools
@@ -18,7 +20,6 @@ full: gen run check clear
 
 gen:
 	$(GENERATOR) -m$(SIZE) -p$(PCT) -f$(ROOT)-$(SIZE).cnf
-	$(INTERP) $(EXTRACT) -i $(ROOT)-$(SIZE).cnf -o $(ROOT)-$(SIZE).schedule | tee $(ROOT)-$(SIZE).data
 
 run:
 	$(INTERP) $(SOLVER) -v $(VLEVEL) -b -i $(ROOT)-$(SIZE).cnf -o $(ROOT)-$(SIZE).lrat 2>&1 | tee $(ROOT)-$(SIZE).data
