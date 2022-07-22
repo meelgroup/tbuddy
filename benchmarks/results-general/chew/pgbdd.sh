@@ -17,9 +17,9 @@ S=123456
 B=2000
 M=100
 
-for O in {0..5}
+for O in {3..7}
 do
-    N=$((B+M*O))
+    N=$((B+M*O*2))
     make cnf N=$N SEED=$S
     make pbdata N=$N SEED=$S
 done
