@@ -14,12 +14,15 @@ S=123456
 ##    done
 ##done
 
-B=1000
 M=100
 
-for O in {1..9}
+for O in {1..20}
 do
-    N=$((B+M*O))
-    make cnf N=$N SEED=$S
-    make pgdata N=$N SEED=$S
+    N=$((M*O))
+    for T in {1..4}
+    do
+        SEED=$((S+T))
+	make cnf N=$N SEED=$SEED
+	make pgdata N=$N SEED=$SEED
+    done
 done
