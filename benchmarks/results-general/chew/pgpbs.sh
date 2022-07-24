@@ -14,11 +14,12 @@ S=123456
 ##    done
 ##done
 
-M=100
+M=200
 
-for O in {1..20}
+B=2000
+for O in {1..10}
 do
-    N=$((M*O))
+    N=$((B+M*O))
     for T in {1..4}
     do
         SEED=$((S+T))

@@ -20,6 +20,7 @@ PEXTRACT=$(PDIR)/extractor/xor_extractor.py
 LRAT = $(DDIR)/lrat-check
 VLEVEL=1
 RM=rm
+TLIM=600
 
 cnf: chew-$(N)-$(SEED).cnf
 
@@ -82,14 +83,14 @@ chew-$(N)-$(SEED).cnf: $(GENERATOR)
 
 .cnf.pbdata:
 	$(RANDOMIZE) $< $(SEED) 
-	$(INTERP) $(PGBDD) -v $(VLEVEL) -b -i $< -p $*.order -o $*.lrat 2>&1 | tee $@
+	$(INTERP) $(PGBDD) -v $(VLEVEL) -b -t $(TLIM) -i $< -p $*.order -o $*.lrat 2>&1 | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
 
 .cnf.pgdata:
 	$(INTERP) $(PEXTRACT) -i $< -o $*.schedule | tee $@
-	$(INTERP) $(PGBDD) -v $(VLEVEL) -i $< -s $*.schedule -o $*.lrat 2>&1 | tee -a $@
+	$(INTERP) $(PGBDD) -v $(VLEVEL) -t $(TLIM) -i $< -s $*.schedule -o $*.lrat 2>&1 | tee -a $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
