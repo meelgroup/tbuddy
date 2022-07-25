@@ -63,6 +63,8 @@ def nthNumber(fields, n = 1):
         fields.reverse()
         n = -n
     for field in fields:
+        if len(field) == 0:
+            continue
         try:
             val = int(field)
             count += 1
