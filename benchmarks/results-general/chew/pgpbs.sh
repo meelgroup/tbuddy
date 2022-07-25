@@ -20,7 +20,7 @@ B=2000
 for O in {1..10}
 do
     N=$((B+M*O))
-    for T in {1..4}
+    for T in {0..4}
     do
         SEED=$((S+T))
 	make cnf N=$N SEED=$SEED
