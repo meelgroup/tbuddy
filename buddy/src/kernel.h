@@ -74,11 +74,6 @@
 #define ENABLE_TBDD 0
 #endif
 
-/** Enabling generation of trace file **/
-#ifndef ENABLE_BTRACE
-#define ENABLE_BTRACE 0
-#endif
-
 /*=== Includes =========================================================*/
 
 #include <limits.h>
@@ -306,10 +301,6 @@ extern int    bdd_reorder_vardown(int);
 extern int    bdd_reorder_varup(int);
 
 extern void   bdd_cpp_init(void);
-
-#if ENABLE_BTRACE
-extern void   bdd_start_trace(FILE *tfile);
-#endif
 
 #ifdef CPLUSPLUS
 }

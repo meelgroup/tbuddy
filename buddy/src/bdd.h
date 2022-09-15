@@ -77,6 +77,11 @@
 #define ENABLE_TBDD 0
 #endif
 
+/** Enabling generation of trace file **/
+#ifndef ENABLE_BTRACE
+#define ENABLE_BTRACE 0
+#endif
+
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -333,6 +338,11 @@ extern int      bdd_xvar(BDD);
 extern int      bdd_nameid(BDD);
 extern int      bdd_dclause(BDD, dclause_t);
 #endif     
+
+#if ENABLE_BTRACE
+extern void   bdd_start_trace(FILE *tfile);
+#endif
+    
   /* In bddop.c */
 
 extern int      bdd_setcacheratio(int);

@@ -22,7 +22,6 @@
   SOFTWARE.
 ========================================================================*/
 
-
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
@@ -38,12 +37,12 @@
 /* Time limit for execution.  0 = no limit */
 int timelimit = 0;
 
-extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, bool bucket, int verblevel, proof_type_t ptype, bool binary, int max_solutions, int clause_limit, unsigned seed);
+extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, FILE *bdd_trace_file, bool bucket, int verblevel, proof_type_t ptype, bool binary, int max_solutions, int clause_limit, unsigned seed);
 
 // BDD-based SAT solver
 
 void usage(char *name) {
-    printf("Usage: %s [-h] [-b] [-v VERB] [-i FILE.cnf] [-o FILE.lrat(b)] [-p FILE.order] [-s FILE.schedule] [-m SOLNS] [-t TLIM] [-c CLIM] [-r SEED]\n", name);
+    printf("Usage: %s [-h] [-b] [-v VERB] [-i FILE.cnf] [-o FILE.lrat(b)] [-p FILE.order] [-s FILE.schedule] [-T FILE.bddtrace] [-m SOLNS] [-t TLIM] [-c CLIM] [-r SEED]\n", name);
     printf("  -h               Print this message\n");
     printf("  -b               Use bucket elimination\n");
     printf("  -v VERB          Set verbosity level (0-3)\n");
@@ -51,6 +50,7 @@ void usage(char *name) {
     printf("  -o FILE.lrat(b)  Specify output proof file (otherwise no proof)\n");
     printf("  -p FILE.order    Specify variable ordering file\n");
     printf("  -s FILE.schedule Specify schedule file\n");
+    printf("  -T FILE.bddtrace Specify file to dump detailed trace of BDD operations\n");
     printf("  -m SOLNS         Generate up to specified number of solutions\n");
     printf("  -t TLIM          Set time limit for execution (seconds)\n");
     printf("  -c CLIM          Set limit on number of input+proof clauses\n");
@@ -92,6 +92,7 @@ int main(int argc, char *argv[]) {
     FILE *sched_file = NULL;
     FILE *order_file = NULL;
     FILE *proof_file = NULL;
+    FILE *bdd_trace_file = NULL;
     bool bucket = false;
     proof_type_t ptype = PROOF_NONE;
     bool binary = false;
@@ -100,7 +101,7 @@ int main(int argc, char *argv[]) {
     unsigned seed = 1;
     int max_solutions = 1;
     int clause_limit = 0;
-    while ((c = getopt(argc, argv, "hbv:i:o:p:s:m:t:c:r:")) != -1) {
+    while ((c = getopt(argc, argv, "hbv:i:o:p:s:m:t:T:c:r:")) != -1) {
 	char buf[2] = { (char) c, '\0' };
 	char *extension;
 	switch (c) {
@@ -178,13 +179,20 @@ int main(int argc, char *argv[]) {
 		usage(argv[0]);
 	    }
 	    break;
+	case 'T':
+	    bdd_trace_file = fopen(optarg, "w");
+	    if (bdd_trace_file == NULL) {
+		std::cerr << "Couldn't open file " << optarg << std::endl;
+		exit(1);
+	    }
+	    break;
 	default:
 	    std::cerr << "Unknown option '" << buf << "'" << std::endl;
 	    usage(argv[0]);
 	}
     }
     double start = tod();
-    if (solve(cnf_file, proof_file, order_file, sched_file, bucket, verb, ptype, binary, max_solutions, clause_limit, seed)) {
+    if (solve(cnf_file, proof_file, order_file, sched_file, bdd_trace_file, bucket, verb, ptype, binary, max_solutions, clause_limit, seed)) {
 	if (verb >= 1) {
 	    printf("c Elapsed seconds: %.3f\n", tod()-start);
 	}

@@ -25,6 +25,9 @@
 
 // Trusted SAT evaluation
 
+/* Enable generation of BDD trace file */
+#define ENABLE_BTRACE 1
+
 #include <ctype.h>
 #include <algorithm>
 
@@ -964,7 +967,8 @@ public:
 
 };
 
-bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, bool bucket,
+bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, FILE *bdd_trace_file,
+	   bool bucket,
 	   int verblevel, proof_type_t ptype, bool binary, int max_solutions, int clause_limit, unsigned seed) {
     CNF cset = CNF(cnf_file);
     fclose(cnf_file);
@@ -979,6 +983,8 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file,
 		      << cset.max_variable() << " variables" << std::endl;
 	    std::cout << "c Breaking ties randomly with seed " << seed << std::endl;
 	}
+    if (bdd_trace_file)
+	bdd_start_trace(bdd_trace_file);
     PhaseGenerator pg(GENERATE_RANDOM, DEFAULT_SEED);
     Solver solver(&pg);
     ilist variable_ordering = NULL;

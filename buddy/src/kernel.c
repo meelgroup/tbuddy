@@ -314,10 +314,6 @@ int bdd_init(int initnodesize, int cs)
    bdd_pairs_init();
    bdd_reorder_init();
    bdd_fdd_init();
-   
-#if ENABLE_BTRACE
-   bdd_trace_file = NULL;
-#endif
 
    if (setjmp(bddexception) != 0)
       assert(0);

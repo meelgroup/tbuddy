@@ -568,18 +568,27 @@ static BDD apply_rec(BDD l, BDD r)
 {
    BddCacheData *entry;
    BDD res;
+   bool done = false;
    
    switch (applyop)
    {
     case bddop_and:
        if (l == r)
-	  return l;
-       if (ISZERO(l)  ||  ISZERO(r))
-	  return 0;
-       if (ISONE(l))
-	  return r;
-       if (ISONE(r))
-	  return l;
+	   { res = l; done = true; }
+       else if (ISZERO(l)  ||  ISZERO(r))
+	   { res = 0; done = true; }
+       else if (ISONE(l))
+	   { res = r; done = true; }
+       else if (ISONE(r))
+	   { res = l; done = true; }
+       if (done) {
+#if ENABLE_BTRACE
+	   if (bdd_trace_file) {
+	       fprintf(bdd_trace_file, "a %d %d %d\n", res, l, r);
+	   }
+#endif
+	   return res;
+       }
        break;
     case bddop_or:
        if (l == r)
@@ -920,27 +929,36 @@ static pcbdd applyj_rec(BDD l, BDD r)
        break;
    case bddop_imptstj:
        if (l == r)
-	   { tres.root = BDDONE ; return tres; }
-       if (ISZERO(l))
-	   { tres.root = BDDONE; return tres; }
-       if (ISONE(r))
-	   { tres.root = BDDONE; return tres; }
-       if (ISONE(l))
+	   { tres.root = BDDONE ; done = true; }
+       else if (ISZERO(l))
+	   { tres.root = BDDONE; done = true; }
+       else if (ISONE(r))
+	   { tres.root = BDDONE; done = true; }
+       else if (ISONE(l))
 	   /* Implication cannot hold for all arguments */
 	   { 
 	       tres.root = BDDZERO;
 	       fprintf(ERROUT, "Implication failure.  N%d -/-> N%d\n", bdd_nameid(l), bdd_nameid(r));
 	       bdd_error(TBDD_PROOF);
-	       return tres;
+	       done = true;
 	   }
-       if (ISZERO(r))
+       else if (ISZERO(r))
 	   /* Implication cannot hold for all arguments */
 	   { 
 	       tres.root = BDDZERO;
 	       fprintf(ERROUT, "Implication failure.  N%d -/-> N%d\n", bdd_nameid(l), bdd_nameid(r));
 	       bdd_error(TBDD_PROOF);
-	       return tres;
+	       done = true;
 	   }
+       
+       if (done) {
+#if ENABLE_BTRACE
+	   if (bdd_trace_file) {
+	       fprintf(bdd_trace_file, "i %d %d\n,", l, r);
+	   }
+#endif
+	   return tres;
+       }
        break;
    }
 
@@ -1041,12 +1059,13 @@ static pcbdd applyj_rec(BDD l, BDD r)
    }
 
 #if ENABLE_BTRACE
-   if (applyop == bddop_andj && bdd_trace_file) {
-       fprintf(bdd_trace_file, "a %d %d %d\n", tres.root, l, r);
+   if (bdd_trace_file) {
+       if (applyop == bddop_andj)
+	   fprintf(bdd_trace_file, "a %d %d %d\n", tres.root, l, r);
+       else if (applyop == bddop_imptstj)
+	   fprintf(bdd_trace_file, "i %d %d\n", l, r);
    }
 #endif
-
-
    return tres;
 }
 
