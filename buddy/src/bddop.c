@@ -895,18 +895,28 @@ static pcbdd applyj_rec(BDD l, BDD r)
 
    tres.root = BDDZERO;
    tres.clause_id = TAUTOLOGY;
+   bool done = false;
+
 
    switch (applyop)
    {
     case bddop_andj:
        if (l == r)
-	   { tres.root = l ; return tres; }
-       if (ISZERO(l)  ||  ISZERO(r))
-	   { tres.root = 0; return tres; }
-       if (ISONE(l))
-	   { tres.root = r; return tres; }
-       if (ISONE(r))
-	   { tres.root = l; return tres; }
+	   { tres.root = l ; done = true; }
+       else if (ISZERO(l)  ||  ISZERO(r))
+	   { tres.root = 0; done = true; }
+       else if (ISONE(l))
+	   { tres.root = r; done = true; }
+       else if (ISONE(r))
+	   { tres.root = l; done = true; }
+       if (done) {
+#if ENABLE_BTRACE
+	   if (bdd_trace_file) {
+	       fprintf(bdd_trace_file, "a %d %d %d\n", tres.root, l, r);
+	   }
+#endif
+	   return tres;
+       }
        break;
    case bddop_imptstj:
        if (l == r)
@@ -1029,6 +1039,13 @@ static pcbdd applyj_rec(BDD l, BDD r)
       }
 #endif /* DO_TRACE */
    }
+
+#if ENABLE_BTRACE
+   if (applyop == bddop_andj && bdd_trace_file) {
+       fprintf(bdd_trace_file, "a %d %d %d\n", tres.root, l, r);
+   }
+#endif
+
 
    return tres;
 }

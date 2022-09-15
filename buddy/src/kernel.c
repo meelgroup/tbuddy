@@ -70,6 +70,7 @@
 *************************************************************************/
 #include "config.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
@@ -137,6 +138,10 @@ jmp_buf      bddexception;      /* Long-jump point for interrupting calc. */
 int          bddresized;        /* Flag indicating a resize of the nodetable */
 
 bddCacheStat bddcachestats;
+
+#if ENABLE_BTRACE
+FILE *bdd_trace_file = NULL;
+#endif 
 
 
 /*=== PRIVATE KERNEL VARIABLES =========================================*/
@@ -310,6 +315,10 @@ int bdd_init(int initnodesize, int cs)
    bdd_reorder_init();
    bdd_fdd_init();
    
+#if ENABLE_BTRACE
+   bdd_trace_file = NULL;
+#endif
+
    if (setjmp(bddexception) != 0)
       assert(0);
 
@@ -387,7 +396,16 @@ void bdd_done(void)
    err_handler = NULL;
    gbc_handler = NULL;
    resize_handler = NULL;
+
+#if ENABLE_BTRACE
+   if (bdd_trace_file) {
+       fclose(bdd_trace_file);
+       bdd_trace_file = NULL;
+   }
+#endif
+
 }
+
 
 
 /*
@@ -1375,6 +1393,10 @@ void bdd_gbc(void)
 	 bddfreepos = CHECKNODE(n);
 	 CHECKRANGE(bddfreenum++);
       }
+#if ENABLE_BTRACE
+      if (bdd_trace_file)
+	  fprintf(bdd_trace_file, "d %d\n", n);
+#endif
    }
 
 #if DO_TRACE
@@ -1655,12 +1677,17 @@ int bdd_makenode(unsigned int level, int low, int high)
    bddfreepos = CHECKNODE(bddnodes[bddfreepos].next);
    CHECKRANGE(bddfreenum--);
    bddproduced++;
-   
+
    node = &bddnodes[res];
    LEVELp(node) = level;
    LOWp(node) = low;
    HIGHp(node) = high;
    
+#if ENABLE_BTRACE
+   if (bdd_trace_file)
+       fprintf(bdd_trace_file, "n %d %d %d %d\n", res, level, high, low);
+#endif
+
    #if ENABLE_TBDD
    if (level > 0) {
        if (proof_type == PROOF_NONE) {
@@ -1848,4 +1875,13 @@ BDD BDD_makeset(int *varset, int varnum)
    return res;
 }
 
+#if ENABLE_BTRACE
+void   bdd_start_trace(FILE *tfile)
+{
+    bdd_trace_file = tfile;
+}
+#endif
+
+
 /* EOF */
+
