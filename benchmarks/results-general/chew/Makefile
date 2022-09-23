@@ -108,8 +108,9 @@ data:
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.ngdata > chew-tbsat-gauss-noproof-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed time" chew-*-*.pgdata > chew-pgpbs-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed time" chew-*-*.pbdata > chew-pgbdd-seconds.csv
-
-
+	$(INTERP) $(GRAB) "verification time" chew-*-*.bdata > chew-tbsat-bucket-check.csv
+	$(INTERP) $(GRAB) "verification time" chew-*-*.gdata > chew-tbsat-gauss-check.csv
+	$(INTERP) $(GRAB) "verification time" chew-*-*.kdata > chew-kissat-check.csv
 
 clean:
 	rm -f chew-*.cnf chew-*.schedule chew-*.order

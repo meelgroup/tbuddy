@@ -104,8 +104,10 @@ static void pseudo_info_fun(int vlevel) {
     printf("c ----------------\n");
     printf("c Number of XOR constraints used: %d\n", pseudo_xor_created);
     printf("c Number of unique XOR constraints: %d\n", pseudo_xor_unique);
-    if (pseudo_xor_unique > 0)
-	printf("c Average (unique) constraint size: %.2f\n", (double) pseudo_total_length / pseudo_xor_unique);
+    if (pseudo_xor_unique > 0) {
+	printf("c Sum of constraint sizes: %d\n", pseudo_total_length);
+	printf("c Average constraint size: %.2f\n", (double) pseudo_total_length / pseudo_xor_unique);
+    }
     printf("c Number of XOR additions performed: %d\n", pseudo_plus_computed);
 #if INSTRUMENT_BOUNDS
     printf("c Upper bound on number of BDD ops for PB: %lu\n", wc_bdd_ops);
@@ -881,6 +883,7 @@ private:
 	for (int eid : imap[var-1]) {
 	    ilist row = equations[eid]->get_variables();
 	    int c = (cols-1)*(ilist_length(row)-1);
+	    //	    int c = ilist_length(row);
 	    if (internal_variables.count(var) == 0)
 		// Penalty for external variable.
 		// Will have cost > any internal variable
