@@ -192,27 +192,36 @@ class xor_set {
 
     void clear();
 
+};
+
     ///////////////////////////////////////////////////////////////////////////////
     //  Pseudo-Boolean (PB) constraints
     ///////////////////////////////////////////////////////////////////////////////
 
-    typedef enum { PB_EQ, PB_LE, PB_GE } pb_comparison_t;
+    typedef enum { PB_EQ, PB_LE, PB_GE, PB_LT, PB_GT } pb_relation_t;
 
 // An (normalized) PB constraint is represented by:
 //   1. A list of variables
 //   2. A list of coefficients
-//   3. A comparison operator (PB_EQ or PB_LE)
+//   3. A relation operator (PB_EQ or PB_LE)
 //   4. A constant value
-//   5. A TBDD validation 
+//   4. A modulus (0 for non-modular arithmetic)
+//   5. A TBDD validation (set to tautology when working with unvalidated constraints)
 class pb_constraint {
  private:
     ilist variables;
     ilist coefficients;
-    pb_comparison_t relation;
+    pb_relation_t relation;
     int constant;
+    int modulus;
     tbdd validation;
-    // How many clauses were added to justify this clause?
-    int generated_clause_count;
+
+    // Private constructor:
+    // Construct PB constraint validated by conjunction of two tbdds
+    // vfun1, vfun2 indicates TBDD representations of validations
+    // 
+    pb_constraint(ilist lits, ilist coeffs, pb_relation_t rel, int constant, int modulus, trustbdd::tbdd &vfun1, trustbdd::tbdd &vfun2);
+
 
  public:
     // Empty constraint represents a tautology
@@ -221,22 +230,14 @@ class pb_constraint {
 	coefficients = ilist_new(0);
 	relation = PB_EQ;
 	constant = 0;
+	modulus = 0;
 	validation = trustbdd::tbdd_tautology(); 
     }
 
     // Construct PB representation, validated by TBDD representation
     // of underlying Boolean function.
     // Allow general form and normalize
-    pb_constraint(ilist lits, ilist coeffs, pb_comparison_t rel, int constant, trustbdd::tbdd &vfun);
-
-    // Construct PB constraint validated by conjunction of two tbdds
-    // vfun1, vfun2 indicates TBDD representations of validations
-    // For use when generating LRAT proofs
-    pb_constraint(ilist lits, ilist coeffs, pb_comparison_t rel, int constant, trustbdd::tbdd &vfun1, trustbdd::tbdd &vfun2);
-
-    // Assert that PB constraint is implied by the clauses
-    // Allow general form and normalize
-    pb_constraint(ilist lits, ilist coeffs, pb_comparison_t rel, int constant);
+    pb_constraint(ilist lits, ilist coeffs, pb_relation_t rel, int constant, int modulus, trustbdd::tbdd &vfun);
 
     // Copy an PB constraint, duplicating the data
     pb_constraint(pb_constraint &x);
@@ -260,9 +261,11 @@ class pb_constraint {
 
     ilist get_coefficients() { return coefficients; }
 
-    pb_comparison_t get_relation() { return relation; }
+    pb_relation_t get_relation() { return relation; }
 
     int get_constant() { return constant; }
+
+    int get_modulus() { return modulus; }
 
     int get_length() { return ilist_length(variables); }
 
@@ -283,8 +286,6 @@ class pb_constraint {
 // Generate an PB constraint as the sum of two constraints
 pb_constraint *pb_plus(pb_constraint *arg1, pb_constraint *arg2);
     
-
-};
 } /* Namespace trustbdd */
 
 #endif /* PSEUDOBOOLEAN */
