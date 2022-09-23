@@ -42,7 +42,7 @@ extern bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sche
 // BDD-based SAT solver
 
 void usage(char *name) {
-    printf("Usage: %s [-h] [-b] [-v VERB] [-i FILE.cnf] [-o FILE.lrat(b)] [-p FILE.order] [-s FILE.schedule] [-T FILE.bddtrace] [-m SOLNS] [-t TLIM] [-c CLIM] [-r SEED]\n", name);
+    printf("Usage: %s [-h] [-b] [-v VERB] [-i FILE.cnf] [-o FILE.lrat(b)] [-p FILE.order] [-s FILE.schedule] [-T FILE.btrace] [-m SOLNS] [-t TLIM] [-c CLIM] [-r SEED]\n", name);
     printf("  -h               Print this message\n");
     printf("  -b               Use bucket elimination\n");
     printf("  -v VERB          Set verbosity level (0-3)\n");
@@ -50,7 +50,7 @@ void usage(char *name) {
     printf("  -o FILE.lrat(b)  Specify output proof file (otherwise no proof)\n");
     printf("  -p FILE.order    Specify variable ordering file\n");
     printf("  -s FILE.schedule Specify schedule file\n");
-    printf("  -T FILE.bddtrace Specify file to dump detailed trace of BDD operations\n");
+    printf("  -T FILE.btrace Specify file to dump detailed trace of BDD operations\n");
     printf("  -m SOLNS         Generate up to specified number of solutions\n");
     printf("  -t TLIM          Set time limit for execution (seconds)\n");
     printf("  -c CLIM          Set limit on number of input+proof clauses\n");

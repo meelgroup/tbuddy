@@ -515,7 +515,12 @@ TBDD tbdd_from_clause_id(int id) {
 	fprintf(ERROUT, "Invalid input clause #%d\n", id);
 	exit(1);
     }
-    return tbdd_from_clause_with_id(clause, id);
+    TBDD tr = tbdd_from_clause_with_id(clause, id);
+#if ENABLE_BTRACE
+    if (bdd_trace_file)
+	fprintf(bdd_trace_file, "tc %d %d\n", tr.root, id);
+#endif
+    return tr;
 }
 
 /*
@@ -605,6 +610,10 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     ilist_fill1(clause, XVAR(r));
     ilist_fill2(ant, p.clause_id, tr.clause_id);
     int clause_id = generate_clause(clause, ant);
+#if ENABLE_BTRACE
+    if (bdd_trace_file)
+	fprintf(bdd_trace_file, "ti %d %d\n", r, tr.root);
+#endif
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
     return tbdd_create(r, clause_id);
@@ -656,6 +665,10 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     ilist_fill3(ant, tr1.clause_id, tr2.clause_id, p.clause_id);
     /* Insert proof of unit clause into t's justification */
     int clause_id = generate_clause(clause, ant);
+#if ENABLE_BTRACE
+    if (bdd_trace_file)
+	fprintf(bdd_trace_file, "ta %d %d %d\n", r, tr1.root, tr2.root);
+#endif
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
     return tbdd_create(r, clause_id);

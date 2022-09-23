@@ -954,7 +954,7 @@ static pcbdd applyj_rec(BDD l, BDD r)
        if (done) {
 #if ENABLE_BTRACE
 	   if (bdd_trace_file) {
-	       fprintf(bdd_trace_file, "i %d %d\n,", l, r);
+	       fprintf(bdd_trace_file, "i %d %d\n,", r, l);
 	   }
 #endif
 	   return tres;
@@ -1063,7 +1063,7 @@ static pcbdd applyj_rec(BDD l, BDD r)
        if (applyop == bddop_andj)
 	   fprintf(bdd_trace_file, "a %d %d %d\n", tres.root, l, r);
        else if (applyop == bddop_imptstj)
-	   fprintf(bdd_trace_file, "i %d %d\n", l, r);
+	   fprintf(bdd_trace_file, "i %d %d\n", r, l);
    }
 #endif
    return tres;
