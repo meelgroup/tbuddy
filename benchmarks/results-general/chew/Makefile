@@ -106,6 +106,7 @@ data:
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.bdata > chew-tbsat-bucket-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.gdata > chew-tbsat-gauss-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.nbdata > chew-tbsat-bucket-noproof-seconds.csv
+	$(INTERP) $(GRAB) "Total BDD nodes produced" chew-*-*.nbdata > chew-tbsat-bucket-noproof-nodes.csv
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.ngdata > chew-tbsat-gauss-noproof-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed time" chew-*-*.pgdata > chew-pgpbs-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed time" chew-*-*.pbdata > chew-pgbdd-seconds.csv
