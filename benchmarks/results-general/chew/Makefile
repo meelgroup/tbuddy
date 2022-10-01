@@ -100,6 +100,7 @@ data:
 	$(INTERP) $(GRAB) "Total clauses" chew-*-*.ddata > chew-tbsat-direct-clauses.csv
 	$(INTERP) $(GRAB) "Total clauses" chew-*-*.bdata > chew-tbsat-bucket-clauses.csv
 	$(INTERP) $(GRAB) "Total clauses" chew-*-*.gdata > chew-tbsat-gauss-clauses.csv
+	$(INTERP) $(GRAB) "Total BDD nodes produced" chew-*-*.bdata > chew-tbsat-bucket-nodes.csv
 	$(INTERP) $(GRAB) -1 "process-time" chew-*-*.kdata > chew-kissat-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.ddata > chew-tbsat-direct-seconds.csv
 	$(INTERP) $(GRAB) "Elapsed seconds" chew-*-*.bdata > chew-tbsat-bucket-seconds.csv
