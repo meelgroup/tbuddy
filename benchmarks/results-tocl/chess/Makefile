@@ -15,6 +15,7 @@ LINEARIZE=$(TBUDDY)/tools/linearize.py
 
 VLEVEL=1
 RM = rm -f
+TLIM=1000
 
 lchess: chess-$(N)
 	make chess-$(N).ldata
@@ -38,33 +39,33 @@ chess-$(N): $(GENERATOR)
 .SUFFIXES: .cnf .ldata .bdata .sdata .kdata .nqdata
 
 .cnf.ldata:
-	$(TBSAT) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
+	$(TBSAT) -t $(TLIM) -v $(VLEVEL) -i $< -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
 
 .cnf.bdata:
-	$(TBSAT) -v $(VLEVEL) -b -i $< -o $*.lrat | tee $@ 
+	$(TBSAT) -t $(TLIM) -v $(VLEVEL) -b -i $< -o $*.lrat | tee $@ 
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
 
 .cnf.sdata:
-	$(TBSAT) -v $(VLEVEL) -i $< -s $*.schedule -o $*.lrat | tee $@
+	$(TBSAT) -t $(TLIM) -v $(VLEVEL) -i $< -s $*.schedule -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
 
 .cnf.nqdata:
 	grep -v "q" $*.schedule > $*.nq-schedule
-	$(TBSAT) -v $(VLEVEL) -i $< -s $*.nq-schedule -o $*.lrat | tee $@
+	$(TBSAT) -t $(TLIM) -v $(VLEVEL) -i $< -s $*.nq-schedule -o $*.lrat | tee $@
 	ls -l $*.lrat | tee -a $@
 	$(LRAT) $< $*.lrat | tee -a $@
 	$(RM) $*.lrat
 
 
 .cnf.kdata:
-	$(KISSAT) $< $*.drat  | tee $@
+	$(KISSAT) --time=$(TLIM) $< $*.drat  | tee $@
 	ls -l $*.drat | tee -a $@
 	$(DRAT) $< $*.drat | tee -a $@
 	$(RM) $*.drat
