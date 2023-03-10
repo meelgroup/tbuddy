@@ -1,15 +1,17 @@
 INTERP=python3
 N = 08
-GDIR=../../generators
+TBUDDY = ~/repos/tbuddy
+BDIR = $(TBUDDY)/benchmarks
+GDIR= $(BDIR)/generators
 GENERATOR = $(GDIR)/chess.py
-TBSAT = ../../../tbsat/src/tbsat
+TBSAT = $(TBUDDY)/tbsat/src/tbsat
 CDIR = ~/repos/drat-trim
 DRAT = $(CDIR)/drat-trim
 LRAT = $(CDIR)/lrat-check
 SDIR = ~/repos/kissat/build
 KISSAT = $(SDIR)/kissat
-GRAB = ../../../tools/grab_data.py
-LINEARIZE=../../../tools/linearize.py
+GRAB = $(TBUDDY)/tools/grab_data.py
+LINEARIZE=$(TBUDDY)/tools/linearize.py
 
 VLEVEL=1
 RM = rm -f
