@@ -818,7 +818,7 @@ public:
 	    step_count++;
 	    if (verbosity_level >= 3) {
 		char mbuf[30];
-		sprintf(mbuf, "Step #%d", step_count);
+		snprintf(mbuf, 30, "Step #%d", step_count);
 		show(mbuf);
 	    }
 	}
