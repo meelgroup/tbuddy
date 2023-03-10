@@ -644,7 +644,7 @@ static BDD apply_rec(BDD l, BDD r)
 #endif
       
       this_apply_counter++;
-      if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+      if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
 	  fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
       }
 

@@ -387,7 +387,7 @@ int generate_clause(ilist literals, ilist hints) {
 	tbdd_report();
 	bdd_error(TBDD_PROOF);
     }
-    if (verbosity_level >= 1 && cid % (clause_limit / CLAUSE_REPORT_RATIO) == 0)
+    if (verbosity_level >= 2 && cid % (clause_limit / CLAUSE_REPORT_RATIO) == 0)
 	printf("c Have reached proof clause #%d\n", cid);
     int rval = 0;
     hints = clean_hints(hints);

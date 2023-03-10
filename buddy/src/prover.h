@@ -36,7 +36,7 @@
 
 /* Size limits */
 /* Maximum number of clauses for each proof type */
-#define CLAUSE_LIMIT_LRAT (1<<30)
+#define CLAUSE_LIMIT_LRAT ((1<<30) + ((1<<30) - 16))
 #define CLAUSE_LIMIT_FRAT (1<<27)
 #define CLAUSE_LIMIT_DRAT (1<<25)
 
