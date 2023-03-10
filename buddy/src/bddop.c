@@ -993,7 +993,7 @@ static pcbdd applyj_rec(BDD l, BDD r)
       int splitLevel;
 
       this_apply_counter++;
-      if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+      if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
 	  fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
       }
 
@@ -1123,7 +1123,7 @@ static pcbdd apply_aij_rec(BDD l, BDD r, BDD t)
       int splitLevel;
 
       this_apply_counter++;
-      if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+      if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
 	  fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
       }
 
@@ -1356,7 +1356,7 @@ static BDD ite_rec(BDD f, BDD g, BDD h)
 #endif
       
    this_apply_counter++;
-   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+   if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
        fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
    }
 
@@ -1635,7 +1635,7 @@ static BDD constrain_rec(BDD f, BDD c)
 #endif
 
    this_apply_counter++;
-   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+   if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
        fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
    }
 
@@ -1764,7 +1764,7 @@ static BDD replace_rec(BDD r)
 #endif
 
    this_apply_counter++;
-   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+   if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
        fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
    }
 
@@ -1803,7 +1803,7 @@ static BDD bdd_correctify(int level, BDD l, BDD r)
    }
 
    this_apply_counter++;
-   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+   if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
        fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
    }
 
@@ -1906,7 +1906,7 @@ static BDD compose_rec(BDD f, BDD g)
 #endif
 
    this_apply_counter++;
-   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+   if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
        fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
    }
 
@@ -2032,7 +2032,7 @@ static BDD veccompose_rec(BDD f)
 #endif
 
    this_apply_counter++;
-   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+   if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
        fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
    }
 
@@ -2356,7 +2356,7 @@ static int quant_rec(int r)
 #endif
 
    this_apply_counter++;
-   if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+   if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
        fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
    }
 
@@ -2659,7 +2659,7 @@ static int appquant_rec(int l, int r)
 #endif
 
       this_apply_counter++;
-      if (this_apply_counter % THIS_APPLY_REPORT == 0) {
+      if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
 	  fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
       }
 
