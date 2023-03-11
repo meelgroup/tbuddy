@@ -4,7 +4,6 @@ TBUDDY = ~/repos/tbuddy
 BDIR = $(TBUDDY)/benchmarks
 GDIR= $(BDIR)/generators
 GENERATOR = $(GDIR)/urquhart-li-code/generate
-TBSAT = ../../../tbsat/src/tbsat
 TBSAT = $(TBUDDY)/tbsat/src/tbsat
 LRAT = ~/repos/drat-trim/lrat-check
 
@@ -13,7 +12,7 @@ VLEVEL=1
 RM=rm
 TLIM=1000
 
-GRAB = $(INTERP) $(TOOLDIR)/grab_data.py
+GRAB = $(INTERP) $(TBUDDY)/tools/grab_data.py
 
 cnf: urquhart-li-$(M).cnf
 
