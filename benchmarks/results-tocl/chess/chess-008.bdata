@@ -1,0 +1,55 @@
+c Read 344 clauses.  108 variables
+c Breaking ties randomly with seed 1
+c Placed 344 terms into 107 buckets.
+c Bucket 5 Reduced to term with 21 nodes
+c Bucket 10 Reduced to term with 65 nodes
+c Bucket 15 Reduced to term with 138 nodes
+c Bucket 20 Reduced to term with 19 nodes
+c Bucket 25 Reduced to term with 126 nodes
+c Bucket 30 Reduced to term with 157 nodes
+c Bucket 35 Reduced to term with 22 nodes
+c Bucket 40 Reduced to term with 133 nodes
+c Bucket 45 Reduced to term with 157 nodes
+c Bucket 50 Reduced to term with 23 nodes
+c Bucket 55 Reduced to term with 125 nodes
+c Bucket 60 Reduced to term with 160 nodes
+c Bucket 65 Reduced to term with 23 nodes
+c Bucket 70 Reduced to term with 129 nodes
+c Bucket 75 Reduced to term with 158 nodes
+c Bucket 80 Reduced to term with 23 nodes
+c Bucket 85 Reduced to term with 125 nodes
+c Bucket 90 Reduced to term with 124 nodes
+c Bucket 95 Reduced to term with 17 nodes
+c Bucket 100 Reduced to term with 16 nodes
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  17160
+c Unique Chain:   552
+c Unique Hit:     1986
+c Unique Miss:    15139
+c => Hit rate =   0.12
+c Operator Hits:  6693
+c Operator Miss:  23407
+c => Hit rate =   0.22
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 15139
+c Input variables: 108
+c Input clauses: 344
+c Total clauses: 84742
+c Unused+non-BDD clause IDs: 6091 (7.2%)
+c Maximum live clauses: 67108
+c Deleted clauses: 84398
+c Final live clauses: 344
+c Total variables: 15245
+c Elapsed seconds: 0.065
+-rw-r--r--  1 bryant  staff  3273618 Mar 10 22:25 chess-008.lrat
+c parsed a formula with 108 variables and 344 clauses
+c VERIFIED
+c allocated 1024 301231 1080
+c Added clauses = 84742.  Deleted clauses = 17637.  Max live clauses = 67108
+c verification time = 0.05 secs

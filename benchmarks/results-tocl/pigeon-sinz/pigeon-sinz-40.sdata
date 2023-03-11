@@ -1,0 +1,114 @@
+c Read 4801 clauses.  3240 variables
+c Breaking ties randomly with seed 1
+c Term #4964. Nodes = 310. Before quantification for pigeon 1
+c Term #4965. Nodes = 78. After quantification for pigeon 1
+c Term #5087. Nodes = 491. Before quantification for pigeon 2
+c Term #5088. Nodes = 114. After quantification for pigeon 2
+c Term #5210. Nodes = 662. Before quantification for pigeon 3
+c Term #5211. Nodes = 148. After quantification for pigeon 3
+c Term #5333. Nodes = 823. Before quantification for pigeon 4
+c Term #5334. Nodes = 180. After quantification for pigeon 4
+c Term #5456. Nodes = 974. Before quantification for pigeon 5
+c Term #5457. Nodes = 210. After quantification for pigeon 5
+c Term #5579. Nodes = 1115. Before quantification for pigeon 6
+c Term #5580. Nodes = 238. After quantification for pigeon 6
+c Term #5702. Nodes = 1246. Before quantification for pigeon 7
+c Term #5703. Nodes = 264. After quantification for pigeon 7
+c Term #5825. Nodes = 1367. Before quantification for pigeon 8
+c Term #5826. Nodes = 288. After quantification for pigeon 8
+c Term #5948. Nodes = 1478. Before quantification for pigeon 9
+c Term #5949. Nodes = 310. After quantification for pigeon 9
+c Term #6071. Nodes = 1579. Before quantification for pigeon 10
+c Term #6072. Nodes = 330. After quantification for pigeon 10
+c Term #6194. Nodes = 1670. Before quantification for pigeon 11
+c Term #6195. Nodes = 348. After quantification for pigeon 11
+c Term #6317. Nodes = 1751. Before quantification for pigeon 12
+c Term #6318. Nodes = 364. After quantification for pigeon 12
+c Term #6440. Nodes = 1822. Before quantification for pigeon 13
+c Term #6441. Nodes = 378. After quantification for pigeon 13
+c Term #6563. Nodes = 1883. Before quantification for pigeon 14
+c Term #6564. Nodes = 390. After quantification for pigeon 14
+c Term #6686. Nodes = 1934. Before quantification for pigeon 15
+c Term #6687. Nodes = 400. After quantification for pigeon 15
+c Garbage collection #1: 2000003 nodes / 1964974 free / 120690 previously freed  / 0.1s / 0.1s total
+c Term #6809. Nodes = 1975. Before quantification for pigeon 16
+c Term #6810. Nodes = 408. After quantification for pigeon 16
+c Term #6932. Nodes = 2006. Before quantification for pigeon 17
+c Term #6933. Nodes = 414. After quantification for pigeon 17
+c Term #7055. Nodes = 2027. Before quantification for pigeon 18
+c Term #7056. Nodes = 418. After quantification for pigeon 18
+c Term #7178. Nodes = 2038. Before quantification for pigeon 19
+c Term #7179. Nodes = 420. After quantification for pigeon 19
+c Term #7301. Nodes = 2039. Before quantification for pigeon 20
+c Term #7302. Nodes = 420. After quantification for pigeon 20
+c Term #7424. Nodes = 2030. Before quantification for pigeon 21
+c Term #7425. Nodes = 418. After quantification for pigeon 21
+c Term #7547. Nodes = 2011. Before quantification for pigeon 22
+c Term #7548. Nodes = 414. After quantification for pigeon 22
+c Term #7670. Nodes = 1982. Before quantification for pigeon 23
+c Term #7671. Nodes = 408. After quantification for pigeon 23
+c Term #7793. Nodes = 1943. Before quantification for pigeon 24
+c Term #7794. Nodes = 400. After quantification for pigeon 24
+c Term #7916. Nodes = 1894. Before quantification for pigeon 25
+c Term #7917. Nodes = 390. After quantification for pigeon 25
+c Term #8039. Nodes = 1835. Before quantification for pigeon 26
+c Term #8040. Nodes = 378. After quantification for pigeon 26
+c Term #8162. Nodes = 1766. Before quantification for pigeon 27
+c Term #8163. Nodes = 364. After quantification for pigeon 27
+c Term #8285. Nodes = 1687. Before quantification for pigeon 28
+c Term #8286. Nodes = 348. After quantification for pigeon 28
+c Term #8408. Nodes = 1598. Before quantification for pigeon 29
+c Term #8409. Nodes = 330. After quantification for pigeon 29
+c Term #8531. Nodes = 1499. Before quantification for pigeon 30
+c Term #8532. Nodes = 310. After quantification for pigeon 30
+c Garbage collection #2: 2000003 nodes / 1934688 free / 117361 previously freed  / 0.1s / 0.1s total
+c Term #8654. Nodes = 1390. Before quantification for pigeon 31
+c Term #8655. Nodes = 288. After quantification for pigeon 31
+c Term #8777. Nodes = 1271. Before quantification for pigeon 32
+c Term #8778. Nodes = 264. After quantification for pigeon 32
+c Term #8900. Nodes = 1142. Before quantification for pigeon 33
+c Term #8901. Nodes = 238. After quantification for pigeon 33
+c Term #9023. Nodes = 1003. Before quantification for pigeon 34
+c Term #9024. Nodes = 210. After quantification for pigeon 34
+c Term #9146. Nodes = 854. Before quantification for pigeon 35
+c Term #9147. Nodes = 180. After quantification for pigeon 35
+c Term #9269. Nodes = 695. Before quantification for pigeon 36
+c Term #9270. Nodes = 148. After quantification for pigeon 36
+c Term #9392. Nodes = 526. Before quantification for pigeon 37
+c Term #9393. Nodes = 114. After quantification for pigeon 37
+c Term #9515. Nodes = 347. Before quantification for pigeon 38
+c Term #9516. Nodes = 78. After quantification for pigeon 38
+c Term #9638. Nodes = 158. Before quantification for pigeon 39
+c Term #9639. Nodes = 40. After quantification for pigeon 39
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  440409
+c Unique Chain:   18561
+c Unique Hit:     51240
+c Unique Miss:    384565
+c => Hit rate =   0.12
+c Operator Hits:  334261
+c Operator Miss:  679043
+c => Hit rate =   0.33
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 384565
+c Input variables: 3240
+c Input clauses: 4801
+c Total clauses: 2159217
+c Unused+non-BDD clause IDs: 219079 (10.1%)
+c Maximum live clauses: 777476
+c Deleted clauses: 2154416
+c Final live clauses: 4801
+c Total variables: 387803
+c Elapsed seconds: 2.805
+-rw-r--r--  1 bryant  staff  115768530 Mar 11 12:52 pigeon-sinz-40.lrat
+c parsed a formula with 3240 variables and 4801 clauses
+c VERIFIED
+c allocated 1024 4204480 164025
+c Added clauses = 2159217.  Deleted clauses = 1576596.  Max live clauses = 777476
+c verification time = 1.39 secs

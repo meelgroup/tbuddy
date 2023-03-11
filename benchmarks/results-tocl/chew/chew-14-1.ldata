@@ -1,0 +1,35 @@
+c Read 96 clauses.  36 variables
+c Breaking ties randomly with seed 1
+c Final BDD size = 0
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  134239
+c Unique Chain:   2188
+c Unique Hit:     1521
+c Unique Miss:    29406
+c => Hit rate =   0.05
+c Operator Hits:  25065
+c Operator Miss:  133877
+c => Hit rate =   0.16
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 29406
+c Input variables: 36
+c Input clauses: 96
+c Total clauses: 257846
+c Unused+non-BDD clause IDs: 20016 (7.8%)
+c Maximum live clauses: 209204
+c Deleted clauses: 257750
+c Final live clauses: 96
+c Total variables: 29440
+c Elapsed seconds: 0.212
+-rw-r--r--  1 bryant  staff  10902694 Mar 11 09:56 chew-14-1.lrat
+c parsed a formula with 36 variables and 96 clauses
+c VERIFIED
+c allocated 1024 957493 31123
+c Added clauses = 257846.  Deleted clauses = 48642.  Max live clauses = 209204
+c verification time = 0.16 secs

@@ -1,0 +1,105 @@
+c ---- [ banner ] ------------------------------------------------------------
+c
+c KISSAT SAT Solver
+c Copyright (c) 2019-2021 Armin Biere JKU Linz
+c 
+c Version 2.0.1 02cd69626a53e93e09286b1978ccb5d6bec58b8e
+c Apple clang version 13.1.6 (clang-1316.0.21.2) -W -Wall -O3 -DNDEBUG
+c Thu Mar 31 15:34:51 EDT 2022 Darwin Randals-Macbook-Pro.local 21.2.0 arm64
+c
+c ---- [ proving ] -----------------------------------------------------------
+c
+c opened and writing proof to DRAT file:
+c
+c   chess-008.drat
+c
+c ---- [ parsing ] -----------------------------------------------------------
+c
+c opened and reading DIMACS file:
+c
+c   chess-008.cnf
+c
+c parsed 'p cnf 108 344' header
+c closing input after reading 7016 bytes (7 KB)
+c finished parsing after 0.00 seconds
+c
+c ---- [ solving ] -----------------------------------------------------------
+c
+c  seconds switched rate      trail   variables
+c         MB reductions conflicts glue    remaining
+c          level restarts redundant irredundant
+c
+c *  0.00  0 0 0 0  0 0   0   0 0% 0 344 108 99%
+c {  0.00  0 0 0 0  0 0   0   0 0% 0 344 108 99%
+c -  0.00  0 9 0 1 39 2 300 240 68% 4 344 108 99%
+c i  0.00  0 8 0 1 39 2 443 325 63% 4 344 101 93%
+c i  0.00  0 8 0 1 39 2 514 370 63% 4 344 96 88%
+c i  0.00  0 8 0 1 39 2 563 399 62% 3 344 89 82%
+c i  0.00  0 8 0 1 39 2 579 408 62% 3 344 84 77%
+c i  0.00  0 8 0 1 39 2 582 410 62% 3 344 83 76%
+c i  0.00  0 8 0 1 39 2 584 410 62% 3 344 82 75%
+c }  0.00  0 8 0 1 39 2 592 412 62% 3 344 63 58%
+c 0  0.00  0 8 0 1 39 2 592 412 62% 3 344 63 58%
+c
+c ---- [ result ] ------------------------------------------------------------
+c
+s UNSATISFIABLE
+c
+c ---- [ profiling ] ---------------------------------------------------------
+c
+c           0.00   85.43 %  search
+c           0.00   85.02 %  focused
+c           0.00    5.45 %  parse
+c           0.00    2.44 %  reduce
+c           0.00    0.00 %  simplify
+c =============================================
+c           0.00  100.00 %  total
+c
+c ---- [ statistics ] --------------------------------------------------------
+c
+c clauses_learned:                        557               94 %  conflicts
+c conflicts:                              592           113671.27 per second
+c decisions:                             1037                1.75 per conflict
+c literals_bumped:                      15013               26.95 per clause
+c literals_deduced:                      4245                7.62 per clause
+c literals_learned:                      3129                5.62 per clause
+c literals_minimized:                       0                0 %  deduced
+c literals_minimize_shrunken:             153               14 %  shrunken
+c literals_shrunken:                     1123               26 %  deduced
+c propagations:                         16790          3223886    per second
+c reductions:                               1              592    interval
+c restarts:                                39               15.18 interval
+c restarts_reused_trails:                  20               51 %  restarts
+c subsumed:                               129                0 %  checks
+c sweep_completed:                          0                0    sweeps
+c sweep_equivalences:                       0                0    variables
+c sweep_sat:                                0                0 %  sweep_solved
+c sweep_solved:                             0                0 %  kitten_solved
+c sweep_units:                              0                0 %  variables
+c sweep_unsat:                              0                0 %  sweep_solved
+c sweep_variables:                          0                0 %  variables
+c
+c ---- [ proof ] -------------------------------------------------------------
+c
+c proof_added:                            618               79 %  per line
+c proof_bytes:                           7159                0 MB 
+c proof_deleted:                          160               21 %  per line
+c
+c ---- [ resources ] ---------------------------------------------------------
+c
+c maximum-resident-set-size:       1912602624 bytes       1824 MB
+c process-time:                           2^10               0.00 seconds
+c
+c ---- [ shutting down ] -----------------------------------------------------
+c
+c exit 20
+-rw-r--r--  1 bryant  staff  7159 Mar 10 13:44 chess-008.drat
+c turning on binary mode checking
+c parsing input formula with 108 variables and 344 clauses
+c finished parsing, read 7159 bytes from proof file
+c detected empty clause; start verification via backward checking
+c 209 of 344 clauses in core                            
+c 476 of 619 lemmas in core using 10313 resolution steps
+c 0 RAT lemmas in core; 45 redundant literals in core lemmas
+s VERIFIED
+c verification time: 0.026 seconds

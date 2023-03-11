@@ -1,0 +1,75 @@
+c Read 10712 clauses.  3116 variables
+c Breaking ties randomly with seed 1
+c Term #10864. Nodes = 77. After quantification for column 0
+c Term #11138. Nodes = 115. After quantification for column 1
+c Term #11414. Nodes = 150. After quantification for column 2
+c Term #11690. Nodes = 183. After quantification for column 3
+c Term #11966. Nodes = 214. After quantification for column 4
+c Term #12242. Nodes = 243. After quantification for column 5
+c Term #12518. Nodes = 270. After quantification for column 6
+c Term #12794. Nodes = 295. After quantification for column 7
+c Term #13070. Nodes = 318. After quantification for column 8
+c Term #13346. Nodes = 339. After quantification for column 9
+c Term #13622. Nodes = 358. After quantification for column 10
+c Term #13898. Nodes = 375. After quantification for column 11
+c Term #14174. Nodes = 390. After quantification for column 12
+c Term #14450. Nodes = 403. After quantification for column 13
+c Term #14726. Nodes = 414. After quantification for column 14
+c Term #15002. Nodes = 423. After quantification for column 15
+c Term #15278. Nodes = 430. After quantification for column 16
+c Term #15554. Nodes = 435. After quantification for column 17
+c Garbage collection #1: 2000003 nodes / 1962401 free / 58838 previously freed  / 0.0s / 0.0s total
+c Term #15830. Nodes = 438. After quantification for column 18
+c Term #16106. Nodes = 439. After quantification for column 19
+c Term #16382. Nodes = 439. After quantification for column 20
+c Term #16658. Nodes = 439. After quantification for column 21
+c Term #16934. Nodes = 439. After quantification for column 22
+c Term #17210. Nodes = 439. After quantification for column 23
+c Term #17486. Nodes = 439. After quantification for column 24
+c Term #17762. Nodes = 439. After quantification for column 25
+c Term #18038. Nodes = 439. After quantification for column 26
+c Term #18314. Nodes = 439. After quantification for column 27
+c Term #18590. Nodes = 439. After quantification for column 28
+c Term #18866. Nodes = 439. After quantification for column 29
+c Term #19142. Nodes = 439. After quantification for column 30
+c Term #19418. Nodes = 439. After quantification for column 31
+c Term #19694. Nodes = 439. After quantification for column 32
+c Term #19970. Nodes = 439. After quantification for column 33
+c Term #20246. Nodes = 439. After quantification for column 34
+c Garbage collection #2: 2000003 nodes / 1935879 free / 63689 previously freed  / 0.0s / 0.1s total
+c Term #20522. Nodes = 439. After quantification for column 35
+c Term #20798. Nodes = 439. After quantification for column 36
+c Term #21074. Nodes = 439. After quantification for column 37
+c Term #21348. Nodes = 417. After quantification for column 38
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  237576
+c Unique Chain:   7021
+c Unique Hit:     26443
+c Unique Miss:    208947
+c => Hit rate =   0.11
+c Operator Hits:  87411
+c Operator Miss:  300751
+c => Hit rate =   0.23
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 208947
+c Input variables: 3116
+c Input clauses: 10712
+c Total clauses: 957012
+c Unused+non-BDD clause IDs: 144634 (15.1%)
+c Maximum live clauses: 491622
+c Deleted clauses: 946300
+c Final live clauses: 10712
+c Total variables: 212061
+c Elapsed seconds: 1.044
+-rw-r--r--  1 bryant  staff  45559032 Mar 10 16:29 chess-040.lrat
+c parsed a formula with 3116 variables and 10712 clauses
+c VERIFIED
+c allocated 1024 2779677 70110
+c Added clauses = 957012.  Deleted clauses = 642441.  Max live clauses = 491622
+c verification time = 0.57 secs

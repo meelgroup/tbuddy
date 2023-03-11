@@ -1,0 +1,69 @@
+c Read 144 clauses.  54 variables
+c Breaking ties randomly with seed 1
+c Placed 144 terms into 20 buckets.
+c Bucket 1 Reduced to term with 7 nodes
+c Bucket 2 Reduced to term with 9 nodes
+c Bucket 3 Reduced to term with 7 nodes
+c Bucket 4 Reduced to term with 7 nodes
+c Bucket 5 Reduced to term with 7 nodes
+c Bucket 6 Reduced to term with 7 nodes
+c Bucket 7 Reduced to term with 7 nodes
+c Bucket 8 Reduced to term with 7 nodes
+c Bucket 9 Reduced to term with 7 nodes
+c Bucket 10 Reduced to term with 7 nodes
+c Bucket 11 Reduced to term with 7 nodes
+c Bucket 12 Reduced to term with 7 nodes
+c Bucket 13 Reduced to term with 9 nodes
+c Bucket 14 Reduced to term with 7 nodes
+c Bucket 15 Reduced to term with 7 nodes
+c Bucket 16 Reduced to term with 7 nodes
+c Bucket 17 Reduced to term with 9 nodes
+c Bucket 18 Reduced to term with 7 nodes
+c Bucket 19 Reduced to term with 7 nodes
+c Bucket 20 Reduced to term with 9 nodes
+c Bucket 21 Reduced to term with 13 nodes
+c Bucket 22 Reduced to term with 17 nodes
+c Bucket 23 Reduced to term with 17 nodes
+c Bucket 24 Reduced to term with 17 nodes
+c Bucket 25 Reduced to term with 17 nodes
+c Bucket 26 Reduced to term with 21 nodes
+c Bucket 27 Reduced to term with 27 nodes
+c Bucket 28 Reduced to term with 33 nodes
+c Bucket 29 Reduced to term with 33 nodes
+c Bucket 30 Reduced to term with 29 nodes
+c Bucket 32 Reduced to term with 25 nodes
+c Bucket 33 Reduced to term with 21 nodes
+c Bucket 34 Reduced to term with 13 nodes
+c Bucket 36 Reduced to term with 9 nodes
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  2034
+c Unique Chain:   4
+c Unique Hit:     358
+c Unique Miss:    1613
+c => Hit rate =   0.18
+c Operator Hits:  1230
+c Operator Miss:  2184
+c => Hit rate =   0.36
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 1613
+c Input variables: 54
+c Input clauses: 144
+c Total clauses: 9038
+c Unused+non-BDD clause IDs: 713 (7.9%)
+c Maximum live clauses: 7421
+c Deleted clauses: 8894
+c Final live clauses: 144
+c Total variables: 1665
+c Elapsed seconds: 0.008
+-rw-r--r--  1 bryant  staff  304974 Mar 10 23:07 chew-20-123456.lrat
+c parsed a formula with 54 variables and 144 clauses
+c VERIFIED
+c allocated 1024 37360 540
+c Added clauses = 9038.  Deleted clauses = 1617.  Max live clauses = 7421
+c verification time = 0.01 secs

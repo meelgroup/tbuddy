@@ -1,0 +1,729 @@
+c Read 434492 clauses.  124496 variables
+c Breaking ties randomly with seed 1
+c Term #435484. Nodes = 497. After quantification for column 0
+c Garbage collection #1: 2000003 nodes / 1192493 free / 35077 previously freed  / 0.0s / 0.0s total
+c Garbage collection #2: 2000003 nodes / 1192961 free / 3588 previously freed  / 0.0s / 0.0s total
+c Term #437228. Nodes = 745. After quantification for column 1
+c Garbage collection #3: 2000003 nodes / 1191357 free / 68530 previously freed  / 0.0s / 0.1s total
+c Term #438974. Nodes = 990. After quantification for column 2
+c Garbage collection #4: 2000003 nodes / 1188736 free / 69253 previously freed  / 0.0s / 0.1s total
+c Term #440720. Nodes = 1233. After quantification for column 3
+c Garbage collection #5: 2000003 nodes / 1185021 free / 69067 previously freed  / 0.0s / 0.2s total
+c Garbage collection #6: 2000003 nodes / 1185546 free / 4025 previously freed  / 0.0s / 0.2s total
+c Term #442466. Nodes = 1474. After quantification for column 4
+c Garbage collection #7: 2000003 nodes / 1181003 free / 70853 previously freed  / 0.0s / 0.2s total
+c Term #444212. Nodes = 1713. After quantification for column 5
+c Garbage collection #8: 2000003 nodes / 1175452 free / 71175 previously freed  / 0.0s / 0.2s total
+c Garbage collection #9: 2000003 nodes / 1175850 free / 3068 previously freed  / 0.0s / 0.3s total
+c Term #445958. Nodes = 1950. After quantification for column 6
+c Garbage collection #10: 2000003 nodes / 1169411 free / 72383 previously freed  / 0.0s / 0.3s total
+c Term #447704. Nodes = 2185. After quantification for column 7
+c Garbage collection #11: 2000003 nodes / 1161994 free / 72817 previously freed  / 0.0s / 0.3s total
+c Term #449450. Nodes = 2418. After quantification for column 8
+c Garbage collection #12: 2000003 nodes / 1153532 free / 72658 previously freed  / 0.0s / 0.4s total
+c Garbage collection #13: 2000003 nodes / 1154030 free / 3830 previously freed  / 0.0s / 0.4s total
+c Term #451196. Nodes = 2649. After quantification for column 9
+c Garbage collection #14: 2000003 nodes / 1144765 free / 74311 previously freed  / 0.0s / 0.4s total
+c Term #452942. Nodes = 2878. After quantification for column 10
+c Garbage collection #15: 2000003 nodes / 1134513 free / 74474 previously freed  / 0.0s / 0.5s total
+c Garbage collection #16: 2000003 nodes / 1134930 free / 3197 previously freed  / 0.0s / 0.5s total
+c Term #454688. Nodes = 3105. After quantification for column 11
+c Garbage collection #17: 2000003 nodes / 1123843 free / 75735 previously freed  / 0.0s / 0.5s total
+c Term #456434. Nodes = 3330. After quantification for column 12
+c Garbage collection #18: 2000003 nodes / 1111803 free / 76024 previously freed  / 0.0s / 0.6s total
+c Garbage collection #19: 2000003 nodes / 1098435 free / 74999 previously freed  / 0.0s / 0.6s total
+c Term #458180. Nodes = 3553. After quantification for column 13
+c Garbage collection #20: 2000003 nodes / 1099328 free / 5218 previously freed  / 0.0s / 0.6s total
+c Term #459926. Nodes = 3774. After quantification for column 14
+c Garbage collection #21: 2000003 nodes / 1085529 free / 77527 previously freed  / 0.0s / 0.7s total
+c Term #461672. Nodes = 3993. After quantification for column 15
+c Garbage collection #22: 2000003 nodes / 1070726 free / 77223 previously freed  / 0.0s / 0.7s total
+c Garbage collection #23: 2000003 nodes / 1071227 free / 3841 previously freed  / 0.0s / 0.7s total
+c Term #463418. Nodes = 4210. After quantification for column 16
+c Garbage collection #24: 2000003 nodes / 1055683 free / 78868 previously freed  / 0.0s / 0.8s total
+c Term #465164. Nodes = 4425. After quantification for column 17
+c Garbage collection #25: 2000003 nodes / 1039172 free / 78713 previously freed  / 0.0s / 0.8s total
+c Garbage collection #26: 2000003 nodes / 1039637 free / 3565 previously freed  / 0.0s / 0.8s total
+c Term #466910. Nodes = 4638. After quantification for column 18
+c Garbage collection #27: 2000003 nodes / 1022377 free / 80148 previously freed  / 0.0s / 0.9s total
+c Term #468656. Nodes = 4849. After quantification for column 19
+c Garbage collection #28: 2000003 nodes / 1004166 free / 80009 previously freed  / 0.0s / 0.9s total
+c Garbage collection #29: 2000003 nodes / 1004619 free / 3473 previously freed  / 0.0s / 0.9s total
+c Term #470402. Nodes = 5058. After quantification for column 20
+c Garbage collection #30: 2000003 nodes / 985669 free / 81386 previously freed  / 0.0s / 1.0s total
+c Term #472148. Nodes = 5265. After quantification for column 21
+c Garbage collection #31: 2000003 nodes / 965788 free / 81221 previously freed  / 0.0s / 1.0s total
+c Garbage collection #32: 2000003 nodes / 966245 free / 3490 previously freed  / 0.0s / 1.0s total
+c Term #473894. Nodes = 5470. After quantification for column 22
+c Garbage collection #33: 2000003 nodes / 945632 free / 82578 previously freed  / 0.0s / 1.1s total
+c Term #475640. Nodes = 5673. After quantification for column 23
+c Garbage collection #34: 2000003 nodes / 924090 free / 82280 previously freed  / 0.0s / 1.1s total
+c Garbage collection #35: 2000003 nodes / 924567 free / 3657 previously freed  / 0.0s / 1.2s total
+c Term #477386. Nodes = 5874. After quantification for column 24
+c Garbage collection #36: 2000003 nodes / 902330 free / 83739 previously freed  / 0.0s / 1.2s total
+c Term #479132. Nodes = 6073. After quantification for column 25
+c Garbage collection #37: 2000003 nodes / 879139 free / 83145 previously freed  / 0.0s / 1.3s total
+c Garbage collection #38: 2000003 nodes / 879661 free / 4002 previously freed  / 0.0s / 1.3s total
+c Term #480878. Nodes = 6270. After quantification for column 26
+c Garbage collection #39: 2000003 nodes / 855824 free / 84845 previously freed  / 0.0s / 1.3s total
+c Garbage collection #40: 2000003 nodes / 830699 free / 83184 previously freed  / 0.0s / 1.4s total
+c Term #482624. Nodes = 6465. After quantification for column 27
+c Garbage collection #41: 2000003 nodes / 831592 free / 5218 previously freed  / 0.0s / 1.4s total
+c Term #484370. Nodes = 6658. After quantification for column 28
+c Garbage collection #42: 2000003 nodes / 806181 free / 85881 previously freed  / 0.1s / 1.4s total
+c Garbage collection #43: 2000003 nodes / 779555 free / 84645 previously freed  / 0.0s / 1.5s total
+c Term #486116. Nodes = 6849. After quantification for column 29
+c Garbage collection #44: 2000003 nodes / 780448 free / 5218 previously freed  / 0.0s / 1.5s total
+c Term #487862. Nodes = 7038. After quantification for column 30
+c Garbage collection #45: 2000003 nodes / 753507 free / 86985 previously freed  / 0.1s / 1.6s total
+c Garbage collection #46: 2000003 nodes / 725379 free / 85829 previously freed  / 0.0s / 1.6s total
+c Term #489608. Nodes = 7225. After quantification for column 31
+c Garbage collection #47: 2000003 nodes / 726272 free / 5218 previously freed  / 0.0s / 1.6s total
+c Term #491354. Nodes = 7410. After quantification for column 32
+c Garbage collection #48: 2000003 nodes / 697833 free / 88065 previously freed  / 0.1s / 1.7s total
+c Garbage collection #49: 2000003 nodes / 668235 free / 86989 previously freed  / 0.1s / 1.7s total
+c Term #493100. Nodes = 7593. After quantification for column 33
+c Garbage collection #50: 2000003 nodes / 669128 free / 5218 previously freed  / 0.0s / 1.8s total
+c Term #494846. Nodes = 7774. After quantification for column 34
+c Garbage collection #51: 2000003 nodes / 639223 free / 89121 previously freed  / 0.1s / 1.8s total
+c Garbage collection #52: 2000003 nodes / 608187 free / 88125 previously freed  / 0.1s / 1.9s total
+c Term #496592. Nodes = 7953. After quantification for column 35
+c Garbage collection #53: 2000003 nodes / 609080 free / 5218 previously freed  / 0.0s / 1.9s total
+c Term #498338. Nodes = 8130. After quantification for column 36
+c Garbage collection #54: 2000003 nodes / 577741 free / 90153 previously freed  / 0.1s / 1.9s total
+c Garbage collection #55: 2000003 nodes / 545299 free / 89237 previously freed  / 0.1s / 2.0s total
+c Term #500084. Nodes = 8305. After quantification for column 37
+c Garbage collection #56: 2000003 nodes / 546192 free / 5218 previously freed  / 0.0s / 2.0s total
+c Term #501830. Nodes = 8478. After quantification for column 38
+c Garbage collection #57: 2000003 nodes / 513451 free / 91161 previously freed  / 0.1s / 2.1s total
+c Garbage collection #58: 2000003 nodes / 479060 free / 33561 previously freed  / 0.0s / 2.1s total
+c Term #503576. Nodes = 8649. After quantification for column 39
+c Garbage collection #59: 2000003 nodes / 480447 free / 61361 previously freed  / 0.0s / 2.1s total
+c Term #505322. Nodes = 8818. After quantification for column 40
+c Garbage collection #60: 2000003 nodes / 446264 free / 91593 previously freed  / 0.1s / 2.2s total
+c Garbage collection #61: 2000003 nodes / 446723 free / 3519 previously freed  / 0.0s / 2.2s total
+c Term #507068. Nodes = 8985. After quantification for column 41
+c Garbage collection #62: 2000003 nodes / 411966 free / 92835 previously freed  / 0.1s / 2.3s total
+c Garbage collection #63: 2000003 nodes / 376074 free / 91337 previously freed  / 0.1s / 2.3s total
+c Term #508814. Nodes = 9150. After quantification for column 42
+c Garbage collection #64: 2000003 nodes / 376967 free / 5218 previously freed  / 0.0s / 2.4s total
+c Term #510560. Nodes = 9313. After quantification for column 43
+c Garbage collection #65: 2000003 nodes / 340861 free / 93576 previously freed  / 0.1s / 2.4s total
+c Garbage collection #66: 2000003 nodes / 303165 free / 33676 previously freed  / 0.0s / 2.5s total
+c Term #512306. Nodes = 9474. After quantification for column 44
+c Garbage collection #67: 2000003 nodes / 304553 free / 63792 previously freed  / 0.0s / 2.5s total
+c Term #514052. Nodes = 9633. After quantification for column 45
+c Garbage collection #68: 2000003 nodes / 267061 free / 93764 previously freed  / 0.1s / 2.6s total
+c Garbage collection #69: 2000003 nodes / 267553 free / 3772 previously freed  / 0.0s / 2.6s total
+c Term #515798. Nodes = 9790. After quantification for column 46
+c Garbage collection #70: 2000003 nodes / 229545 free / 95114 previously freed  / 0.1s / 2.7s total
+c Garbage collection #71: 2000003 nodes / 190499 free / 94023 previously freed  / 0.1s / 2.7s total
+c Term #517544. Nodes = 9945. After quantification for column 47
+c Garbage collection #72: 2000003 nodes / 191392 free / 5218 previously freed  / 0.0s / 2.8s total
+c Term #519290. Nodes = 10098. After quantification for column 48
+c Garbage collection #73: 2000003 nodes / 152121 free / 95841 previously freed  / 0.1s / 2.8s total
+c Garbage collection #74: 2000003 nodes / 111320 free / 33791 previously freed  / 0.0s / 2.9s total
+c Term #521036. Nodes = 10249. After quantification for column 49
+c Garbage collection #75: 2000003 nodes / 112709 free / 66073 previously freed  / 0.1s / 2.9s total
+c Garbage collection #76: 2000003 nodes / 79450 free / 79450 previously freed  / 0.1s / 3.0s total
+c Term #522782. Nodes = 10398. After quantification for column 50
+c Garbage collection #77: 3999971 nodes / 2072064 free / 21187 previously freed  / 0.0s / 3.0s total
+c Garbage collection #78: 3999971 nodes / 2072598 free / 4094 previously freed  / 0.0s / 3.0s total
+c Term #524528. Nodes = 10545. After quantification for column 51
+c Garbage collection #79: 3999971 nodes / 2031533 free / 97197 previously freed  / 0.1s / 3.1s total
+c Garbage collection #80: 3999971 nodes / 1988941 free / 33676 previously freed  / 0.0s / 3.2s total
+c Term #526274. Nodes = 10690. After quantification for column 52
+c Garbage collection #81: 3999971 nodes / 1990333 free / 67388 previously freed  / 0.1s / 3.2s total
+c Term #528020. Nodes = 10833. After quantification for column 53
+c Garbage collection #82: 3999971 nodes / 1947942 free / 96743 previously freed  / 0.1s / 3.3s total
+c Garbage collection #83: 3999971 nodes / 1948505 free / 4341 previously freed  / 0.0s / 3.3s total
+c Term #529766. Nodes = 10974. After quantification for column 54
+c Garbage collection #84: 3999971 nodes / 1905706 free / 98407 previously freed  / 0.1s / 3.4s total
+c Garbage collection #85: 3999971 nodes / 1904851 free / 33566 previously freed  / 0.0s / 3.5s total
+c Term #531512. Nodes = 11113. After quantification for column 55
+c Garbage collection #86: 3999971 nodes / 1862791 free / 68638 previously freed  / 0.1s / 3.5s total
+c Garbage collection #87: 3999971 nodes / 1818422 free / 97345 previously freed  / 0.1s / 3.6s total
+c Term #533258. Nodes = 11250. After quantification for column 56
+c Garbage collection #88: 3999971 nodes / 1819315 free / 5218 previously freed  / 0.0s / 3.7s total
+c Term #535004. Nodes = 11385. After quantification for column 57
+c Garbage collection #89: 3999971 nodes / 1774851 free / 99540 previously freed  / 0.1s / 3.7s total
+c Garbage collection #90: 3999971 nodes / 1775250 free / 3059 previously freed  / 0.0s / 3.8s total
+c Term #536750. Nodes = 11518. After quantification for column 58
+c Garbage collection #91: 3999971 nodes / 1730309 free / 100381 previously freed  / 0.1s / 3.9s total
+c Garbage collection #92: 3999971 nodes / 1684363 free / 98735 previously freed  / 0.1s / 3.9s total
+c Term #538496. Nodes = 11649. After quantification for column 59
+c Garbage collection #93: 3999971 nodes / 1685256 free / 5218 previously freed  / 0.0s / 4.0s total
+c Term #540242. Nodes = 11778. After quantification for column 60
+c Garbage collection #94: 3999971 nodes / 1639205 free / 100665 previously freed  / 0.1s / 4.1s total
+c Garbage collection #95: 3999971 nodes / 1639610 free / 3105 previously freed  / 0.0s / 4.1s total
+c Term #541988. Nodes = 11905. After quantification for column 61
+c Garbage collection #96: 3999971 nodes / 1593106 free / 101488 previously freed  / 0.1s / 4.2s total
+c Garbage collection #97: 3999971 nodes / 1545642 free / 99985 previously freed  / 0.1s / 4.3s total
+c Term #543734. Nodes = 12030. After quantification for column 62
+c Garbage collection #98: 3999971 nodes / 1546535 free / 5218 previously freed  / 0.0s / 4.3s total
+c Term #545480. Nodes = 12153. After quantification for column 63
+c Garbage collection #99: 3999971 nodes / 1498972 free / 101759 previously freed  / 0.1s / 4.4s total
+c Garbage collection #100: 3999971 nodes / 1499380 free / 3128 previously freed  / 0.0s / 4.4s total
+c Term #547226. Nodes = 12274. After quantification for column 64
+c Garbage collection #101: 3999971 nodes / 1451388 free / 102564 previously freed  / 0.1s / 4.5s total
+c Garbage collection #102: 3999971 nodes / 1402475 free / 101158 previously freed  / 0.1s / 4.6s total
+c Term #548972. Nodes = 12393. After quantification for column 65
+c Garbage collection #103: 3999971 nodes / 1403368 free / 5218 previously freed  / 0.0s / 4.6s total
+c Term #550718. Nodes = 12510. After quantification for column 66
+c Garbage collection #104: 3999971 nodes / 1354362 free / 102776 previously freed  / 0.1s / 4.7s total
+c Garbage collection #105: 3999971 nodes / 1354776 free / 3174 previously freed  / 0.0s / 4.8s total
+c Term #552464. Nodes = 12625. After quantification for column 67
+c Garbage collection #106: 3999971 nodes / 1305365 free / 103563 previously freed  / 0.1s / 4.9s total
+c Garbage collection #107: 3999971 nodes / 1255078 free / 102300 previously freed  / 0.1s / 5.0s total
+c Term #554210. Nodes = 12738. After quantification for column 68
+c Garbage collection #108: 3999971 nodes / 1255971 free / 5218 previously freed  / 0.0s / 5.0s total
+c Term #555956. Nodes = 12849. After quantification for column 69
+c Garbage collection #109: 3999971 nodes / 1205594 free / 103739 previously freed  / 0.1s / 5.1s total
+c Garbage collection #110: 3999971 nodes / 1206011 free / 3197 previously freed  / 0.0s / 5.1s total
+c Term #557702. Nodes = 12958. After quantification for column 70
+c Garbage collection #111: 3999971 nodes / 1155253 free / 104508 previously freed  / 0.1s / 5.2s total
+c Garbage collection #112: 3999971 nodes / 1103667 free / 103411 previously freed  / 0.1s / 5.3s total
+c Term #559448. Nodes = 13065. After quantification for column 71
+c Garbage collection #113: 3999971 nodes / 1104560 free / 5218 previously freed  / 0.1s / 5.4s total
+c Term #561194. Nodes = 13170. After quantification for column 72
+c Garbage collection #114: 3999971 nodes / 1052887 free / 104671 previously freed  / 0.1s / 5.5s total
+c Garbage collection #115: 3999971 nodes / 1053310 free / 3243 previously freed  / 0.1s / 5.5s total
+c Term #562940. Nodes = 13273. After quantification for column 73
+c Garbage collection #116: 3999971 nodes / 1001283 free / 105445 previously freed  / 0.1s / 5.6s total
+c Garbage collection #117: 3999971 nodes / 948458 free / 104376 previously freed  / 0.1s / 5.7s total
+c Term #564686. Nodes = 13374. After quantification for column 74
+c Garbage collection #118: 3999971 nodes / 949351 free / 5218 previously freed  / 0.1s / 5.7s total
+c Term #566432. Nodes = 13473. After quantification for column 75
+c Garbage collection #119: 3999971 nodes / 896454 free / 105549 previously freed  / 0.1s / 5.8s total
+c Garbage collection #120: 3999971 nodes / 896880 free / 3266 previously freed  / 0.1s / 5.9s total
+c Term #568178. Nodes = 13570. After quantification for column 76
+c Garbage collection #121: 3999971 nodes / 843650 free / 106282 previously freed  / 0.1s / 6.0s total
+c Garbage collection #122: 3999971 nodes / 789667 free / 105356 previously freed  / 0.1s / 6.1s total
+c Term #569924. Nodes = 13665. After quantification for column 77
+c Garbage collection #123: 3999971 nodes / 790560 free / 5218 previously freed  / 0.1s / 6.1s total
+c Term #571670. Nodes = 13758. After quantification for column 78
+c Garbage collection #124: 3999971 nodes / 736508 free / 106350 previously freed  / 0.1s / 6.2s total
+c Garbage collection #125: 3999971 nodes / 736937 free / 3289 previously freed  / 0.1s / 6.3s total
+c Term #573416. Nodes = 13849. After quantification for column 79
+c Garbage collection #126: 3999971 nodes / 682576 free / 107065 previously freed  / 0.1s / 6.4s total
+c Garbage collection #127: 3999971 nodes / 626853 free / 33469 previously freed  / 0.1s / 6.5s total
+c Term #575162. Nodes = 13938. After quantification for column 80
+c Garbage collection #128: 3999971 nodes / 628265 free / 76996 previously freed  / 0.1s / 6.6s total
+c Garbage collection #129: 3999971 nodes / 572747 free / 105789 previously freed  / 0.1s / 6.7s total
+c Term #576908. Nodes = 14025. After quantification for column 81
+c Garbage collection #130: 3999971 nodes / 573640 free / 5218 previously freed  / 0.1s / 6.7s total
+c Term #578654. Nodes = 14110. After quantification for column 82
+c Garbage collection #131: 3999971 nodes / 518163 free / 107357 previously freed  / 0.1s / 6.8s total
+c Garbage collection #132: 3999971 nodes / 518598 free / 3335 previously freed  / 0.1s / 6.9s total
+c Term #580400. Nodes = 14193. After quantification for column 83
+c Garbage collection #133: 3999971 nodes / 462847 free / 108071 previously freed  / 0.1s / 7.0s total
+c Garbage collection #134: 3999971 nodes / 405773 free / 33538 previously freed  / 0.1s / 7.0s total
+c Term #582146. Nodes = 14274. After quantification for column 84
+c Garbage collection #135: 3999971 nodes / 407190 free / 78001 previously freed  / 0.1s / 7.1s total
+c Garbage collection #136: 3999971 nodes / 350355 free / 106816 previously freed  / 0.1s / 7.2s total
+c Term #583892. Nodes = 14353. After quantification for column 85
+c Garbage collection #137: 3999971 nodes / 351248 free / 5218 previously freed  / 0.1s / 7.3s total
+c Term #585638. Nodes = 14430. After quantification for column 86
+c Garbage collection #138: 3999971 nodes / 294477 free / 108291 previously freed  / 0.1s / 7.4s total
+c Garbage collection #139: 3999971 nodes / 294915 free / 3358 previously freed  / 0.1s / 7.5s total
+c Term #587384. Nodes = 14505. After quantification for column 87
+c Garbage collection #140: 3999971 nodes / 237899 free / 108958 previously freed  / 0.1s / 7.6s total
+c Garbage collection #141: 3999971 nodes / 179605 free / 33630 previously freed  / 0.1s / 7.6s total
+c Term #589130. Nodes = 14578. After quantification for column 88
+c Garbage collection #142: 3999971 nodes / 181027 free / 78910 previously freed  / 0.1s / 7.7s total
+c Garbage collection #143: 3999971 nodes / 123003 free / 107747 previously freed  / 0.1s / 7.8s total
+c Term #590876. Nodes = 14649. After quantification for column 89
+c Garbage collection #144: 3999971 nodes / 123896 free / 5218 previously freed  / 0.1s / 7.9s total
+c Garbage collection #145: 3999971 nodes / 79433 free / 79433 previously freed  / 0.1s / 8.0s total
+c Term #592622. Nodes = 14718. After quantification for column 90
+c Garbage collection #146: 7999921 nodes / 4065906 free / 30959 previously freed  / 0.1s / 8.1s total
+c Garbage collection #147: 7999921 nodes / 4066350 free / 3404 previously freed  / 0.1s / 8.2s total
+c Term #594368. Nodes = 14785. After quantification for column 91
+c Garbage collection #148: 7999921 nodes / 4008197 free / 109749 previously freed  / 0.1s / 8.3s total
+c Garbage collection #149: 7999921 nodes / 3948811 free / 33722 previously freed  / 0.1s / 8.4s total
+c Term #596114. Nodes = 14850. After quantification for column 92
+c Garbage collection #150: 7999921 nodes / 3950238 free / 79723 previously freed  / 0.1s / 8.5s total
+c Garbage collection #151: 7999921 nodes / 3891153 free / 108582 previously freed  / 0.1s / 8.6s total
+c Term #597860. Nodes = 14913. After quantification for column 93
+c Garbage collection #152: 7999921 nodes / 3892046 free / 5218 previously freed  / 0.1s / 8.7s total
+c Term #599606. Nodes = 14974. After quantification for column 94
+c Garbage collection #153: 7999921 nodes / 3833068 free / 109848 previously freed  / 0.1s / 8.8s total
+c Garbage collection #154: 7999921 nodes / 3833515 free / 3427 previously freed  / 0.1s / 8.9s total
+c Term #601352. Nodes = 15033. After quantification for column 95
+c Garbage collection #155: 7999921 nodes / 3774356 free / 110467 previously freed  / 0.1s / 9.0s total
+c Garbage collection #156: 7999921 nodes / 3714003 free / 33791 previously freed  / 0.1s / 9.1s total
+c Term #603098. Nodes = 15090. After quantification for column 96
+c Garbage collection #157: 7999921 nodes / 3715435 free / 80440 previously freed  / 0.1s / 9.2s total
+c Garbage collection #158: 7999921 nodes / 3655417 free / 109321 previously freed  / 0.1s / 9.4s total
+c Term #604844. Nodes = 15145. After quantification for column 97
+c Garbage collection #159: 7999921 nodes / 3656310 free / 5218 previously freed  / 0.1s / 9.4s total
+c Term #606590. Nodes = 15198. After quantification for column 98
+c Garbage collection #160: 7999921 nodes / 3596422 free / 110494 previously freed  / 0.1s / 9.6s total
+c Garbage collection #161: 7999921 nodes / 3596875 free / 3473 previously freed  / 0.1s / 9.6s total
+c Term #608336. Nodes = 15249. After quantification for column 99
+c Garbage collection #162: 7999921 nodes / 3536841 free / 111112 previously freed  / 0.1s / 9.8s total
+c Garbage collection #163: 7999921 nodes / 3535986 free / 33566 previously freed  / 0.1s / 9.9s total
+c Term #610082. Nodes = 15298. After quantification for column 100
+c Garbage collection #164: 7999921 nodes / 3477029 free / 80918 previously freed  / 0.3s / 10.1s total
+c Garbage collection #165: 7999921 nodes / 3416257 free / 110355 previously freed  / 0.1s / 10.3s total
+c Term #611828. Nodes = 15345. After quantification for column 101
+c Garbage collection #166: 7999921 nodes / 3417150 free / 5218 previously freed  / 0.1s / 10.3s total
+c Term #613574. Nodes = 15390. After quantification for column 102
+c Garbage collection #167: 7999921 nodes / 3356480 free / 111044 previously freed  / 0.1s / 10.5s total
+c Garbage collection #168: 7999921 nodes / 3356936 free / 3496 previously freed  / 0.1s / 10.6s total
+c Term #615320. Nodes = 15433. After quantification for column 103
+c Garbage collection #169: 7999921 nodes / 3296149 free / 111615 previously freed  / 0.1s / 10.7s total
+c Garbage collection #170: 7999921 nodes / 3296542 free / 3013 previously freed  / 0.1s / 10.8s total
+c Term #617066. Nodes = 15474. After quantification for column 104
+c Garbage collection #171: 7999921 nodes / 3235625 free / 112019 previously freed  / 0.1s / 10.9s total
+c Garbage collection #172: 7999921 nodes / 3174185 free / 110971 previously freed  / 0.1s / 11.1s total
+c Term #618812. Nodes = 15513. After quantification for column 105
+c Garbage collection #173: 7999921 nodes / 3175078 free / 5218 previously freed  / 0.1s / 11.1s total
+c Term #620558. Nodes = 15550. After quantification for column 106
+c Garbage collection #174: 7999921 nodes / 3113754 free / 111498 previously freed  / 0.1s / 11.3s total
+c Garbage collection #175: 7999921 nodes / 3114213 free / 3519 previously freed  / 0.1s / 11.4s total
+c Term #622304. Nodes = 15585. After quantification for column 107
+c Garbage collection #176: 7999921 nodes / 3052804 free / 112045 previously freed  / 0.1s / 11.5s total
+c Garbage collection #177: 7999921 nodes / 3053203 free / 3059 previously freed  / 0.1s / 11.6s total
+c Term #624050. Nodes = 15618. After quantification for column 108
+c Garbage collection #178: 7999921 nodes / 2991699 free / 112448 previously freed  / 0.1s / 11.7s total
+c Garbage collection #179: 7999921 nodes / 2929713 free / 111445 previously freed  / 0.1s / 11.9s total
+c Term #625796. Nodes = 15649. After quantification for column 109
+c Garbage collection #180: 7999921 nodes / 2930606 free / 5218 previously freed  / 0.1s / 12.0s total
+c Term #627542. Nodes = 15678. After quantification for column 110
+c Garbage collection #181: 7999921 nodes / 2868759 free / 111879 previously freed  / 0.1s / 12.1s total
+c Garbage collection #182: 7999921 nodes / 2869221 free / 3542 previously freed  / 0.1s / 12.2s total
+c Term #629288. Nodes = 15705. After quantification for column 111
+c Garbage collection #183: 7999921 nodes / 2807324 free / 112425 previously freed  / 0.1s / 12.4s total
+c Garbage collection #184: 7999921 nodes / 2807723 free / 3059 previously freed  / 0.1s / 12.4s total
+c Term #631034. Nodes = 15730. After quantification for column 112
+c Garbage collection #185: 7999921 nodes / 2745760 free / 112781 previously freed  / 0.1s / 12.6s total
+c Garbage collection #186: 7999921 nodes / 2682630 free / 33354 previously freed  / 0.1s / 12.7s total
+c Term #632780. Nodes = 15753. After quantification for column 113
+c Garbage collection #187: 7999921 nodes / 2684087 free / 82445 previously freed  / 0.1s / 12.8s total
+c Garbage collection #188: 7999921 nodes / 2621528 free / 111362 previously freed  / 0.1s / 13.0s total
+c Term #634526. Nodes = 15774. After quantification for column 114
+c Garbage collection #189: 7999921 nodes / 2622421 free / 5218 previously freed  / 0.1s / 13.1s total
+c Term #636272. Nodes = 15793. After quantification for column 115
+c Garbage collection #190: 7999921 nodes / 2560101 free / 112226 previously freed  / 0.1s / 13.2s total
+c Garbage collection #191: 7999921 nodes / 2560563 free / 3542 previously freed  / 0.1s / 13.3s total
+c Term #638018. Nodes = 15810. After quantification for column 116
+c Garbage collection #192: 7999921 nodes / 2498230 free / 112719 previously freed  / 0.1s / 13.5s total
+c Garbage collection #193: 7999921 nodes / 2498635 free / 3105 previously freed  / 0.1s / 13.6s total
+c Term #639764. Nodes = 15825. After quantification for column 117
+c Garbage collection #194: 7999921 nodes / 2436279 free / 113068 previously freed  / 0.1s / 13.7s total
+c Garbage collection #195: 7999921 nodes / 2372795 free / 33400 previously freed  / 0.1s / 13.8s total
+c Term #641510. Nodes = 15838. After quantification for column 118
+c Garbage collection #196: 7999921 nodes / 2374262 free / 82725 previously freed  / 0.1s / 14.0s total
+c Garbage collection #197: 7999921 nodes / 2311393 free / 111612 previously freed  / 0.1s / 14.1s total
+c Term #643256. Nodes = 15849. After quantification for column 119
+c Garbage collection #198: 7999921 nodes / 2312286 free / 5218 previously freed  / 0.1s / 14.2s total
+c Term #645002. Nodes = 15858. After quantification for column 120
+c Garbage collection #199: 7999921 nodes / 2249693 free / 112423 previously freed  / 0.1s / 14.4s total
+c Garbage collection #200: 7999921 nodes / 2250158 free / 3565 previously freed  / 0.1s / 14.5s total
+c Term #646748. Nodes = 15865. After quantification for column 121
+c Garbage collection #201: 7999921 nodes / 2187592 free / 112886 previously freed  / 0.2s / 14.6s total
+c Garbage collection #202: 7999921 nodes / 2187997 free / 3105 previously freed  / 0.1s / 14.7s total
+c Term #648494. Nodes = 15870. After quantification for column 122
+c Garbage collection #203: 7999921 nodes / 2125448 free / 113205 previously freed  / 0.2s / 14.9s total
+c Garbage collection #204: 7999921 nodes / 2061810 free / 33446 previously freed  / 0.1s / 15.0s total
+c Term #650240. Nodes = 15873. After quantification for column 123
+c Garbage collection #205: 7999921 nodes / 2063288 free / 82838 previously freed  / 0.1s / 15.1s total
+c Garbage collection #206: 7999921 nodes / 2000308 free / 111729 previously freed  / 0.2s / 15.3s total
+c Term #651986. Nodes = 15874. After quantification for column 124
+c Garbage collection #207: 7999921 nodes / 2001201 free / 5218 previously freed  / 0.1s / 15.4s total
+c Term #653732. Nodes = 15874. After quantification for column 125
+c Garbage collection #208: 7999921 nodes / 1938535 free / 112493 previously freed  / 0.2s / 15.6s total
+c Garbage collection #209: 7999921 nodes / 1939000 free / 3565 previously freed  / 0.1s / 15.7s total
+c Term #655478. Nodes = 15874. After quantification for column 126
+c Garbage collection #210: 7999921 nodes / 1876391 free / 112930 previously freed  / 0.2s / 15.8s total
+c Garbage collection #211: 7999921 nodes / 1876796 free / 3105 previously freed  / 0.1s / 15.9s total
+c Term #657224. Nodes = 15874. After quantification for column 127
+c Garbage collection #212: 7999921 nodes / 1814226 free / 113229 previously freed  / 0.2s / 16.1s total
+c Garbage collection #213: 7999921 nodes / 1750578 free / 33446 previously freed  / 0.1s / 16.2s total
+c Term #658970. Nodes = 15874. After quantification for column 128
+c Garbage collection #214: 7999921 nodes / 1752055 free / 82842 previously freed  / 0.2s / 16.4s total
+c Garbage collection #215: 7999921 nodes / 1689078 free / 111737 previously freed  / 0.2s / 16.5s total
+c Term #660716. Nodes = 15874. After quantification for column 129
+c Garbage collection #216: 7999921 nodes / 1689971 free / 5218 previously freed  / 0.1s / 16.6s total
+c Term #662462. Nodes = 15874. After quantification for column 130
+c Garbage collection #217: 7999921 nodes / 1627305 free / 112493 previously freed  / 0.2s / 16.8s total
+c Garbage collection #218: 7999921 nodes / 1627770 free / 3565 previously freed  / 0.1s / 16.9s total
+c Term #664208. Nodes = 15874. After quantification for column 131
+c Garbage collection #219: 7999921 nodes / 1565161 free / 112930 previously freed  / 0.2s / 17.1s total
+c Garbage collection #220: 7999921 nodes / 1565566 free / 3105 previously freed  / 0.1s / 17.2s total
+c Term #665954. Nodes = 15874. After quantification for column 132
+c Garbage collection #221: 7999921 nodes / 1502996 free / 113229 previously freed  / 0.2s / 17.3s total
+c Garbage collection #222: 7999921 nodes / 1439348 free / 33446 previously freed  / 0.1s / 17.5s total
+c Term #667700. Nodes = 15874. After quantification for column 133
+c Garbage collection #223: 7999921 nodes / 1440825 free / 82842 previously freed  / 0.2s / 17.6s total
+c Garbage collection #224: 7999921 nodes / 1377848 free / 111737 previously freed  / 0.2s / 17.8s total
+c Term #669446. Nodes = 15874. After quantification for column 134
+c Garbage collection #225: 7999921 nodes / 1378741 free / 5218 previously freed  / 0.1s / 17.9s total
+c Term #671192. Nodes = 15874. After quantification for column 135
+c Garbage collection #226: 7999921 nodes / 1316075 free / 112493 previously freed  / 0.2s / 18.1s total
+c Garbage collection #227: 7999921 nodes / 1316540 free / 3565 previously freed  / 0.1s / 18.2s total
+c Term #672938. Nodes = 15874. After quantification for column 136
+c Garbage collection #228: 7999921 nodes / 1253931 free / 112930 previously freed  / 0.2s / 18.4s total
+c Garbage collection #229: 7999921 nodes / 1254336 free / 3105 previously freed  / 0.1s / 18.5s total
+c Term #674684. Nodes = 15874. After quantification for column 137
+c Garbage collection #230: 7999921 nodes / 1191766 free / 113229 previously freed  / 0.2s / 18.6s total
+c Garbage collection #231: 7999921 nodes / 1128118 free / 33446 previously freed  / 0.1s / 18.8s total
+c Term #676430. Nodes = 15874. After quantification for column 138
+c Garbage collection #232: 7999921 nodes / 1129595 free / 82842 previously freed  / 0.2s / 18.9s total
+c Garbage collection #233: 7999921 nodes / 1066618 free / 111737 previously freed  / 0.2s / 19.1s total
+c Term #678176. Nodes = 15874. After quantification for column 139
+c Garbage collection #234: 7999921 nodes / 1067511 free / 5218 previously freed  / 0.1s / 19.2s total
+c Term #679922. Nodes = 15874. After quantification for column 140
+c Garbage collection #235: 7999921 nodes / 1004845 free / 112493 previously freed  / 0.2s / 19.4s total
+c Garbage collection #236: 7999921 nodes / 1005310 free / 3565 previously freed  / 0.1s / 19.5s total
+c Term #681668. Nodes = 15874. After quantification for column 141
+c Garbage collection #237: 7999921 nodes / 942701 free / 112930 previously freed  / 0.2s / 19.7s total
+c Garbage collection #238: 7999921 nodes / 943106 free / 3105 previously freed  / 0.1s / 19.8s total
+c Term #683414. Nodes = 15874. After quantification for column 142
+c Garbage collection #239: 7999921 nodes / 880536 free / 113229 previously freed  / 0.2s / 20.0s total
+c Garbage collection #240: 7999921 nodes / 816888 free / 33446 previously freed  / 0.1s / 20.1s total
+c Term #685160. Nodes = 15874. After quantification for column 143
+c Garbage collection #241: 7999921 nodes / 818365 free / 82842 previously freed  / 0.2s / 20.3s total
+c Garbage collection #242: 7999921 nodes / 755388 free / 111737 previously freed  / 0.2s / 20.5s total
+c Term #686906. Nodes = 15874. After quantification for column 144
+c Garbage collection #243: 7999921 nodes / 756281 free / 5218 previously freed  / 0.1s / 20.6s total
+c Term #688652. Nodes = 15874. After quantification for column 145
+c Garbage collection #244: 7999921 nodes / 693615 free / 112493 previously freed  / 0.2s / 20.8s total
+c Garbage collection #245: 7999921 nodes / 694080 free / 3565 previously freed  / 0.1s / 20.9s total
+c Term #690398. Nodes = 15874. After quantification for column 146
+c Garbage collection #246: 7999921 nodes / 631471 free / 112930 previously freed  / 0.2s / 21.1s total
+c Garbage collection #247: 7999921 nodes / 631876 free / 3105 previously freed  / 0.1s / 21.2s total
+c Term #692144. Nodes = 15874. After quantification for column 147
+c Garbage collection #248: 7999921 nodes / 569306 free / 113229 previously freed  / 0.2s / 21.4s total
+c Garbage collection #249: 7999921 nodes / 505658 free / 33446 previously freed  / 0.1s / 21.5s total
+c Term #693890. Nodes = 15874. After quantification for column 148
+c Garbage collection #250: 7999921 nodes / 507135 free / 82842 previously freed  / 0.2s / 21.7s total
+c Garbage collection #251: 7999921 nodes / 444158 free / 111737 previously freed  / 0.2s / 21.9s total
+c Term #695636. Nodes = 15874. After quantification for column 149
+c Garbage collection #252: 7999921 nodes / 445051 free / 5218 previously freed  / 0.1s / 22.0s total
+c Term #697382. Nodes = 15874. After quantification for column 150
+c Garbage collection #253: 7999921 nodes / 382385 free / 112493 previously freed  / 0.2s / 22.2s total
+c Garbage collection #254: 7999921 nodes / 382850 free / 3565 previously freed  / 0.1s / 22.3s total
+c Term #699128. Nodes = 15874. After quantification for column 151
+c Garbage collection #255: 7999921 nodes / 320241 free / 112930 previously freed  / 0.2s / 22.5s total
+c Garbage collection #256: 7999921 nodes / 320646 free / 3105 previously freed  / 0.1s / 22.6s total
+c Term #700874. Nodes = 15874. After quantification for column 152
+c Garbage collection #257: 7999921 nodes / 258076 free / 113229 previously freed  / 0.2s / 22.8s total
+c Garbage collection #258: 7999921 nodes / 194428 free / 33446 previously freed  / 0.1s / 22.9s total
+c Term #702620. Nodes = 15874. After quantification for column 153
+c Garbage collection #259: 7999921 nodes / 195905 free / 82842 previously freed  / 0.2s / 23.1s total
+c Garbage collection #260: 7999921 nodes / 132928 free / 111737 previously freed  / 0.2s / 23.3s total
+c Term #704366. Nodes = 15874. After quantification for column 154
+c Garbage collection #261: 7999921 nodes / 133821 free / 5218 previously freed  / 0.1s / 23.4s total
+c Garbage collection #262: 7999921 nodes / 84040 free / 84040 previously freed  / 0.2s / 23.6s total
+c Term #706112. Nodes = 15874. After quantification for column 155
+c Garbage collection #263: 11999903 nodes / 4071137 free / 33121 previously freed  / 0.2s / 23.8s total
+c Garbage collection #264: 11999903 nodes / 4071602 free / 3565 previously freed  / 0.3s / 24.1s total
+c Term #707858. Nodes = 15874. After quantification for column 156
+c Garbage collection #265: 11999903 nodes / 4008993 free / 112930 previously freed  / 0.2s / 24.3s total
+c Garbage collection #266: 11999903 nodes / 4009398 free / 3105 previously freed  / 0.1s / 24.5s total
+c Term #709604. Nodes = 15874. After quantification for column 157
+c Garbage collection #267: 11999903 nodes / 3946828 free / 113229 previously freed  / 0.2s / 24.6s total
+c Garbage collection #268: 11999903 nodes / 3883180 free / 33446 previously freed  / 0.2s / 24.8s total
+c Term #711350. Nodes = 15874. After quantification for column 158
+c Garbage collection #269: 11999903 nodes / 3884657 free / 82842 previously freed  / 0.2s / 25.0s total
+c Garbage collection #270: 11999903 nodes / 3821680 free / 111737 previously freed  / 0.2s / 25.2s total
+c Term #713096. Nodes = 15874. After quantification for column 159
+c Garbage collection #271: 11999903 nodes / 3822573 free / 5218 previously freed  / 0.2s / 25.3s total
+c Term #714842. Nodes = 15874. After quantification for column 160
+c Garbage collection #272: 11999903 nodes / 3759907 free / 112493 previously freed  / 0.2s / 25.5s total
+c Garbage collection #273: 11999903 nodes / 3760372 free / 3565 previously freed  / 0.2s / 25.7s total
+c Term #716588. Nodes = 15874. After quantification for column 161
+c Garbage collection #274: 11999903 nodes / 3697763 free / 112930 previously freed  / 0.2s / 25.9s total
+c Garbage collection #275: 11999903 nodes / 3698168 free / 3105 previously freed  / 0.2s / 26.0s total
+c Term #718334. Nodes = 15874. After quantification for column 162
+c Garbage collection #276: 11999903 nodes / 3635598 free / 113229 previously freed  / 0.2s / 26.2s total
+c Garbage collection #277: 11999903 nodes / 3571950 free / 33446 previously freed  / 0.2s / 26.4s total
+c Term #720080. Nodes = 15874. After quantification for column 163
+c Garbage collection #278: 11999903 nodes / 3573427 free / 82842 previously freed  / 0.2s / 26.6s total
+c Garbage collection #279: 11999903 nodes / 3510450 free / 111737 previously freed  / 0.2s / 26.8s total
+c Term #721826. Nodes = 15874. After quantification for column 164
+c Garbage collection #280: 11999903 nodes / 3511343 free / 5218 previously freed  / 0.4s / 27.2s total
+c Term #723572. Nodes = 15874. After quantification for column 165
+c Garbage collection #281: 11999903 nodes / 3448677 free / 112493 previously freed  / 0.2s / 27.4s total
+c Garbage collection #282: 11999903 nodes / 3449142 free / 3565 previously freed  / 0.2s / 27.6s total
+c Term #725318. Nodes = 15874. After quantification for column 166
+c Garbage collection #283: 11999903 nodes / 3386533 free / 112930 previously freed  / 0.2s / 27.8s total
+c Garbage collection #284: 11999903 nodes / 3386938 free / 3105 previously freed  / 0.2s / 27.9s total
+c Term #727064. Nodes = 15874. After quantification for column 167
+c Garbage collection #285: 11999903 nodes / 3324368 free / 113229 previously freed  / 0.2s / 28.1s total
+c Garbage collection #286: 11999903 nodes / 3260720 free / 33446 previously freed  / 0.2s / 28.3s total
+c Term #728810. Nodes = 15874. After quantification for column 168
+c Garbage collection #287: 11999903 nodes / 3262197 free / 82842 previously freed  / 0.2s / 28.5s total
+c Garbage collection #288: 11999903 nodes / 3199220 free / 111737 previously freed  / 0.2s / 28.7s total
+c Term #730556. Nodes = 15874. After quantification for column 169
+c Garbage collection #289: 11999903 nodes / 3200113 free / 5218 previously freed  / 0.2s / 28.9s total
+c Term #732302. Nodes = 15874. After quantification for column 170
+c Garbage collection #290: 11999903 nodes / 3137447 free / 112493 previously freed  / 0.2s / 29.1s total
+c Garbage collection #291: 11999903 nodes / 3137912 free / 3565 previously freed  / 0.2s / 29.2s total
+c Term #734048. Nodes = 15874. After quantification for column 171
+c Garbage collection #292: 11999903 nodes / 3075303 free / 112930 previously freed  / 0.2s / 29.4s total
+c Garbage collection #293: 11999903 nodes / 3075708 free / 3105 previously freed  / 0.2s / 29.6s total
+c Term #735794. Nodes = 15874. After quantification for column 172
+c Garbage collection #294: 11999903 nodes / 3013138 free / 113229 previously freed  / 0.2s / 29.8s total
+c Garbage collection #295: 11999903 nodes / 2949490 free / 33446 previously freed  / 0.2s / 30.0s total
+c Term #737540. Nodes = 15874. After quantification for column 173
+c Garbage collection #296: 11999903 nodes / 2950967 free / 82842 previously freed  / 0.2s / 30.2s total
+c Garbage collection #297: 11999903 nodes / 2887990 free / 111737 previously freed  / 0.2s / 30.4s total
+c Term #739286. Nodes = 15874. After quantification for column 174
+c Garbage collection #298: 11999903 nodes / 2888883 free / 5218 previously freed  / 0.2s / 30.6s total
+c Term #741032. Nodes = 15874. After quantification for column 175
+c Garbage collection #299: 11999903 nodes / 2826217 free / 112493 previously freed  / 0.2s / 30.8s total
+c Garbage collection #300: 11999903 nodes / 2826682 free / 3565 previously freed  / 0.2s / 30.9s total
+c Term #742778. Nodes = 15874. After quantification for column 176
+c Garbage collection #301: 11999903 nodes / 2764073 free / 112930 previously freed  / 0.2s / 31.2s total
+c Garbage collection #302: 11999903 nodes / 2764478 free / 3105 previously freed  / 0.2s / 31.3s total
+c Term #744524. Nodes = 15874. After quantification for column 177
+c Garbage collection #303: 11999903 nodes / 2701908 free / 113229 previously freed  / 0.2s / 31.5s total
+c Garbage collection #304: 11999903 nodes / 2638260 free / 33446 previously freed  / 0.2s / 31.7s total
+c Term #746270. Nodes = 15874. After quantification for column 178
+c Garbage collection #305: 11999903 nodes / 2639737 free / 82842 previously freed  / 0.2s / 32.0s total
+c Garbage collection #306: 11999903 nodes / 2576760 free / 111737 previously freed  / 0.2s / 32.2s total
+c Term #748016. Nodes = 15874. After quantification for column 179
+c Garbage collection #307: 11999903 nodes / 2577653 free / 5218 previously freed  / 0.2s / 32.4s total
+c Term #749762. Nodes = 15874. After quantification for column 180
+c Garbage collection #308: 11999903 nodes / 2514987 free / 112493 previously freed  / 0.2s / 32.6s total
+c Garbage collection #309: 11999903 nodes / 2515452 free / 3565 previously freed  / 0.2s / 32.8s total
+c Term #751508. Nodes = 15874. After quantification for column 181
+c Garbage collection #310: 11999903 nodes / 2452843 free / 112930 previously freed  / 0.2s / 33.0s total
+c Garbage collection #311: 11999903 nodes / 2453248 free / 3105 previously freed  / 0.2s / 33.2s total
+c Term #753254. Nodes = 15874. After quantification for column 182
+c Garbage collection #312: 11999903 nodes / 2390678 free / 113229 previously freed  / 0.2s / 33.4s total
+c Garbage collection #313: 11999903 nodes / 2327030 free / 33446 previously freed  / 0.2s / 33.6s total
+c Term #755000. Nodes = 15874. After quantification for column 183
+c Garbage collection #314: 11999903 nodes / 2328507 free / 82842 previously freed  / 0.2s / 33.8s total
+c Garbage collection #315: 11999903 nodes / 2265530 free / 111737 previously freed  / 0.2s / 34.0s total
+c Term #756746. Nodes = 15874. After quantification for column 184
+c Garbage collection #316: 11999903 nodes / 2266423 free / 5218 previously freed  / 0.2s / 34.2s total
+c Term #758492. Nodes = 15874. After quantification for column 185
+c Garbage collection #317: 11999903 nodes / 2203757 free / 112493 previously freed  / 0.2s / 34.4s total
+c Garbage collection #318: 11999903 nodes / 2204222 free / 3565 previously freed  / 0.2s / 34.6s total
+c Term #760238. Nodes = 15874. After quantification for column 186
+c Garbage collection #319: 11999903 nodes / 2141613 free / 112930 previously freed  / 0.2s / 34.8s total
+c Garbage collection #320: 11999903 nodes / 2142018 free / 3105 previously freed  / 0.2s / 35.0s total
+c Term #761984. Nodes = 15874. After quantification for column 187
+c Garbage collection #321: 11999903 nodes / 2079448 free / 113229 previously freed  / 0.2s / 35.2s total
+c Garbage collection #322: 11999903 nodes / 2015800 free / 33446 previously freed  / 0.2s / 35.4s total
+c Term #763730. Nodes = 15874. After quantification for column 188
+c Garbage collection #323: 11999903 nodes / 2017277 free / 82842 previously freed  / 0.2s / 35.6s total
+c Garbage collection #324: 11999903 nodes / 1954300 free / 111737 previously freed  / 0.2s / 35.9s total
+c Term #765476. Nodes = 15874. After quantification for column 189
+c Garbage collection #325: 11999903 nodes / 1955193 free / 5218 previously freed  / 0.2s / 36.0s total
+c Term #767222. Nodes = 15874. After quantification for column 190
+c Garbage collection #326: 11999903 nodes / 1892527 free / 112493 previously freed  / 0.2s / 36.3s total
+c Garbage collection #327: 11999903 nodes / 1892992 free / 3565 previously freed  / 0.2s / 36.5s total
+c Term #768968. Nodes = 15874. After quantification for column 191
+c Garbage collection #328: 11999903 nodes / 1830383 free / 112930 previously freed  / 0.2s / 36.7s total
+c Garbage collection #329: 11999903 nodes / 1830788 free / 3105 previously freed  / 0.2s / 36.9s total
+c Term #770714. Nodes = 15874. After quantification for column 192
+c Garbage collection #330: 11999903 nodes / 1768218 free / 113229 previously freed  / 0.2s / 37.1s total
+c Garbage collection #331: 11999903 nodes / 1704570 free / 33446 previously freed  / 0.2s / 37.3s total
+c Term #772460. Nodes = 15874. After quantification for column 193
+c Garbage collection #332: 11999903 nodes / 1706047 free / 82842 previously freed  / 0.2s / 37.5s total
+c Garbage collection #333: 11999903 nodes / 1643070 free / 111737 previously freed  / 0.2s / 37.7s total
+c Term #774206. Nodes = 15874. After quantification for column 194
+c Garbage collection #334: 11999903 nodes / 1643963 free / 5218 previously freed  / 0.2s / 37.9s total
+c Term #775952. Nodes = 15874. After quantification for column 195
+c Garbage collection #335: 11999903 nodes / 1581297 free / 112493 previously freed  / 0.2s / 38.2s total
+c Garbage collection #336: 11999903 nodes / 1581762 free / 3565 previously freed  / 0.2s / 38.4s total
+c Term #777698. Nodes = 15874. After quantification for column 196
+c Garbage collection #337: 11999903 nodes / 1519153 free / 112930 previously freed  / 0.2s / 38.6s total
+c Garbage collection #338: 11999903 nodes / 1519558 free / 3105 previously freed  / 0.2s / 38.8s total
+c Term #779444. Nodes = 15874. After quantification for column 197
+c Garbage collection #339: 11999903 nodes / 1456988 free / 113229 previously freed  / 0.2s / 39.0s total
+c Garbage collection #340: 11999903 nodes / 1393340 free / 33446 previously freed  / 0.2s / 39.2s total
+c Term #781190. Nodes = 15874. After quantification for column 198
+c Garbage collection #341: 11999903 nodes / 1394817 free / 82842 previously freed  / 0.2s / 39.4s total
+c Garbage collection #342: 11999903 nodes / 1331840 free / 111737 previously freed  / 0.2s / 39.7s total
+c Term #782936. Nodes = 15874. After quantification for column 199
+c Garbage collection #343: 11999903 nodes / 1332733 free / 5218 previously freed  / 0.2s / 39.9s total
+c Term #784682. Nodes = 15874. After quantification for column 200
+c Garbage collection #344: 11999903 nodes / 1270067 free / 112493 previously freed  / 0.2s / 40.1s total
+c Garbage collection #345: 11999903 nodes / 1270532 free / 3565 previously freed  / 0.2s / 40.3s total
+c Term #786428. Nodes = 15874. After quantification for column 201
+c Garbage collection #346: 11999903 nodes / 1207923 free / 112930 previously freed  / 0.2s / 40.5s total
+c Garbage collection #347: 11999903 nodes / 1208328 free / 3105 previously freed  / 0.2s / 40.7s total
+c Term #788174. Nodes = 15874. After quantification for column 202
+c Garbage collection #348: 11999903 nodes / 1145758 free / 113229 previously freed  / 0.2s / 41.0s total
+c Garbage collection #349: 11999903 nodes / 1082110 free / 33446 previously freed  / 0.2s / 41.2s total
+c Term #789920. Nodes = 15874. After quantification for column 203
+c Garbage collection #350: 11999903 nodes / 1083587 free / 82842 previously freed  / 0.2s / 41.4s total
+c Garbage collection #351: 11999903 nodes / 1020610 free / 111737 previously freed  / 0.2s / 41.6s total
+c Term #791666. Nodes = 15874. After quantification for column 204
+c Garbage collection #352: 11999903 nodes / 1021503 free / 5218 previously freed  / 0.2s / 41.8s total
+c Term #793412. Nodes = 15874. After quantification for column 205
+c Garbage collection #353: 11999903 nodes / 958837 free / 112493 previously freed  / 0.2s / 42.1s total
+c Garbage collection #354: 11999903 nodes / 959302 free / 3565 previously freed  / 0.2s / 42.3s total
+c Term #795158. Nodes = 15874. After quantification for column 206
+c Garbage collection #355: 11999903 nodes / 896693 free / 112930 previously freed  / 0.2s / 42.5s total
+c Garbage collection #356: 11999903 nodes / 897098 free / 3105 previously freed  / 0.2s / 42.7s total
+c Term #796904. Nodes = 15874. After quantification for column 207
+c Garbage collection #357: 11999903 nodes / 834528 free / 113229 previously freed  / 0.2s / 43.0s total
+c Garbage collection #358: 11999903 nodes / 770880 free / 33446 previously freed  / 0.2s / 43.2s total
+c Term #798650. Nodes = 15874. After quantification for column 208
+c Garbage collection #359: 11999903 nodes / 772357 free / 82842 previously freed  / 0.2s / 43.4s total
+c Garbage collection #360: 11999903 nodes / 709380 free / 111737 previously freed  / 0.2s / 43.6s total
+c Term #800396. Nodes = 15874. After quantification for column 209
+c Garbage collection #361: 11999903 nodes / 710273 free / 5218 previously freed  / 0.2s / 43.8s total
+c Term #802142. Nodes = 15874. After quantification for column 210
+c Garbage collection #362: 11999903 nodes / 647607 free / 112493 previously freed  / 0.2s / 44.1s total
+c Garbage collection #363: 11999903 nodes / 648072 free / 3565 previously freed  / 0.2s / 44.3s total
+c Term #803888. Nodes = 15874. After quantification for column 211
+c Garbage collection #364: 11999903 nodes / 585463 free / 112930 previously freed  / 0.2s / 44.5s total
+c Garbage collection #365: 11999903 nodes / 585868 free / 3105 previously freed  / 0.2s / 44.7s total
+c Term #805634. Nodes = 15874. After quantification for column 212
+c Garbage collection #366: 11999903 nodes / 523298 free / 113229 previously freed  / 0.2s / 45.0s total
+c Garbage collection #367: 11999903 nodes / 459650 free / 33446 previously freed  / 0.2s / 45.2s total
+c Term #807380. Nodes = 15874. After quantification for column 213
+c Garbage collection #368: 11999903 nodes / 461127 free / 82842 previously freed  / 0.2s / 45.4s total
+c Garbage collection #369: 11999903 nodes / 398150 free / 111737 previously freed  / 0.3s / 45.7s total
+c Term #809126. Nodes = 15874. After quantification for column 214
+c Garbage collection #370: 11999903 nodes / 399043 free / 5218 previously freed  / 0.2s / 45.9s total
+c Term #810872. Nodes = 15874. After quantification for column 215
+c Garbage collection #371: 11999903 nodes / 336377 free / 112493 previously freed  / 0.3s / 46.2s total
+c Garbage collection #372: 11999903 nodes / 336842 free / 3565 previously freed  / 0.2s / 46.4s total
+c Term #812618. Nodes = 15874. After quantification for column 216
+c Garbage collection #373: 11999903 nodes / 274233 free / 112930 previously freed  / 0.3s / 46.6s total
+c Garbage collection #374: 11999903 nodes / 274638 free / 3105 previously freed  / 0.2s / 46.8s total
+c Term #814364. Nodes = 15874. After quantification for column 217
+c Garbage collection #375: 11999903 nodes / 212068 free / 113229 previously freed  / 0.3s / 47.1s total
+c Garbage collection #376: 11999903 nodes / 148420 free / 33446 previously freed  / 0.2s / 47.3s total
+c Term #816110. Nodes = 15874. After quantification for column 218
+c Garbage collection #377: 11999903 nodes / 149897 free / 82842 previously freed  / 0.2s / 47.5s total
+c Garbage collection #378: 11999903 nodes / 95203 free / 95203 previously freed  / 0.2s / 47.8s total
+c Garbage collection #379: 15999883 nodes / 4086900 free / 31123 previously freed  / 0.2s / 48.0s total
+c Term #817856. Nodes = 15874. After quantification for column 219
+c Garbage collection #380: 15999883 nodes / 4087793 free / 5218 previously freed  / 0.2s / 48.2s total
+c Term #819602. Nodes = 15874. After quantification for column 220
+c Garbage collection #381: 15999883 nodes / 4025127 free / 112493 previously freed  / 0.3s / 48.5s total
+c Garbage collection #382: 15999883 nodes / 4025592 free / 3565 previously freed  / 0.2s / 48.7s total
+c Term #821348. Nodes = 15874. After quantification for column 221
+c Garbage collection #383: 15999883 nodes / 3962983 free / 112930 previously freed  / 0.3s / 49.0s total
+c Garbage collection #384: 15999883 nodes / 3963388 free / 3105 previously freed  / 0.2s / 49.2s total
+c Term #823094. Nodes = 15874. After quantification for column 222
+c Garbage collection #385: 15999883 nodes / 3900818 free / 113229 previously freed  / 0.3s / 49.5s total
+c Garbage collection #386: 15999883 nodes / 3837170 free / 33446 previously freed  / 0.2s / 49.7s total
+c Term #824840. Nodes = 15874. After quantification for column 223
+c Garbage collection #387: 15999883 nodes / 3838647 free / 82842 previously freed  / 0.3s / 50.0s total
+c Garbage collection #388: 15999883 nodes / 3775670 free / 111737 previously freed  / 0.3s / 50.2s total
+c Term #826586. Nodes = 15874. After quantification for column 224
+c Garbage collection #389: 15999883 nodes / 3776563 free / 5218 previously freed  / 0.2s / 50.5s total
+c Term #828332. Nodes = 15874. After quantification for column 225
+c Garbage collection #390: 15999883 nodes / 3713897 free / 112493 previously freed  / 0.3s / 50.7s total
+c Garbage collection #391: 15999883 nodes / 3714362 free / 3565 previously freed  / 0.2s / 51.0s total
+c Term #830078. Nodes = 15874. After quantification for column 226
+c Garbage collection #392: 15999883 nodes / 3651753 free / 112930 previously freed  / 0.3s / 51.2s total
+c Garbage collection #393: 15999883 nodes / 3652158 free / 3105 previously freed  / 0.2s / 51.5s total
+c Term #831824. Nodes = 15874. After quantification for column 227
+c Garbage collection #394: 15999883 nodes / 3589588 free / 113229 previously freed  / 0.3s / 51.7s total
+c Garbage collection #395: 15999883 nodes / 3525940 free / 33446 previously freed  / 0.2s / 52.0s total
+c Term #833570. Nodes = 15874. After quantification for column 228
+c Garbage collection #396: 15999883 nodes / 3527417 free / 82842 previously freed  / 0.3s / 52.2s total
+c Garbage collection #397: 15999883 nodes / 3464440 free / 111737 previously freed  / 0.3s / 52.5s total
+c Term #835316. Nodes = 15874. After quantification for column 229
+c Garbage collection #398: 15999883 nodes / 3465333 free / 5218 previously freed  / 0.2s / 52.7s total
+c Term #837062. Nodes = 15874. After quantification for column 230
+c Garbage collection #399: 15999883 nodes / 3402667 free / 112493 previously freed  / 0.3s / 53.0s total
+c Garbage collection #400: 15999883 nodes / 3403132 free / 3565 previously freed  / 0.2s / 53.2s total
+c Term #838808. Nodes = 15874. After quantification for column 231
+c Garbage collection #401: 15999883 nodes / 3340523 free / 112930 previously freed  / 0.3s / 53.5s total
+c Garbage collection #402: 15999883 nodes / 3340928 free / 3105 previously freed  / 0.2s / 53.8s total
+c Term #840554. Nodes = 15874. After quantification for column 232
+c Garbage collection #403: 15999883 nodes / 3278358 free / 113229 previously freed  / 0.3s / 54.0s total
+c Garbage collection #404: 15999883 nodes / 3214710 free / 33446 previously freed  / 0.2s / 54.3s total
+c Term #842300. Nodes = 15874. After quantification for column 233
+c Garbage collection #405: 15999883 nodes / 3216187 free / 82842 previously freed  / 0.3s / 54.5s total
+c Garbage collection #406: 15999883 nodes / 3153210 free / 111737 previously freed  / 0.3s / 54.8s total
+c Term #844046. Nodes = 15874. After quantification for column 234
+c Garbage collection #407: 15999883 nodes / 3154103 free / 5218 previously freed  / 0.2s / 55.1s total
+c Term #845792. Nodes = 15874. After quantification for column 235
+c Garbage collection #408: 15999883 nodes / 3091437 free / 112493 previously freed  / 0.3s / 55.3s total
+c Garbage collection #409: 15999883 nodes / 3091902 free / 3565 previously freed  / 0.2s / 55.6s total
+c Term #847538. Nodes = 15874. After quantification for column 236
+c Garbage collection #410: 15999883 nodes / 3029293 free / 112930 previously freed  / 0.3s / 55.9s total
+c Garbage collection #411: 15999883 nodes / 3029698 free / 3105 previously freed  / 0.2s / 56.1s total
+c Term #849284. Nodes = 15874. After quantification for column 237
+c Garbage collection #412: 15999883 nodes / 2967128 free / 113229 previously freed  / 0.3s / 56.4s total
+c Garbage collection #413: 15999883 nodes / 2903480 free / 33446 previously freed  / 0.2s / 56.6s total
+c Term #851030. Nodes = 15874. After quantification for column 238
+c Garbage collection #414: 15999883 nodes / 2904957 free / 82842 previously freed  / 0.3s / 56.9s total
+c Garbage collection #415: 15999883 nodes / 2841980 free / 111737 previously freed  / 0.3s / 57.2s total
+c Term #852776. Nodes = 15874. After quantification for column 239
+c Garbage collection #416: 15999883 nodes / 2842873 free / 5218 previously freed  / 0.4s / 57.6s total
+c Term #854522. Nodes = 15874. After quantification for column 240
+c Garbage collection #417: 15999883 nodes / 2780207 free / 112493 previously freed  / 0.3s / 57.9s total
+c Garbage collection #418: 15999883 nodes / 2780672 free / 3565 previously freed  / 0.2s / 58.1s total
+c Term #856268. Nodes = 15874. After quantification for column 241
+c Garbage collection #419: 15999883 nodes / 2718063 free / 112930 previously freed  / 0.3s / 58.4s total
+c Garbage collection #420: 15999883 nodes / 2718468 free / 3105 previously freed  / 0.2s / 58.6s total
+c Term #858014. Nodes = 15874. After quantification for column 242
+c Garbage collection #421: 15999883 nodes / 2655898 free / 113229 previously freed  / 0.3s / 58.9s total
+c Garbage collection #422: 15999883 nodes / 2592250 free / 33446 previously freed  / 0.3s / 59.2s total
+c Term #859760. Nodes = 15874. After quantification for column 243
+c Garbage collection #423: 15999883 nodes / 2593727 free / 82842 previously freed  / 0.3s / 59.5s total
+c Garbage collection #424: 15999883 nodes / 2530750 free / 111737 previously freed  / 0.3s / 59.7s total
+c Term #861506. Nodes = 15874. After quantification for column 244
+c Garbage collection #425: 15999883 nodes / 2531643 free / 5218 previously freed  / 0.2s / 60.0s total
+c Term #863252. Nodes = 15874. After quantification for column 245
+c Garbage collection #426: 15999883 nodes / 2468977 free / 112493 previously freed  / 0.3s / 60.3s total
+c Garbage collection #427: 15999883 nodes / 2469442 free / 3565 previously freed  / 0.2s / 60.5s total
+c Term #864998. Nodes = 15874. After quantification for column 246
+c Garbage collection #428: 15999883 nodes / 2406833 free / 112930 previously freed  / 0.3s / 60.8s total
+c Garbage collection #429: 15999883 nodes / 2407238 free / 3105 previously freed  / 0.2s / 61.1s total
+c Term #866744. Nodes = 15874. After quantification for column 247
+c Garbage collection #430: 15999883 nodes / 2344667 free / 113224 previously freed  / 0.3s / 61.4s total
+c Garbage collection #431: 15999883 nodes / 2281523 free / 33446 previously freed  / 0.3s / 61.6s total
+c Term #868488. Nodes = 15747. After quantification for column 248
+c Garbage collection #432: 15999883 nodes / 2282844 free / 81104 previously freed  / 0.5s / 62.1s total
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  44489944
+c Unique Chain:   30603463
+c Unique Hit:     3820095
+c Unique Miss:    40583978
+c => Hit rate =   0.09
+c Operator Hits:  19897313
+c Operator Miss:  63394907
+c => Hit rate =   0.24
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 40583978
+c Input variables: 124496
+c Input clauses: 434492
+c Total clauses: 181396318
+c Unused+non-BDD clause IDs: 27081551 (14.9%)
+c Maximum live clauses: 48352079
+c Deleted clauses: 180961826
+c Final live clauses: 434492
+c Total variables: 40708472
+c Elapsed seconds: 313.805
+-rw-r--r--  1 bryant  staff  11349477704 Mar 10 16:39 chess-250.lrat
+c parsed a formula with 124496 variables and 434492 clauses
+c topTable reallocation from 1024 to 1536
+c topTable reallocation from 1536 to 2304
+c increasing the number of buckets from 1024 to 1536
+c topTable reallocation from 2304 to 3456
+c topTable reallocation from 3456 to 5184
+c increasing the number of buckets from 1536 to 2304
+c topTable reallocation from 5184 to 7776
+c increasing the number of buckets from 2304 to 3456
+c topTable reallocation from 7776 to 11664
+c increasing the number of buckets from 3456 to 5184
+c topTable reallocation from 11664 to 17496
+c increasing the number of buckets from 5184 to 7776
+c topTable reallocation from 17496 to 26244
+c increasing the number of buckets from 7776 to 11664
+c VERIFIED
+c allocated 11664 253681794 1244960
+c Added clauses = 181396318.  Deleted clauses = 133344799.  Max live clauses = 48352079
+c verification time = 113.94 secs

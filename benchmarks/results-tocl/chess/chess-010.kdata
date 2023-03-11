@@ -1,0 +1,181 @@
+c ---- [ banner ] ------------------------------------------------------------
+c
+c KISSAT SAT Solver
+c Copyright (c) 2019-2021 Armin Biere JKU Linz
+c 
+c Version 2.0.1 02cd69626a53e93e09286b1978ccb5d6bec58b8e
+c Apple clang version 13.1.6 (clang-1316.0.21.2) -W -Wall -O3 -DNDEBUG
+c Thu Mar 31 15:34:51 EDT 2022 Darwin Randals-Macbook-Pro.local 21.2.0 arm64
+c
+c ---- [ proving ] -----------------------------------------------------------
+c
+c opened and writing proof to DRAT file:
+c
+c   chess-010.drat
+c
+c ---- [ parsing ] -----------------------------------------------------------
+c
+c opened and reading DIMACS file:
+c
+c   chess-010.cnf
+c
+c parsed 'p cnf 176 572' header
+c closing input after reading 11909 bytes (12 KB)
+c finished parsing after 0.00 seconds
+c
+c ---- [ solving ] -----------------------------------------------------------
+c
+c  seconds switched rate      trail   variables
+c         MB reductions conflicts glue    remaining
+c          level restarts redundant irredundant
+c
+c *  0.00  0 0 0 0  0 0   0   0 0% 0 572 176 99%
+c {  0.00  0 0 0 0  0 0   0   0 0% 0 572 176 99%
+c -  0.00  0 22 0 1 45 4 300 229 78% 4 572 176 99%
+c d  0.00  0 16 0 1 121 3 764 624 67% 5 560 170 96%
+c t  0.00  0 16 0 1 121 3 764 624 67% 5 557 170 96%
+c u  0.01  0 16 0 1 121 3 785 614 67% 5 557 170 96%
+c v  0.01  0 16 0 1 121 3 800 611 67% 5 557 170 96%
+c }  0.01  0 15 1 1 157 4 1000 786 66% 5 557 170 96%
+c [  0.01  0 0 1 1 157 0 1000 786 0% 0 557 170 96%
+c O  0.01  0 22 1 1 157 7 1001 787 79% 3 557 170 96%
+c -  0.01  0 20 1 2 157 1 1300 887 74% 7 557 170 96%
+c t  0.01  0 18 1 2 157 1 1560 1095 71% 7 556 170 96%
+c u  0.01  0 18 1 2 157 1 1575 1088 71% 7 556 170 96%
+c v  0.01  0 18 1 2 157 1 1592 1087 71% 7 556 170 96%
+c ]  0.01  0 15 2 2 157 1 1993 1317 59% 7 556 170 96%
+c {  0.01  0 15 2 2 157 4 1993 1317 66% 5 556 170 96%
+c }  0.02  0 14 3 2 293 4 2503 1766 61% 5 556 170 96%
+c [  0.02  0 15 3 2 293 1 2503 1766 59% 7 556 170 96%
+c I  0.02  0 15 3 2 293 1 2503 1766 59% 7 556 170 96%
+c -  0.02  0 15 3 3 293 1 2716 1523 56% 7 556 170 96%
+c
+c  seconds  switched  rate         trail   variables
+c         MB reductions conflicts     glue     remaining
+c          level restarts   redundant irredundant
+c
+c t  0.02  0 13 3 3 293 1 3168 1768 52% 7 554 170 96%
+c u  0.03  0 13 3 3 293 1 3233 1643 52% 7 554 170 96%
+c v  0.03  0 13 3 3 293 1 3253 1639 52% 7 554 170 96%
+c e  0.03  0 12 3 3 294 1 3823 2011 50% 7 438 104 59%
+c e  0.03  0 12 3 3 294 1 3823 2011 50% 7 433 102 58%
+c -  0.04  0 12 3 4 294 1 4450 596 52% 6 433 102 58%
+c B  0.04  0 11 3 4 294 1 4763 801 53% 6 433 102 58%
+c b  0.05  0 11 3 4 295 1 5698 1349 53% 6 433 101 57%
+c u  0.05  0 11 3 4 295 1 5743 968 53% 6 433 101 57%
+c v  0.05  0 11 3 4 295 1 5786 935 53% 6 433 101 57%
+c w  0.05  0 11 3 4 295 1 5790 935 53% 6 430 101 57%
+c i  0.05  0 10 3 4 295 1 6158 1121 52% 6 430 97 55%
+c -  0.05  0 10 3 5 295 1 6450 849 52% 6 416 97 55%
+c i  0.05  0 10 3 5 295 1 6860 1060 52% 6 416 96 54%
+c ]  0.05  0 10 4 5 295 1 6870 1067 52% 6 416 96 54%
+c {  0.05  0 14 4 5 295 4 6870 1067 61% 5 416 96 54%
+c i  0.06  0 13 4 5 295 3 7196 1225 58% 5 416 92 52%
+c s  0.06  0 12 4 5 295 3 7324 1298 58% 5 367 92 52%
+c e  0.06  0 12 4 5 295 3 7324 1298 58% 5 361 85 48%
+c i  0.06  0 12 4 5 295 3 7553 463 57% 5 361 84 47%
+c
+c  seconds  switched  rate        trail  variables
+c         MB reductions conflicts    glue    remaining
+c          level restarts   redundant irredundant
+c
+c i  0.06  0 11 4 5 295 3 7669 525 57% 4 361 83 47%
+c i  0.06  0 11 4 5 295 3 7793 579 57% 4 361 82 46%
+c i  0.06  0 11 4 5 295 3 7890 617 56% 4 361 76 43%
+c i  0.06  0 11 4 5 295 3 7914 625 56% 4 361 75 42%
+c i  0.06  0 11 4 5 295 3 7920 627 56% 4 361 71 40%
+c i  0.06  0 11 4 5 295 3 7925 630 56% 4 361 62 35%
+c }  0.06  0 11 4 5 295 3 7927 630 56% 4 361 51 29%
+c 0  0.06  0 11 4 5 295 3 7927 630 56% 4 361 51 29%
+c
+c ---- [ result ] ------------------------------------------------------------
+c
+s UNSATISFIABLE
+c
+c ---- [ profiling ] ---------------------------------------------------------
+c
+c           0.05   79.46 %  search
+c           0.03   54.04 %  stable
+c           0.02   25.39 %  focused
+c           0.01   19.89 %  simplify
+c           0.01   10.36 %  probe
+c           0.01    9.15 %  eliminate
+c           0.00    6.75 %  vivify
+c           0.00    3.27 %  reduce
+c           0.00    1.35 %  sweep
+c           0.00    1.34 %  substitute
+c           0.00    0.45 %  parse
+c           0.00    0.39 %  failed
+c           0.00    0.38 %  autarky
+c           0.00    0.26 %  transitive
+c           0.00    0.26 %  subsume
+c           0.00    0.16 %  backbone
+c           0.00    0.11 %  ternary
+c =============================================
+c           0.06  100.00 %  total
+c
+c ---- [ statistics ] --------------------------------------------------------
+c
+c backbone_implied:                         1                1.00 per unit
+c backbone_units:                           1                1 %  variables
+c clauses_learned:                       7236               91 %  conflicts
+c conflicts:                             7927           127797.12 per second
+c decisions:                            12872                1.62 per conflict
+c forward_strengthened:                    68               40 %  strengthened
+c forward_subsumed:                        34                1 %  subsumed
+c kitten_conflicts:                       327                0.36 per solved
+c kitten_decisions:                      6967                7.74 per solved
+c kitten_propagations:                  13882               15.42 per solved
+c kitten_sat:                             591               66 %  solved
+c kitten_solved:                          900 
+c kitten_ticks:                         34775                2.51 per propagation
+c kitten_unknown:                           5                1 %  solved
+c kitten_unsat:                           304               34 %  solved
+c literals_bumped:                     200649               27.73 per clause
+c literals_deduced:                     78157               10.80 per clause
+c literals_learned:                     57839                7.99 per clause
+c literals_minimized:                       0                0 %  deduced
+c literals_minimize_shrunken:            3788               19 %  shrunken
+c literals_shrunken:                    20329               26 %  deduced
+c propagations:                        201465          3247969    per second
+c reductions:                               5             1585    interval
+c rephased:                                 3             2642    interval
+c restarts:                               295               26.87 interval
+c restarts_reused_trails:                  70               24 %  restarts
+c strengthened:                           169                1 %  checks
+c substituted:                              6                3 %  variables
+c subsumption_checks:                   12288 
+c subsumed:                              2299               19 %  checks
+c sweep:                                    4             1982    interval
+c sweep_completed:                          1                4    sweeps
+c sweep_equivalences:                       0                0    variables
+c sweep_sat:                              567               96 %  sweep_solved
+c sweep_solved:                           590               66 %  kitten_solved
+c sweep_units:                              0                0 %  variables
+c sweep_unsat:                             18                3 %  sweep_solved
+c sweep_variables:                         56               32 %  variables
+c
+c ---- [ proof ] -------------------------------------------------------------
+c
+c proof_added:                           8393               51 %  per line
+c proof_bytes:                         247652                0 MB 
+c proof_deleted:                         7929               49 %  per line
+c
+c ---- [ resources ] ---------------------------------------------------------
+c
+c maximum-resident-set-size:       2483027968 bytes       2368 MB
+c process-time:                          57830               0.06 seconds
+c
+c ---- [ shutting down ] -----------------------------------------------------
+c
+c exit 20
+-rw-r--r--  1 bryant  staff  247652 Mar 10 13:44 chess-010.drat
+c turning on binary mode checking
+c parsing input formula with 176 variables and 572 clauses
+c finished parsing, read 247652 bytes from proof file
+c detected empty clause; start verification via backward checking
+c 438 of 572 clauses in core                            
+c 6723 of 8394 lemmas in core using 118988 resolution steps
+c 0 RAT lemmas in core; 657 redundant literals in core lemmas
+s VERIFIED
+c verification time: 0.054 seconds

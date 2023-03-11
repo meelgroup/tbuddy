@@ -1,0 +1,161 @@
+c ---- [ banner ] ------------------------------------------------------------
+c
+c KISSAT SAT Solver
+c Copyright (c) 2019-2021 Armin Biere JKU Linz
+c 
+c Version 2.0.1 02cd69626a53e93e09286b1978ccb5d6bec58b8e
+c Apple clang version 13.1.6 (clang-1316.0.21.2) -W -Wall -O3 -DNDEBUG
+c Thu Mar 31 15:34:51 EDT 2022 Darwin Randals-Macbook-Pro.local 21.2.0 arm64
+c
+c ---- [ proving ] -----------------------------------------------------------
+c
+c opened and writing proof to DRAT file:
+c
+c   pigeon-sinz-10.drat
+c
+c ---- [ parsing ] -----------------------------------------------------------
+c
+c opened and reading DIMACS file:
+c
+c   pigeon-sinz-10.cnf
+c
+c parsed 'p cnf 210 301' header
+c closing input after reading 11756 bytes (11 KB)
+c finished parsing after 0.00 seconds
+c
+c ---- [ options ] -----------------------------------------------------------
+c
+c --stable=0                       (different from default '1')
+c
+c ---- [ solving ] -----------------------------------------------------------
+c
+c  seconds switched rate      trail   variables
+c         MB reductions conflicts glue    remaining
+c          level restarts redundant irredundant
+c
+c *  0.00  0 0 0 0  0 0   0   0 0% 0 301 210 100%
+c {  0.00  0 0 0 0  0 0   0   0 0% 0 301 210 100%
+c -  0.00  0 12 0 1  4 2 302 109 84% 7 301 210 100%
+c u  0.01  0 13 0 1  4 2 629 316 83% 7 301 210 100%
+c -  0.01  0 14 0 2 88 3 1302 595 83% 7 301 210 100%
+c u  0.01  0 14 0 2 88 3 1311 595 83% 7 301 210 100%
+c v  0.01  0 14 0 2 88 3 1317 593 83% 7 301 210 100%
+c -  0.02  0 12 0 3 91 2 2717 1195 78% 7 301 210 100%
+c u  0.02  0 12 0 3 91 2 2723 1158 78% 7 301 210 100%
+c v  0.03  0 12 0 3 91 2 2734 1154 78% 7 301 210 100%
+c e  0.03  0 12 0 3 117 2 3106 1436 78% 7 264 132 63%
+c e  0.03  0 12 0 3 117 2 3106 1436 78% 7 253 122 58%
+c -  0.04  0 13 0 4 261 2 4449 741 81% 7 253 122 58%
+c u  0.05  0 12 0 4 274 2 4776 917 81% 7 253 122 58%
+c v  0.05  0 12 0 4 274 2 4783 913 81% 7 253 122 58%
+c e  0.06  0 12 0 4 317 2 6034 1630 82% 7 250 120 57%
+c ^  0.06  0 12 0 4 317 2 6034 1630 82% 7 250 120 57%
+c -  0.06  0 12 0 5 317 2 6449 1628 81% 6 250 120 57%
+c i  0.06  0 11 0 5 317 2 6702 1720 81% 6 250 119 56%
+c u  0.07  0 11 0 5 366 2 7436 1463 81% 6 250 119 56%
+c
+c  seconds  switched  rate         trail   variables
+c         MB reductions conflicts     glue     remaining
+c          level restarts   redundant irredundant
+c
+c v  0.07  0 11 0 5 366 2 7454 1456 81% 6 250 119 56%
+c -  0.09  0 11 0 6 398 2 8685 1753 81% 6 247 119 56%
+c i  0.10  0 11 0 6 429 2 9934 2445 80% 6 247 115 55%
+c i  0.10  0 10 0 6 431 2 10688 2815 80% 6 247 111 53%
+c f  0.11  0 10 0 6 431 2 10797 2108 80% 6 247 111 53%
+c u  0.11  0 10 0 6 431 2 10852 2086 80% 6 247 111 53%
+c v  0.11  0 10 0 6 431 2 10873 2075 80% 6 247 111 53%
+c w  0.11  0 10 0 6 431 2 10873 2075 80% 6 246 111 53%
+c -  0.11  0 10 0 7 431 2 11137 1893 80% 6 228 111 53%
+c i  0.12  0 10 0 7 431 2 11546 2098 79% 6 228 104 49%
+c i  0.12  0 10 0 7 432 2 11699 2166 79% 6 228 101 48%
+c i  0.12  0 10 0 7 432 2 11951 2274 79% 6 228 97 46%
+c i  0.12  0 10 0 7 432 2 12138 2374 79% 6 228 91 43%
+c i  0.12  0 10 0 7 432 2 12195 2403 79% 6 228 50 24%
+c i  0.12  0 10 0 7 432 2 12196 2403 79% 6 228 43 20%
+c }  0.12  0 10 0 7 432 2 12200 2404 79% 6 228 40 19%
+c 0  0.12  0 10 0 7 432 2 12200 2404 79% 6 228 40 19%
+c
+c ---- [ result ] ------------------------------------------------------------
+c
+s UNSATISFIABLE
+c
+c ---- [ profiling ] ---------------------------------------------------------
+c
+c           0.11   84.67 %  search
+c           0.11   84.65 %  focused
+c           0.02   14.92 %  simplify
+c           0.01   11.56 %  probe
+c           0.01    4.74 %  vivify
+c           0.01    4.65 %  substitute
+c           0.00    3.75 %  reduce
+c           0.00    3.35 %  eliminate
+c           0.00    1.45 %  sweep
+c           0.00    0.31 %  failed
+c           0.00    0.28 %  parse
+c           0.00    0.16 %  transitive
+c           0.00    0.16 %  backbone
+c           0.00    0.05 %  ternary
+c           0.00    0.04 %  subsume
+c =============================================
+c           0.12  100.00 %  total
+c
+c ---- [ statistics ] --------------------------------------------------------
+c
+c clauses_learned:                      11876               97 %  conflicts
+c conflicts:                            12200            97409.08 per second
+c decisions:                            21555                1.77 per conflict
+c forward_strengthened:                    34               35 %  strengthened
+c kitten_decisions:                     43786               15.26 per solved
+c kitten_propagations:                  48406               16.87 per solved
+c kitten_sat:                            2833               99 %  solved
+c kitten_solved:                         2869 
+c kitten_ticks:                         67671                1.40 per propagation
+c kitten_unknown:                          10                0 %  solved
+c kitten_unsat:                            26                1 %  solved
+c learned_units:                            1                0 %  variables
+c literals_bumped:                     479141               40.35 per clause
+c literals_deduced:                    248279               20.91 per clause
+c literals_learned:                    112130                9.44 per clause
+c literals_minimized:                       0                0 %  deduced
+c literals_minimize_shrunken:           18352               13 %  shrunken
+c literals_shrunken:                   136158               55 %  deduced
+c propagations:                        363638          2903413    per second
+c reductions:                               7             1743    interval
+c restarts:                               432               28.24 interval
+c restarts_reused_trails:                   7                2 %  restarts
+c strengthened:                            96                1 %  checks
+c subsumption_checks:                    7803 
+c subsumed:                              4758               61 %  checks
+c sweep:                                    6             2033    interval
+c sweep_completed:                          3                2    sweeps
+c sweep_equivalences:                       0                0    variables
+c sweep_sat:                             2497               99 %  sweep_solved
+c sweep_solved:                          2533               88 %  kitten_solved
+c sweep_units:                              0                0 %  variables
+c sweep_unsat:                             26                1 %  sweep_solved
+c sweep_variables:                        308              146 %  variables
+c
+c ---- [ proof ] -------------------------------------------------------------
+c
+c proof_added:                          13044               55 %  per line
+c proof_bytes:                         931691                1 MB 
+c proof_deleted:                        10632               45 %  per line
+c
+c ---- [ resources ] ---------------------------------------------------------
+c
+c maximum-resident-set-size:       3137339392 bytes       2992 MB
+c process-time:          110312 bytes (108 KB)               0.12 seconds
+c
+c ---- [ shutting down ] -----------------------------------------------------
+c
+c exit 20
+-rw-r--r--  1 bryant  staff  931691 Mar 11 12:01 pigeon-sinz-10.drat
+c parsing input formula with 210 variables and 301 clauses
+c finished parsing
+c detected empty clause; start verification via backward checking
+c 301 of 301 clauses in core                            
+c 9523 of 13045 lemmas in core using 290286 resolution steps
+c 0 RAT lemmas in core; 195 redundant literals in core lemmas
+s VERIFIED
+c verification time: 0.104 seconds

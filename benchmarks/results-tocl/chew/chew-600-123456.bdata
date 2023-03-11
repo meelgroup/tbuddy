@@ -1,0 +1,78 @@
+c Read 4784 clauses.  1794 variables
+c Breaking ties randomly with seed 1
+c Placed 4784 terms into 600 buckets.
+c Bucket 30 Reduced to term with 7 nodes
+c Bucket 60 Reduced to term with 7 nodes
+c Bucket 90 Reduced to term with 7 nodes
+c Bucket 120 Reduced to term with 7 nodes
+c Bucket 150 Reduced to term with 7 nodes
+c Bucket 180 Reduced to term with 7 nodes
+c Bucket 210 Reduced to term with 7 nodes
+c Bucket 240 Reduced to term with 7 nodes
+c Bucket 270 Reduced to term with 7 nodes
+c Bucket 300 Reduced to term with 7 nodes
+c Bucket 330 Reduced to term with 7 nodes
+c Bucket 360 Reduced to term with 7 nodes
+c Bucket 390 Reduced to term with 7 nodes
+c Bucket 420 Reduced to term with 7 nodes
+c Bucket 450 Reduced to term with 7 nodes
+c Bucket 480 Reduced to term with 7 nodes
+c Bucket 510 Reduced to term with 7 nodes
+c Bucket 540 Reduced to term with 7 nodes
+c Bucket 570 Reduced to term with 7 nodes
+c Bucket 600 Reduced to term with 9 nodes
+c Bucket 630 Reduced to term with 123 nodes
+c Bucket 660 Reduced to term with 241 nodes
+c Bucket 690 Reduced to term with 329 nodes
+c Bucket 720 Reduced to term with 409 nodes
+c Bucket 750 Reduced to term with 469 nodes
+c Garbage collection #1: 2000003 nodes / 1936586 free / 30589 previously freed  / 0.0s / 0.0s total
+c Bucket 780 Reduced to term with 529 nodes
+c Bucket 810 Reduced to term with 569 nodes
+c Bucket 840 Reduced to term with 589 nodes
+c Garbage collection #2: 2000003 nodes / 1865583 free / 21874 previously freed  / 0.0s / 0.0s total
+c Bucket 870 Reduced to term with 629 nodes
+c Bucket 900 Reduced to term with 633 nodes
+c Bucket 930 Reduced to term with 649 nodes
+c Garbage collection #3: 2000003 nodes / 1803935 free / 16724 previously freed  / 0.0s / 0.0s total
+c Bucket 960 Reduced to term with 625 nodes
+c Bucket 990 Reduced to term with 581 nodes
+c Bucket 1020 Reduced to term with 525 nodes
+c Bucket 1050 Reduced to term with 465 nodes
+c Garbage collection #4: 2000003 nodes / 1733979 free / 20164 previously freed  / 0.0s / 0.1s total
+c Bucket 1080 Reduced to term with 377 nodes
+c Bucket 1110 Reduced to term with 293 nodes
+c Bucket 1140 Reduced to term with 213 nodes
+c Bucket 1170 Reduced to term with 105 nodes
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  526502
+c Unique Chain:   31281
+c Unique Hit:     125674
+c Unique Miss:    398457
+c => Hit rate =   0.24
+c Operator Hits:  730713
+c Operator Miss:  762187
+c => Hit rate =   0.49
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 398457
+c Input variables: 1794
+c Input clauses: 4784
+c Total clauses: 2598962
+c Unused+non-BDD clause IDs: 24162 (0.9%)
+c Maximum live clauses: 1278545
+c Deleted clauses: 2594178
+c Final live clauses: 4784
+c Total variables: 400249
+c Elapsed seconds: 3.603
+-rw-r--r--  1 bryant  staff  140943572 Mar 10 23:07 chew-600-123456.lrat
+c parsed a formula with 1794 variables and 4784 clauses
+c VERIFIED
+c allocated 1024 6284575 90820
+c Added clauses = 2598962.  Deleted clauses = 1320419.  Max live clauses = 1278545
+c verification time = 1.61 secs

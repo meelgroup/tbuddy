@@ -1,0 +1,47 @@
+c Read 364 clauses.  253 variables
+c Breaking ties randomly with seed 1
+c Final BDD size = 0
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  55766332
+c Unique Chain:   5546
+c Unique Hit:     4503
+c Unique Miss:    46781
+c => Hit rate =   0.09
+c Operator Hits:  13873225
+c Operator Miss:  55764988
+c => Hit rate =   0.20
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 46781
+c Input variables: 253
+c Input clauses: 364
+c Total clauses: 71676880
+c Unused+non-BDD clause IDs: 25878 (0.0%)
+c Maximum live clauses: 55886707
+c Deleted clauses: 71676516
+c Final live clauses: 364
+c Total variables: 47032
+c Elapsed seconds: 93.558
+-rw-r--r--  1 bryant  staff  3847279778 Mar 11 12:28 pigeon-sinz-11.lrat
+c parsed a formula with 253 variables and 364 clauses
+c topTable reallocation from 1024 to 1536
+c increasing the number of buckets from 1024 to 1536
+c topTable reallocation from 1536 to 2304
+c increasing the number of buckets from 1536 to 2304
+c topTable reallocation from 2304 to 3456
+c increasing the number of buckets from 2304 to 3456
+c topTable reallocation from 3456 to 5184
+c increasing the number of buckets from 3456 to 5184
+c topTable reallocation from 5184 to 7776
+c increasing the number of buckets from 5184 to 7776
+c topTable reallocation from 7776 to 11664
+c increasing the number of buckets from 7776 to 11664
+c VERIFIED
+c allocated 11664 209323075 43222
+c Added clauses = 71676880.  Deleted clauses = 15790173.  Max live clauses = 55886707
+c verification time = 44.35 secs

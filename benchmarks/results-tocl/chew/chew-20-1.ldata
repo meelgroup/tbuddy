@@ -1,0 +1,53 @@
+c Read 144 clauses.  54 variables
+c Breaking ties randomly with seed 1
+c Garbage collection #1: 200003 nodes / 1760 free / 1760 previously freed  / 0.0s / 0.0s total
+c Garbage collection #2: 299993 nodes / 1594 free / 1594 previously freed  / 0.0s / 0.0s total
+c Garbage collection #3: 399989 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #4: 499979 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #5: 599959 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #6: 699953 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #7: 799949 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #8: 899939 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #9: 999931 nodes / 0 free / 0 previously freed  / 0.0s / 0.1s total
+c Garbage collection #10: 1099927 nodes / 0 free / 0 previously freed  / 0.0s / 0.1s total
+c Garbage collection #11: 1199923 nodes / 0 free / 0 previously freed  / 0.0s / 0.1s total
+c Garbage collection #12: 1299919 nodes / 111911 free / 14300 previously freed  / 0.0s / 0.1s total
+c Final BDD size = 0
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  15509393
+c Unique Chain:   2259162
+c Unique Hit:     2588429
+c Unique Miss:    1205660
+c => Hit rate =   0.68
+c Operator Hits:  1371210
+c Operator Miss:  15508851
+c => Hit rate =   0.08
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 1205660
+c Input variables: 54
+c Input clauses: 144
+c Total clauses: 21626877
+c Unused+non-BDD clause IDs: 796760 (3.7%)
+c Maximum live clauses: 15547549
+c Deleted clauses: 21626733
+c Final live clauses: 144
+c Total variables: 1205712
+c Elapsed seconds: 29.551
+-rw-r--r--  1 bryant  staff  1188282721 Mar 11 09:57 chew-20-1.lrat
+c parsed a formula with 54 variables and 144 clauses
+c topTable reallocation from 1024 to 1536
+c increasing the number of buckets from 1024 to 1536
+c topTable reallocation from 1536 to 2304
+c increasing the number of buckets from 1536 to 2304
+c topTable reallocation from 2304 to 3456
+c increasing the number of buckets from 2304 to 3456
+c VERIFIED
+c allocated 3456 82820737 4038025
+c Added clauses = 21626877.  Deleted clauses = 6079328.  Max live clauses = 15547549
+c verification time = 13.84 secs

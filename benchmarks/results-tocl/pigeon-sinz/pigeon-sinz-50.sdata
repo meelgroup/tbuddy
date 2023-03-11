@@ -1,0 +1,136 @@
+c Read 7501 clauses.  5050 variables
+c Breaking ties randomly with seed 1
+c Term #7704. Nodes = 390. Before quantification for pigeon 1
+c Term #7705. Nodes = 98. After quantification for pigeon 1
+c Term #7857. Nodes = 621. Before quantification for pigeon 2
+c Term #7858. Nodes = 144. After quantification for pigeon 2
+c Term #8010. Nodes = 842. Before quantification for pigeon 3
+c Term #8011. Nodes = 188. After quantification for pigeon 3
+c Term #8163. Nodes = 1053. Before quantification for pigeon 4
+c Term #8164. Nodes = 230. After quantification for pigeon 4
+c Term #8316. Nodes = 1254. Before quantification for pigeon 5
+c Term #8317. Nodes = 270. After quantification for pigeon 5
+c Term #8469. Nodes = 1445. Before quantification for pigeon 6
+c Term #8470. Nodes = 308. After quantification for pigeon 6
+c Term #8622. Nodes = 1626. Before quantification for pigeon 7
+c Term #8623. Nodes = 344. After quantification for pigeon 7
+c Term #8775. Nodes = 1797. Before quantification for pigeon 8
+c Term #8776. Nodes = 378. After quantification for pigeon 8
+c Term #8928. Nodes = 1958. Before quantification for pigeon 9
+c Term #8929. Nodes = 410. After quantification for pigeon 9
+c Term #9081. Nodes = 2109. Before quantification for pigeon 10
+c Term #9082. Nodes = 440. After quantification for pigeon 10
+c Garbage collection #1: 2000003 nodes / 1963986 free / 126224 previously freed  / 0.1s / 0.1s total
+c Term #9234. Nodes = 2250. Before quantification for pigeon 11
+c Term #9235. Nodes = 468. After quantification for pigeon 11
+c Term #9387. Nodes = 2381. Before quantification for pigeon 12
+c Term #9388. Nodes = 494. After quantification for pigeon 12
+c Term #9540. Nodes = 2502. Before quantification for pigeon 13
+c Term #9541. Nodes = 518. After quantification for pigeon 13
+c Term #9693. Nodes = 2613. Before quantification for pigeon 14
+c Term #9694. Nodes = 540. After quantification for pigeon 14
+c Term #9846. Nodes = 2714. Before quantification for pigeon 15
+c Term #9847. Nodes = 560. After quantification for pigeon 15
+c Term #9999. Nodes = 2805. Before quantification for pigeon 16
+c Term #10000. Nodes = 578. After quantification for pigeon 16
+c Term #10152. Nodes = 2886. Before quantification for pigeon 17
+c Term #10153. Nodes = 594. After quantification for pigeon 17
+c Term #10305. Nodes = 2957. Before quantification for pigeon 18
+c Term #10306. Nodes = 608. After quantification for pigeon 18
+c Term #10458. Nodes = 3018. Before quantification for pigeon 19
+c Term #10459. Nodes = 620. After quantification for pigeon 19
+c Term #10611. Nodes = 3069. Before quantification for pigeon 20
+c Term #10612. Nodes = 630. After quantification for pigeon 20
+c Garbage collection #2: 2000003 nodes / 1934877 free / 119450 previously freed  / 0.1s / 0.1s total
+c Term #10764. Nodes = 3110. Before quantification for pigeon 21
+c Term #10765. Nodes = 638. After quantification for pigeon 21
+c Term #10917. Nodes = 3141. Before quantification for pigeon 22
+c Term #10918. Nodes = 644. After quantification for pigeon 22
+c Term #11070. Nodes = 3162. Before quantification for pigeon 23
+c Term #11071. Nodes = 648. After quantification for pigeon 23
+c Term #11223. Nodes = 3173. Before quantification for pigeon 24
+c Term #11224. Nodes = 650. After quantification for pigeon 24
+c Term #11376. Nodes = 3174. Before quantification for pigeon 25
+c Term #11377. Nodes = 650. After quantification for pigeon 25
+c Term #11529. Nodes = 3165. Before quantification for pigeon 26
+c Term #11530. Nodes = 648. After quantification for pigeon 26
+c Term #11682. Nodes = 3146. Before quantification for pigeon 27
+c Term #11683. Nodes = 644. After quantification for pigeon 27
+c Term #11835. Nodes = 3117. Before quantification for pigeon 28
+c Term #11836. Nodes = 638. After quantification for pigeon 28
+c Term #11988. Nodes = 3078. Before quantification for pigeon 29
+c Term #11989. Nodes = 630. After quantification for pigeon 29
+c Garbage collection #3: 2000003 nodes / 1904601 free / 118256 previously freed  / 0.1s / 0.2s total
+c Term #12141. Nodes = 3029. Before quantification for pigeon 30
+c Term #12142. Nodes = 620. After quantification for pigeon 30
+c Term #12294. Nodes = 2970. Before quantification for pigeon 31
+c Term #12295. Nodes = 608. After quantification for pigeon 31
+c Term #12447. Nodes = 2901. Before quantification for pigeon 32
+c Term #12448. Nodes = 594. After quantification for pigeon 32
+c Term #12600. Nodes = 2822. Before quantification for pigeon 33
+c Term #12601. Nodes = 578. After quantification for pigeon 33
+c Term #12753. Nodes = 2733. Before quantification for pigeon 34
+c Term #12754. Nodes = 560. After quantification for pigeon 34
+c Term #12906. Nodes = 2634. Before quantification for pigeon 35
+c Term #12907. Nodes = 540. After quantification for pigeon 35
+c Term #13059. Nodes = 2525. Before quantification for pigeon 36
+c Term #13060. Nodes = 518. After quantification for pigeon 36
+c Term #13212. Nodes = 2406. Before quantification for pigeon 37
+c Term #13213. Nodes = 494. After quantification for pigeon 37
+c Term #13365. Nodes = 2277. Before quantification for pigeon 38
+c Term #13366. Nodes = 468. After quantification for pigeon 38
+c Term #13518. Nodes = 2138. Before quantification for pigeon 39
+c Term #13519. Nodes = 440. After quantification for pigeon 39
+c Garbage collection #4: 2000003 nodes / 1876584 free / 120418 previously freed  / 0.1s / 0.2s total
+c Term #13671. Nodes = 1989. Before quantification for pigeon 40
+c Term #13672. Nodes = 410. After quantification for pigeon 40
+c Term #13824. Nodes = 1830. Before quantification for pigeon 41
+c Term #13825. Nodes = 378. After quantification for pigeon 41
+c Term #13977. Nodes = 1661. Before quantification for pigeon 42
+c Term #13978. Nodes = 344. After quantification for pigeon 42
+c Term #14130. Nodes = 1482. Before quantification for pigeon 43
+c Term #14131. Nodes = 308. After quantification for pigeon 43
+c Term #14283. Nodes = 1293. Before quantification for pigeon 44
+c Term #14284. Nodes = 270. After quantification for pigeon 44
+c Term #14436. Nodes = 1094. Before quantification for pigeon 45
+c Term #14437. Nodes = 230. After quantification for pigeon 45
+c Term #14589. Nodes = 885. Before quantification for pigeon 46
+c Term #14590. Nodes = 188. After quantification for pigeon 46
+c Term #14742. Nodes = 666. Before quantification for pigeon 47
+c Term #14743. Nodes = 144. After quantification for pigeon 47
+c Term #14895. Nodes = 437. Before quantification for pigeon 48
+c Term #14896. Nodes = 98. After quantification for pigeon 48
+c Term #15048. Nodes = 198. Before quantification for pigeon 49
+c Term #15049. Nodes = 50. After quantification for pigeon 49
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  846795
+c Unique Chain:   50483
+c Unique Hit:     96836
+c Unique Miss:    742705
+c => Hit rate =   0.12
+c Operator Hits:  704225
+c Operator Miss:  1386105
+c => Hit rate =   0.34
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 742705
+c Input variables: 5050
+c Input clauses: 7501
+c Total clauses: 4307998
+c Unused+non-BDD clause IDs: 417349 (9.7%)
+c Maximum live clauses: 1007019
+c Deleted clauses: 4300497
+c Final live clauses: 7501
+c Total variables: 747753
+c Elapsed seconds: 5.863
+-rw-r--r--  1 bryant  staff  239293311 Mar 11 12:52 pigeon-sinz-50.lrat
+c parsed a formula with 5050 variables and 7501 clauses
+c VERIFIED
+c allocated 1024 6569109 170437
+c Added clauses = 4307998.  Deleted clauses = 3301083.  Max live clauses = 1007019
+c verification time = 2.83 secs

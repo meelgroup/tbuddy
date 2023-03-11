@@ -1,0 +1,125 @@
+c ---- [ banner ] ------------------------------------------------------------
+c
+c KISSAT SAT Solver
+c Copyright (c) 2019-2021 Armin Biere JKU Linz
+c 
+c Version 2.0.1 02cd69626a53e93e09286b1978ccb5d6bec58b8e
+c Apple clang version 13.1.6 (clang-1316.0.21.2) -W -Wall -O3 -DNDEBUG
+c Thu Mar 31 15:34:51 EDT 2022 Darwin Randals-Macbook-Pro.local 21.2.0 arm64
+c
+c ---- [ proving ] -----------------------------------------------------------
+c
+c opened and writing proof to DRAT file:
+c
+c   chew-12-123458.drat
+c
+c ---- [ parsing ] -----------------------------------------------------------
+c
+c opened and reading DIMACS file:
+c
+c   chew-12-123458.cnf
+c
+c parsed 'p cnf 30 80' header
+c closing input after reading 940 bytes
+c finished parsing after 0.00 seconds
+c
+c ---- [ options ] -----------------------------------------------------------
+c
+c --stable=0                       (different from default '1')
+c
+c ---- [ solving ] -----------------------------------------------------------
+c
+c  seconds switched rate      trail variables
+c         MB reductions conflicts glue  remaining
+c          level restarts redundant irredundant
+c
+c *  0.00  0 0 0 0  0 0   0   0 0% 0 80 30 97%
+c {  0.00  0 0 0 0  0 0   0   0 0% 0 80 30 97%
+c i  0.00  0 6 0 0  0 1 282 110 76% 4 80 29 94%
+c -  0.00  0 6 0 1  0 1 300  14 76% 4 79 29 94%
+c i  0.00  0 6 0 1  0 1 378  31 72% 4 79 28 90%
+c u  0.00  0 6 0 1  0 1 381  14 72% 4 72 28 90%
+c d  0.00  0 6 0 1  0 1 381  14 72% 4 64 24 77%
+c i  0.00  0 5 0 1  0 1 425  20 71% 4 64 23 74%
+c i  0.00  0 5 0 1  0 1 447  26 70% 4 64 22 71%
+c i  0.00  0 5 0 1  0 1 461  31 70% 3 64 20 65%
+c i  0.00  0 5 0 1  0 1 465  32 70% 3 64 18 58%
+c i  0.00  0 5 0 1  0 1 467  33 70% 3 64 14 45%
+c }  0.00  0 5 0 1  0 1 469  33 70% 3 64 10 32%
+c 0  0.00  0 5 0 1  0 1 469  33 70% 3 64 10 32%
+c
+c ---- [ result ] ------------------------------------------------------------
+c
+s UNSATISFIABLE
+c
+c ---- [ profiling ] ---------------------------------------------------------
+c
+c           0.00   82.66 %  search
+c           0.00   82.13 %  focused
+c           0.00    9.91 %  probe
+c           0.00    9.91 %  simplify
+c           0.00    8.01 %  reduce
+c           0.00    6.02 %  substitute
+c           0.00    2.33 %  parse
+c           0.00    1.21 %  sweep
+c           0.00    1.17 %  vivify
+c           0.00    0.68 %  ternary
+c           0.00    0.24 %  backbone
+c           0.00    0.24 %  transitive
+c           0.00    0.10 %  failed
+c =============================================
+c           0.00  100.00 %  total
+c
+c ---- [ statistics ] --------------------------------------------------------
+c
+c clauses_learned:                        332               71 %  conflicts
+c conflicts:                              469           164850.62 per second
+c decisions:                              414                0.88 per conflict
+c kitten_decisions:                        62                4.43 per solved
+c kitten_propagations:                    112                8.00 per solved
+c kitten_sat:                              12               86 %  solved
+c kitten_solved:                           14 
+c kitten_ticks:                           319                2.85 per propagation
+c kitten_unknown:                           2               14 %  solved
+c literals_bumped:                       6176               18.60 per clause
+c literals_deduced:                      2316                6.98 per clause
+c literals_learned:                      1777                5.35 per clause
+c literals_minimized:                       0                0 %  deduced
+c literals_minimize_shrunken:               0                0 %  shrunken
+c literals_shrunken:                      547               24 %  deduced
+c propagations:                          2979          1047100    per second
+c reductions:                               1              469    interval
+c substituted:                              4               13 %  variables
+c subsumed:                               166                0 %  checks
+c sweep:                                    1              469    interval
+c sweep_completed:                          1                1    sweeps
+c sweep_equivalences:                       0                0    variables
+c sweep_sat:                               12               86 %  sweep_solved
+c sweep_solved:                            14              100 %  kitten_solved
+c sweep_units:                              0                0 %  variables
+c sweep_unsat:                              0                0 %  sweep_solved
+c sweep_variables:                          4               13 %  variables
+c
+c ---- [ proof ] -------------------------------------------------------------
+c
+c proof_added:                            490               52 %  per line
+c proof_bytes:                          19540                0 MB 
+c proof_deleted:                          456               48 %  per line
+c
+c ---- [ resources ] ---------------------------------------------------------
+c
+c maximum-resident-set-size:       1543503872 bytes       1472 MB
+c process-time:                             25               0.00 seconds
+c
+c ---- [ shutting down ] -----------------------------------------------------
+c
+c exit 20
+-rw-r--r--  1 bryant  staff  19540 Mar 11 02:56 chew-12-123458.drat
+c parsing input formula with 30 variables and 80 clauses
+c finished parsing
+c detected empty clause; start verification via backward checking
+c 80 of 80 clauses in core                            
+c 471 of 491 lemmas in core using 4185 resolution steps
+c 0 RAT lemmas in core; 0 redundant literals in core lemmas
+s VERIFIED
+c verification time: 0.025 seconds

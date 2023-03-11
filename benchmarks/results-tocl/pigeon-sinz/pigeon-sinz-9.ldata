@@ -1,0 +1,35 @@
+c Read 244 clauses.  171 variables
+c Breaking ties randomly with seed 1
+c Final BDD size = 0
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  150794
+c Unique Chain:   388
+c Unique Hit:     430
+c Unique Miss:    11934
+c => Hit rate =   0.03
+c Operator Hits:  50990
+c Operator Miss:  149892
+c => Hit rate =   0.25
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 11934
+c Input variables: 171
+c Input clauses: 244
+c Total clauses: 248740
+c Unused+non-BDD clause IDs: 6653 (2.7%)
+c Maximum live clauses: 188456
+c Deleted clauses: 248496
+c Final live clauses: 244
+c Total variables: 12103
+c Elapsed seconds: 0.210
+-rw-r--r--  1 bryant  staff  11251881 Mar 11 12:26 pigeon-sinz-9.lrat
+c parsed a formula with 171 variables and 244 clauses
+c VERIFIED
+c allocated 1024 720892 1710
+c Added clauses = 248740.  Deleted clauses = 60284.  Max live clauses = 188456
+c verification time = 0.15 secs

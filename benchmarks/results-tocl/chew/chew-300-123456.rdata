@@ -1,0 +1,62 @@
+c Read 2384 clauses.  894 variables
+c Breaking ties randomly with seed 1
+c Placed 2384 terms into 419 buckets.
+c Bucket 20 Reduced to term with 7 nodes
+c Bucket 40 Reduced to term with 7 nodes
+c Bucket 60 Reduced to term with 7 nodes
+c Bucket 80 Reduced to term with 7 nodes
+c Bucket 100 Reduced to term with 7 nodes
+c Bucket 120 Reduced to term with 9 nodes
+c Bucket 140 Reduced to term with 19 nodes
+c Bucket 160 Reduced to term with 7 nodes
+c Bucket 180 Reduced to term with 7 nodes
+c Bucket 200 Reduced to term with 7 nodes
+c Bucket 220 Reduced to term with 15 nodes
+c Bucket 240 Reduced to term with 13 nodes
+c Bucket 260 Reduced to term with 19 nodes
+c Bucket 280 Reduced to term with 25 nodes
+c Bucket 300 Reduced to term with 17 nodes
+c Bucket 320 Reduced to term with 13 nodes
+c Bucket 340 Reduced to term with 85 nodes
+c Bucket 360 Reduced to term with 15 nodes
+c Bucket 380 Reduced to term with 31 nodes
+c Bucket 400 Reduced to term with 9 nodes
+c Bucket 420 Reduced to term with 33 nodes
+c Bucket 440 Reduced to term with 83 nodes
+c Bucket 460 Reduced to term with 9 nodes
+c Bucket 480 Reduced to term with 289 nodes
+c Bucket 500 Reduced to term with 9 nodes
+c Bucket 520 Reduced to term with 359 nodes
+c Bucket 580 Reduced to term with 247 nodes
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  120763
+c Unique Chain:   2300
+c Unique Hit:     23687
+c Unique Miss:    96023
+c => Hit rate =   0.20
+c Operator Hits:  149363
+c Operator Miss:  167160
+c => Hit rate =   0.47
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 96023
+c Input variables: 894
+c Input clauses: 2384
+c Total clauses: 615715
+c Unused+non-BDD clause IDs: 11222 (1.8%)
+c Maximum live clauses: 463501
+c Deleted clauses: 613331
+c Final live clauses: 2384
+c Total variables: 96915
+c Elapsed seconds: 0.622
+-rw-r--r--  1 bryant  staff  28618109 Mar 10 23:07 chew-300-123456.lrat
+c parsed a formula with 894 variables and 2384 clauses
+c VERIFIED
+c allocated 1024 3131757 8940
+c Added clauses = 615715.  Deleted clauses = 152214.  Max live clauses = 463501
+c verification time = 0.36 secs

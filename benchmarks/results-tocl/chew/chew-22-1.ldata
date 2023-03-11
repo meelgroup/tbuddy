@@ -1,0 +1,61 @@
+c Read 160 clauses.  60 variables
+c Breaking ties randomly with seed 1
+c Garbage collection #1: 200003 nodes / 1134 free / 1134 previously freed  / 0.0s / 0.0s total
+c Garbage collection #2: 299993 nodes / 2550 free / 2550 previously freed  / 0.0s / 0.0s total
+c Garbage collection #3: 399989 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #4: 499979 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #5: 599959 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #6: 699953 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #7: 799949 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #8: 899939 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
+c Garbage collection #9: 999931 nodes / 0 free / 0 previously freed  / 0.0s / 0.1s total
+c Garbage collection #10: 1099927 nodes / 0 free / 0 previously freed  / 0.0s / 0.1s total
+c Garbage collection #11: 1199923 nodes / 0 free / 0 previously freed  / 0.0s / 0.1s total
+c Garbage collection #12: 1299919 nodes / 0 free / 0 previously freed  / 0.0s / 0.1s total
+c Garbage collection #13: 1399919 nodes / 27137 free / 0 previously freed  / 0.0s / 0.1s total
+c Garbage collection #14: 1399919 nodes / 224253 free / 197116 previously freed  / 0.0s / 0.1s total
+c Final BDD size = 0
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  81480924
+c Unique Chain:   2132788
+c Unique Hit:     1590692
+c Unique Miss:    1376464
+c => Hit rate =   0.54
+c Operator Hits:  2459966
+c Operator Miss:  81480322
+c => Hit rate =   0.03
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 1376464
+c Input variables: 60
+c Input clauses: 160
+c Total clauses: 92637006
+c Unused+non-BDD clause IDs: 1029840 (1.1%)
+c Maximum live clauses: 82976449
+c Deleted clauses: 92636846
+c Final live clauses: 160
+c Total variables: 1376522
+c Elapsed seconds: 123.400
+-rw-r--r--  1 bryant  staff  5079416588 Mar 11 09:59 chew-22-1.lrat
+c parsed a formula with 60 variables and 160 clauses
+c topTable reallocation from 1024 to 1536
+c increasing the number of buckets from 1024 to 1536
+c topTable reallocation from 1536 to 2304
+c increasing the number of buckets from 1536 to 2304
+c topTable reallocation from 2304 to 3456
+c increasing the number of buckets from 2304 to 3456
+c topTable reallocation from 3456 to 5184
+c increasing the number of buckets from 3456 to 5184
+c topTable reallocation from 5184 to 7776
+c increasing the number of buckets from 5184 to 7776
+c topTable reallocation from 7776 to 11664
+c increasing the number of buckets from 7776 to 11664
+c VERIFIED
+c allocated 11664 310584213 2991654
+c Added clauses = 92637006.  Deleted clauses = 9660557.  Max live clauses = 82976449
+c verification time = 55.25 secs
