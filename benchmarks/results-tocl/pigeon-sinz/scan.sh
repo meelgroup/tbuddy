@@ -1,27 +1,15 @@
 #!/bin/bash
 
-D=1
-
-for DCOUNT in {1..1}
+for N10 in {1..9}
 do
-    D=$((D*10)) 
-    for O in {1..9}
-    do
-        N=$((D*O))
-        make cnf N=$N
-        make sdata N=$N 
-    done
+    N=$((N10*10)) 
+    make spigeon N=$N 
 done
 
-for DCOUNT in {1..1}
+for N25 in {4..10}
 do
-    D=$((D*10))
-    for O in {1..2}
-    do
-        N=$((D*O))
-        make cnf N=$N
-        make sdata N=$N
-    done
+    N=$((N25*25)) 
+    make spigeon N=$N 
 done
 
 	

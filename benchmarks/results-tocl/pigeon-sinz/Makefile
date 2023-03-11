@@ -1,7 +1,7 @@
 INTERP=python3
-GDIR=../../generators
-GENERATOR = $(GDIR)/pigeon-sinz.py
 TBUDDY = ~/repos/tbuddy
+GDIR=$(TBUDDY)/benchmarks/generators
+GENERATOR = $(GDIR)/pigeon-sinz.py
 BDIR = $(TBUDDY)/benchmarks
 TBSAT = $(TBUDDY)/tbsat/src/tbsat
 CDIR = ~/repos/drat-trim
