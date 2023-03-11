@@ -60,6 +60,7 @@ void usage(char *name) {
 
 void sigalrmhandler(int sig) {
     printf("Timeout after %d seconds\n", timelimit);
+    printf("Elapsed seconds: %d.00\n", timelimit);
     exit(1);
 }
 
