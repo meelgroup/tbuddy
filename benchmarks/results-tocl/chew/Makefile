@@ -10,7 +10,7 @@ DRAT = $(CDIR)/drat-trim
 LRAT = $(CDIR)/lrat-check
 SDIR = ~/repos/kissat/build
 KISSAT = $(SDIR)/kissat
-KFLAGS = --unsat --no-binary --time=$(TLIM)
+KFLAGS = --unsat --no-binary
 GRAB = $(TBUDDY)/tools/grab_data.py
 LINEARIZE=$(TBUDDY)/tools/linearize.py
 RANDOMIZE = $(TBUDDY)/tools/randomizer.py
@@ -57,7 +57,7 @@ chew-$(N)-$(SEED).cnf: $(GENERATOR)
 	$(RM) $*.lrat
 
 .cnf.kdata:
-	$(KISSAT) $(KFLAGS) $< $*.drat | tee $@
+	$(KISSAT) $(KFLAGS) --time=$(TLIM) $< $*.drat | tee $@
 	ls -l $*.drat | tee -a $@
 	$(DRAT) $< $*.drat | tee -a $@
 	$(RM) $*.drat
