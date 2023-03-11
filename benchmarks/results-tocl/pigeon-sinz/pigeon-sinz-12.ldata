@@ -1,5 +1,0 @@
-c Read 433 clauses.  300 variables
-c Breaking ties randomly with seed 1
-Timeout after 1000 seconds
-Elapsed seconds: 1000.00
--rw-r--r--  1 bryant  staff  40288060560 Mar 11 12:46 pigeon-sinz-12.lrat

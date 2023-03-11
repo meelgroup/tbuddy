@@ -33,8 +33,11 @@ bdata: urquhart-li-$(M).bdata
 data:
 	rm -f *.csv
 	$(GRAB) "Elapsed" *.bdata > urquhart-li-tbsat-bucket-seconds.csv
-	$(GRAB) "verification time" *.bdata > urquhart-li-tbsat-bucket-check-seconds.csv	
+	$(GRAB) "verification time" *.bdata > urquhart-li-tbsat-bucket-check-seconds.csv
 	$(GRAB) "Total clauses" *.bdata > urquhart-li-tbsat-bucket-clauses.csv	
+	$(GRAB) "Elapsed" *.rdata > urquhart-li-tbsat-rbucket-seconds.csv
+	$(GRAB) "verification time" *.rdata > urquhart-li-rtbsat-bucket-check-seconds.csv
+	$(GRAB) "Total clauses" *.rdata > urquhart-li-tbsat-rbucket-clauses.csv	
 
 clean:
 	rm -f urquhart-li-*.cnf
