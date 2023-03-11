@@ -1,0 +1,49 @@
+c Read 1592 clauses.  476 variables
+c Breaking ties randomly with seed 1
+c Term #1648. Nodes = 29. After quantification for column 0
+c Term #1754. Nodes = 43. After quantification for column 1
+c Term #1862. Nodes = 54. After quantification for column 2
+c Term #1970. Nodes = 63. After quantification for column 3
+c Term #2078. Nodes = 70. After quantification for column 4
+c Term #2186. Nodes = 75. After quantification for column 5
+c Term #2294. Nodes = 78. After quantification for column 6
+c Term #2402. Nodes = 79. After quantification for column 7
+c Term #2510. Nodes = 79. After quantification for column 8
+c Term #2618. Nodes = 79. After quantification for column 9
+c Term #2726. Nodes = 79. After quantification for column 10
+c Term #2834. Nodes = 79. After quantification for column 11
+c Term #2942. Nodes = 79. After quantification for column 12
+c Term #3050. Nodes = 79. After quantification for column 13
+c Term #3156. Nodes = 69. After quantification for column 14
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  20487
+c Unique Chain:   71
+c Unique Hit:     2780
+c Unique Miss:    17363
+c => Hit rate =   0.14
+c Operator Hits:  5983
+c Operator Miss:  22926
+c => Hit rate =   0.21
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 17363
+c Input variables: 476
+c Input clauses: 1592
+c Total clauses: 81374
+c Unused+non-BDD clause IDs: 12484 (15.3%)
+c Maximum live clauses: 70746
+c Deleted clauses: 79782
+c Final live clauses: 1592
+c Total variables: 17837
+c Elapsed seconds: 0.066
+-rw-r--r--  1 bryant  staff  2967677 Mar 11 17:40 chess-016.lrat
+c parsed a formula with 476 variables and 1592 clauses
+c VERIFIED
+c allocated 1024 413100 4760
+c Added clauses = 81374.  Deleted clauses = 10628.  Max live clauses = 70746
+c verification time = 0.04 secs

@@ -1,0 +1,44 @@
+c Read 109 clauses.  78 variables
+c Breaking ties randomly with seed 1
+c Term #136. Nodes = 38. Before quantification for pigeon 1
+c Term #137. Nodes = 10. After quantification for pigeon 1
+c Term #157. Nodes = 49. Before quantification for pigeon 2
+c Term #158. Nodes = 12. After quantification for pigeon 2
+c Term #178. Nodes = 50. Before quantification for pigeon 3
+c Term #179. Nodes = 12. After quantification for pigeon 3
+c Term #199. Nodes = 41. Before quantification for pigeon 4
+c Term #200. Nodes = 10. After quantification for pigeon 4
+c Term #220. Nodes = 22. Before quantification for pigeon 5
+c Term #221. Nodes = 6. After quantification for pigeon 5
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  2049
+c Unique Chain:   6
+c Unique Hit:     310
+c Unique Miss:    1657
+c => Hit rate =   0.16
+c Operator Hits:  767
+c Operator Miss:  2495
+c => Hit rate =   0.24
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 1657
+c Input variables: 78
+c Input clauses: 109
+c Total clauses: 8081
+c Unused+non-BDD clause IDs: 1241 (15.4%)
+c Maximum live clauses: 7073
+c Deleted clauses: 7972
+c Final live clauses: 109
+c Total variables: 1733
+c Elapsed seconds: 0.011
+-rw-r--r--  1 bryant  staff  256491 Mar 11 17:41 pigeon-sinz-006.lrat
+c parsed a formula with 78 variables and 109 clauses
+c VERIFIED
+c allocated 1024 42345 780
+c Added clauses = 8081.  Deleted clauses = 1008.  Max live clauses = 7073
+c verification time = 0.01 secs

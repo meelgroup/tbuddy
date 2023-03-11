@@ -1,0 +1,102 @@
+c ---- [ banner ] ------------------------------------------------------------
+c
+c KISSAT SAT Solver
+c Copyright (c) 2019-2021 Armin Biere JKU Linz
+c 
+c Version 2.0.1 02cd69626a53e93e09286b1978ccb5d6bec58b8e
+c Apple clang version 13.1.6 (clang-1316.0.21.2) -W -Wall -O3 -DNDEBUG
+c Thu Mar 31 15:34:51 EDT 2022 Darwin Randals-Macbook-Pro.local 21.2.0 arm64
+c
+c ---- [ proving ] -----------------------------------------------------------
+c
+c opened and writing proof to DRAT file:
+c
+c   pigeon-sinz-006.drat
+c
+c ---- [ parsing ] -----------------------------------------------------------
+c
+c opened and reading DIMACS file:
+c
+c   pigeon-sinz-006.cnf
+c
+c parsed 'p cnf 78 109' header
+c closing input after reading 4287 bytes (4 KB)
+c finished parsing after 0.00 seconds
+c
+c ---- [ options ] -----------------------------------------------------------
+c
+c --stable=0                       (different from default '1')
+c
+c ---- [ solving ] -----------------------------------------------------------
+c
+c  seconds switched rate      trail  variables
+c         MB reductions conflicts glue   remaining
+c          level restarts redundant irredundant
+c
+c *  0.00  0 0 0 0  0 0   0   0 0% 0 109 78 99%
+c {  0.00  0 0 0 0  0 0   0   0 0% 0 109 78 99%
+c i  0.00  0 5 0 0  0 1  89  38 88% 3 109 76 96%
+c i  0.00  0 5 0 0  0 1 133  57 85% 3 109 72 91%
+c i  0.00  0 5 0 0  0 1 212  98 84% 3 109 62 78%
+c i  0.00  0 5 0 0  0 1 224 104 84% 3 109 58 73%
+c i  0.00  0 5 0 0  0 1 227 106 84% 3 109 50 63%
+c }  0.00  0 5 0 0  0 1 233 108 83% 3 109 47 59%
+c 0  0.00  0 5 0 0  0 1 233 108 83% 3 109 47 59%
+c
+c ---- [ result ] ------------------------------------------------------------
+c
+s UNSATISFIABLE
+c
+c ---- [ profiling ] ---------------------------------------------------------
+c
+c           0.00   83.42 %  search
+c           0.00   82.66 %  focused
+c           0.00    7.67 %  parse
+c           0.00    0.00 %  simplify
+c =============================================
+c           0.00  100.00 %  total
+c
+c ---- [ statistics ] --------------------------------------------------------
+c
+c clauses_learned:                        228               98 %  conflicts
+c conflicts:                              233            56843.13 per second
+c decisions:                              319                1.37 per conflict
+c literals_bumped:                       6363               27.91 per clause
+c literals_deduced:                      2220                9.74 per clause
+c literals_learned:                      1017                4.46 per clause
+c literals_minimized:                       0                0 %  deduced
+c literals_minimize_shrunken:              39                3 %  shrunken
+c literals_shrunken:                     1209               54 %  deduced
+c propagations:                          5756          1404245    per second
+c subsumed:                               114                0 %  checks
+c sweep_completed:                          0                0    sweeps
+c sweep_equivalences:                       0                0    variables
+c sweep_sat:                                0                0 %  sweep_solved
+c sweep_solved:                             0                0 %  kitten_solved
+c sweep_units:                              0                0 %  variables
+c sweep_unsat:                              0                0 %  sweep_solved
+c sweep_variables:                          0                0 %  variables
+c
+c ---- [ proof ] -------------------------------------------------------------
+c
+c proof_added:                            256               69 %  per line
+c proof_bytes:                           5934                0 MB 
+c proof_deleted:                          116               31 %  per line
+c
+c ---- [ resources ] ---------------------------------------------------------
+c
+c maximum-resident-set-size:       1543503872 bytes       1472 MB
+c process-time:                            2^8               0.00 seconds
+c
+c ---- [ shutting down ] -----------------------------------------------------
+c
+c exit 20
+-rw-r--r--  1 bryant  staff  5934 Mar 11 17:41 pigeon-sinz-006.drat
+c parsing input formula with 78 variables and 109 clauses
+c finished parsing
+c detected empty clause; start verification via backward checking
+c 109 of 109 clauses in core                            
+c 199 of 257 lemmas in core using 5791 resolution steps
+c 0 RAT lemmas in core; 0 redundant literals in core lemmas
+s VERIFIED
+c verification time: 0.031 seconds

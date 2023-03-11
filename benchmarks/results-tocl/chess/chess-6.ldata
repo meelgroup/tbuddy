@@ -1,0 +1,35 @@
+c Read 172 clauses.  56 variables
+c Breaking ties randomly with seed 1
+c Final BDD size = 0
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  2571
+c Unique Chain:   6
+c Unique Hit:     265
+c Unique Miss:    1704
+c => Hit rate =   0.13
+c Operator Hits:  361
+c Operator Miss:  2069
+c => Hit rate =   0.15
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 1704
+c Input variables: 56
+c Input clauses: 172
+c Total clauses: 8619
+c Unused+non-BDD clause IDs: 1302 (15.1%)
+c Maximum live clauses: 7643
+c Deleted clauses: 8447
+c Final live clauses: 172
+c Total variables: 1758
+c Elapsed seconds: 0.008
+-rw-r--r--  1 bryant  staff  274647 Mar 11 17:38 chess-6.lrat
+c parsed a formula with 56 variables and 172 clauses
+c VERIFIED
+c allocated 1024 44604 560
+c Added clauses = 8619.  Deleted clauses = 976.  Max live clauses = 7643
+c verification time = 0.01 secs

@@ -1,0 +1,60 @@
+c Read 172 clauses.  56 variables
+c Breaking ties randomly with seed 1
+c Placed 172 terms into 55 buckets.
+c Bucket 2 Reduced to term with 9 nodes
+c Bucket 4 Reduced to term with 9 nodes
+c Bucket 6 Reduced to term with 21 nodes
+c Bucket 8 Reduced to term with 59 nodes
+c Bucket 10 Reduced to term with 52 nodes
+c Bucket 12 Reduced to term with 30 nodes
+c Bucket 14 Reduced to term with 13 nodes
+c Bucket 16 Reduced to term with 19 nodes
+c Bucket 18 Reduced to term with 56 nodes
+c Bucket 20 Reduced to term with 67 nodes
+c Bucket 22 Reduced to term with 45 nodes
+c Bucket 24 Reduced to term with 22 nodes
+c Bucket 26 Reduced to term with 16 nodes
+c Bucket 28 Reduced to term with 34 nodes
+c Bucket 30 Reduced to term with 82 nodes
+c Bucket 32 Reduced to term with 55 nodes
+c Bucket 34 Reduced to term with 32 nodes
+c Bucket 36 Reduced to term with 14 nodes
+c Bucket 38 Reduced to term with 22 nodes
+c Bucket 40 Reduced to term with 54 nodes
+c Bucket 42 Reduced to term with 50 nodes
+c Bucket 44 Reduced to term with 33 nodes
+c Bucket 46 Reduced to term with 17 nodes
+c Bucket 48 Reduced to term with 9 nodes
+c Bucket 50 Reduced to term with 6 nodes
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  3245
+c Unique Chain:   27
+c Unique Hit:     434
+c Unique Miss:    2794
+c => Hit rate =   0.13
+c Operator Hits:  723
+c Operator Miss:  3889
+c => Hit rate =   0.16
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 2794
+c Input variables: 56
+c Input clauses: 172
+c Total clauses: 14894
+c Unused+non-BDD clause IDs: 1514 (10.2%)
+c Maximum live clauses: 12791
+c Deleted clauses: 14722
+c Final live clauses: 172
+c Total variables: 2848
+c Elapsed seconds: 0.013
+-rw-r--r--  1 bryant  staff  511824 Mar 11 17:39 chess-6.lrat
+c parsed a formula with 56 variables and 172 clauses
+c VERIFIED
+c allocated 1024 66906 560
+c Added clauses = 14894.  Deleted clauses = 2103.  Max live clauses = 12791
+c verification time = 0.01 secs
