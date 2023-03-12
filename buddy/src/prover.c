@@ -471,9 +471,10 @@ int generate_clause(ilist literals, ilist hints) {
 	    /* must expand */
 	    double efactor = 2.0;
 	    int new_alloc_clause_count = (int) (alloc_clause_count * efactor);
-	    while (new_alloc_clause_count < cid && efactor > 1.0) {
+	    while (new_alloc_clause_count <= cid) {
 		/* Expanding by too much causes overflow */
 		efactor = 1.0 + (efactor-1.0)/2.0;
+        if (efactor < 1.0) bdd_error(BDD_MEMORY);
 		new_alloc_clause_count = (int) (alloc_clause_count * efactor);
 	    }
 	    int i;
