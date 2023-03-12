@@ -59,9 +59,9 @@ data:
 	$(GRAB) "Elapsed" *.rdata > urquhart-simon-tbsat-rbucket-seconds.csv
 	$(GRAB) "verification time" *.rdata > urquhart-simon-rtbsat-bucket-check-seconds.csv
 	$(GRAB) "Total clauses" *.rdata > urquhart-simon-tbsat-rbucket-clauses.csv	
-	$(INTERP) $(GRAB) "proof_added" *.kdata > urquhart-li-kissat-clauses.csv
-	$(INTERP) $(GRAB) -1 "process-time" *.kdata > urquhart-li-kissat-seconds.csv
-	$(INTERP) $(GRAB) "verification time" *.kdata > urquhart-li-kissat-check-seconds.csv
+	$(GRAB) "proof_added" *.kdata > urquhart-simon-kissat-clauses.csv
+	$(GRAB) -1 "process-time" *.kdata > urquhart-simon-kissat-seconds.csv
+	$(GRAB) "verification time" *.kdata > urquhart-simon-kissat-check-seconds.csv
 
 
 clean:
