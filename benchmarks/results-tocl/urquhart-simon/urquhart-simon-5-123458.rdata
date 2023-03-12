@@ -1,0 +1,83 @@
+c Read 1382 clauses.  125 variables
+c Breaking ties randomly with seed 1
+c Placed 1382 terms into 37 buckets.
+c Bucket 1 Reduced to term with 17 nodes
+c Bucket 2 Reduced to term with 21 nodes
+c Bucket 3 Reduced to term with 29 nodes
+c Bucket 4 Reduced to term with 17 nodes
+c Bucket 5 Reduced to term with 21 nodes
+c Bucket 6 Reduced to term with 31 nodes
+c Bucket 7 Reduced to term with 15 nodes
+c Bucket 8 Reduced to term with 39 nodes
+c Bucket 9 Reduced to term with 7 nodes
+c Bucket 10 Reduced to term with 15 nodes
+c Bucket 11 Reduced to term with 15 nodes
+c Bucket 12 Reduced to term with 9 nodes
+c Bucket 13 Reduced to term with 19 nodes
+c Bucket 14 Reduced to term with 25 nodes
+c Bucket 15 Reduced to term with 21 nodes
+c Bucket 16 Reduced to term with 17 nodes
+c Bucket 17 Reduced to term with 37 nodes
+c Bucket 18 Reduced to term with 35 nodes
+c Bucket 19 Reduced to term with 43 nodes
+c Bucket 20 Reduced to term with 45 nodes
+c Bucket 21 Reduced to term with 49 nodes
+c Bucket 22 Reduced to term with 55 nodes
+c Bucket 23 Reduced to term with 65 nodes
+c Bucket 24 Reduced to term with 91 nodes
+c Bucket 25 Reduced to term with 97 nodes
+c Bucket 26 Reduced to term with 97 nodes
+c Bucket 27 Reduced to term with 11 nodes
+c Bucket 28 Reduced to term with 105 nodes
+c Bucket 30 Reduced to term with 103 nodes
+c Bucket 31 Reduced to term with 101 nodes
+c Bucket 32 Reduced to term with 93 nodes
+c Bucket 33 Reduced to term with 23 nodes
+c Bucket 34 Reduced to term with 91 nodes
+c Bucket 36 Reduced to term with 87 nodes
+c Bucket 38 Reduced to term with 79 nodes
+c Bucket 40 Reduced to term with 75 nodes
+c Bucket 41 Reduced to term with 71 nodes
+c Bucket 42 Reduced to term with 63 nodes
+c Bucket 46 Reduced to term with 59 nodes
+c Bucket 54 Reduced to term with 57 nodes
+c Bucket 58 Reduced to term with 53 nodes
+c Bucket 60 Reduced to term with 47 nodes
+c Bucket 61 Reduced to term with 9 nodes
+c Bucket 63 Reduced to term with 37 nodes
+c Bucket 69 Reduced to term with 11 nodes
+c Bucket 71 Reduced to term with 21 nodes
+c Bucket 73 Reduced to term with 19 nodes
+c Bucket 96 Reduced to term with 9 nodes
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  31024
+c Unique Chain:   116
+c Unique Hit:     10292
+c Unique Miss:    20452
+c => Hit rate =   0.33
+c Operator Hits:  16962
+c Operator Miss:  25756
+c => Hit rate =   0.40
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 20452
+c Input variables: 125
+c Input clauses: 1382
+c Total clauses: 121299
+c Unused+non-BDD clause IDs: 5828 (4.8%)
+c Maximum live clauses: 98579
+c Deleted clauses: 119917
+c Final live clauses: 1382
+c Total variables: 20575
+c Elapsed seconds: 0.101
+-rw-r--r--  1 bryant  staff  5119356 Mar 12 08:23 urquhart-simon-5-123458.lrat
+c parsed a formula with 125 variables and 1382 clauses
+c VERIFIED
+c allocated 1024 537894 1250
+c Added clauses = 121299.  Deleted clauses = 22720.  Max live clauses = 98579
+c verification time = 0.07 secs

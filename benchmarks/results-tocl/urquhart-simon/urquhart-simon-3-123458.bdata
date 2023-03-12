@@ -1,0 +1,51 @@
+c Read 564 clauses.  48 variables
+c Breaking ties randomly with seed 1
+c Placed 564 terms into 15 buckets.
+c Bucket 1 Reduced to term with 17 nodes
+c Bucket 2 Reduced to term with 21 nodes
+c Bucket 3 Reduced to term with 23 nodes
+c Bucket 4 Reduced to term with 23 nodes
+c Bucket 5 Reduced to term with 33 nodes
+c Bucket 6 Reduced to term with 17 nodes
+c Bucket 7 Reduced to term with 31 nodes
+c Bucket 8 Reduced to term with 37 nodes
+c Bucket 9 Reduced to term with 43 nodes
+c Bucket 10 Reduced to term with 41 nodes
+c Bucket 12 Reduced to term with 39 nodes
+c Bucket 14 Reduced to term with 35 nodes
+c Bucket 16 Reduced to term with 29 nodes
+c Bucket 18 Reduced to term with 25 nodes
+c Bucket 19 Reduced to term with 15 nodes
+c Bucket 21 Reduced to term with 9 nodes
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  11131
+c Unique Chain:   139
+c Unique Hit:     3719
+c Unique Miss:    7306
+c => Hit rate =   0.34
+c Operator Hits:  4682
+c Operator Miss:  8269
+c => Hit rate =   0.36
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 7306
+c Input variables: 48
+c Input clauses: 564
+c Total clauses: 41923
+c Unused+non-BDD clause IDs: 2432 (5.8%)
+c Maximum live clauses: 33687
+c Deleted clauses: 41359
+c Final live clauses: 564
+c Total variables: 7352
+c Elapsed seconds: 0.032
+-rw-r--r--  1 bryant  staff  1642701 Mar 12 08:22 urquhart-simon-3-123458.lrat
+c parsed a formula with 48 variables and 564 clauses
+c VERIFIED
+c allocated 1024 219492 480
+c Added clauses = 41923.  Deleted clauses = 8236.  Max live clauses = 33687
+c verification time = 0.03 secs

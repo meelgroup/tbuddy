@@ -1,0 +1,63 @@
+c Read 4668 clauses.  497 variables
+c Breaking ties randomly with seed 1
+c Placed 4668 terms into 142 buckets.
+c Bucket 7 Reduced to term with 19 nodes
+c Bucket 14 Reduced to term with 11 nodes
+c Bucket 21 Reduced to term with 17 nodes
+c Bucket 28 Reduced to term with 33 nodes
+c Bucket 35 Reduced to term with 55 nodes
+c Bucket 42 Reduced to term with 23 nodes
+c Bucket 49 Reduced to term with 37 nodes
+c Bucket 56 Reduced to term with 47 nodes
+c Bucket 63 Reduced to term with 75 nodes
+c Bucket 70 Reduced to term with 21 nodes
+c Bucket 77 Reduced to term with 11 nodes
+c Bucket 84 Reduced to term with 27 nodes
+c Bucket 91 Reduced to term with 21 nodes
+c Bucket 98 Reduced to term with 57 nodes
+c Bucket 105 Reduced to term with 117 nodes
+c Bucket 112 Reduced to term with 37 nodes
+c Bucket 119 Reduced to term with 301 nodes
+c Bucket 126 Reduced to term with 317 nodes
+c Bucket 133 Reduced to term with 327 nodes
+c Bucket 140 Reduced to term with 315 nodes
+c Garbage collection #1: 2000003 nodes / 1978916 free / 52197 previously freed  / 0.0s / 0.0s total
+c Bucket 147 Reduced to term with 53 nodes
+c Bucket 161 Reduced to term with 313 nodes
+c Bucket 168 Reduced to term with 309 nodes
+c Bucket 182 Reduced to term with 235 nodes
+c Bucket 196 Reduced to term with 187 nodes
+c Bucket 266 Reduced to term with 53 nodes
+c Bucket 287 Reduced to term with 37 nodes
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  160380
+c Unique Chain:   2123
+c Unique Hit:     47921
+c Unique Miss:    111359
+c => Hit rate =   0.30
+c Operator Hits:  129324
+c Operator Miss:  162978
+c => Hit rate =   0.44
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 111359
+c Input variables: 497
+c Input clauses: 4668
+c Total clauses: 693611
+c Unused+non-BDD clause IDs: 19816 (2.9%)
+c Maximum live clauses: 346125
+c Deleted clauses: 688943
+c Final live clauses: 4668
+c Total variables: 111854
+c Elapsed seconds: 0.778
+-rw-r--r--  1 bryant  staff  34983901 Mar 12 08:23 urquhart-simon-10-123460.lrat
+c parsed a formula with 497 variables and 4668 clauses
+c VERIFIED
+c allocated 1024 1816924 84910
+c Added clauses = 693611.  Deleted clauses = 410539.  Max live clauses = 346125
+c verification time = 0.43 secs

@@ -1,0 +1,158 @@
+c Read 60194 clauses.  6168 variables
+c Breaking ties randomly with seed 1
+c Placed 60194 terms into 1773 buckets.
+c Garbage collection #1: 2000003 nodes / 1826798 free / 54334 previously freed  / 0.0s / 0.0s total
+c Bucket 88 Reduced to term with 19 nodes
+c Garbage collection #2: 2000003 nodes / 1836504 free / 54868 previously freed  / 0.0s / 0.1s total
+c Bucket 176 Reduced to term with 19 nodes
+c Garbage collection #3: 2000003 nodes / 1845180 free / 55087 previously freed  / 0.0s / 0.1s total
+c Bucket 264 Reduced to term with 25 nodes
+c Bucket 352 Reduced to term with 35 nodes
+c Garbage collection #4: 2000003 nodes / 1853529 free / 55011 previously freed  / 0.0s / 0.1s total
+c Bucket 440 Reduced to term with 17 nodes
+c Garbage collection #5: 2000003 nodes / 1862465 free / 54464 previously freed  / 0.0s / 0.1s total
+c Bucket 528 Reduced to term with 21 nodes
+c Garbage collection #6: 2000003 nodes / 1869442 free / 54175 previously freed  / 0.0s / 0.2s total
+c Bucket 616 Reduced to term with 21 nodes
+c Bucket 704 Reduced to term with 17 nodes
+c Garbage collection #7: 2000003 nodes / 1874586 free / 53528 previously freed  / 0.0s / 0.2s total
+c Bucket 792 Reduced to term with 21 nodes
+c Bucket 880 Reduced to term with 27 nodes
+c Garbage collection #8: 2000003 nodes / 1876628 free / 53554 previously freed  / 0.0s / 0.2s total
+c Bucket 968 Reduced to term with 95 nodes
+c Bucket 1056 Reduced to term with 19 nodes
+c Garbage collection #9: 2000003 nodes / 1871248 free / 51896 previously freed  / 0.0s / 0.3s total
+c Bucket 1144 Reduced to term with 23 nodes
+c Bucket 1232 Reduced to term with 35 nodes
+c Garbage collection #10: 2000003 nodes / 1861355 free / 51329 previously freed  / 0.0s / 0.3s total
+c Bucket 1320 Reduced to term with 21 nodes
+c Garbage collection #11: 2000003 nodes / 1847780 free / 52279 previously freed  / 0.0s / 0.3s total
+c Bucket 1408 Reduced to term with 37 nodes
+c Bucket 1496 Reduced to term with 237 nodes
+c Garbage collection #12: 2000003 nodes / 1813026 free / 50009 previously freed  / 0.0s / 0.3s total
+c Garbage collection #13: 2000003 nodes / 1768032 free / 57974 previously freed  / 0.0s / 0.4s total
+c Bucket 1584 Reduced to term with 17 nodes
+c Garbage collection #14: 2000003 nodes / 1711319 free / 49206 previously freed  / 0.0s / 0.4s total
+c Garbage collection #15: 2000003 nodes / 1639956 free / 44795 previously freed  / 0.0s / 0.4s total
+c Bucket 1672 Reduced to term with 3607 nodes
+c Garbage collection #16: 2000003 nodes / 1575939 free / 45748 previously freed  / 0.0s / 0.5s total
+c Garbage collection #17: 2000003 nodes / 1555653 free / 69820 previously freed  / 0.0s / 0.5s total
+c Garbage collection #18: 2000003 nodes / 1468339 free / 34472 previously freed  / 0.0s / 0.5s total
+c Garbage collection #19: 2000003 nodes / 1462642 free / 81083 previously freed  / 0.0s / 0.6s total
+c Garbage collection #20: 2000003 nodes / 1405920 free / 50934 previously freed  / 0.0s / 0.6s total
+c Bucket 1760 Reduced to term with 85 nodes
+c Garbage collection #21: 2000003 nodes / 1316760 free / 45404 previously freed  / 0.0s / 0.7s total
+c Garbage collection #22: 2000003 nodes / 1268179 free / 44986 previously freed  / 0.0s / 0.7s total
+c Garbage collection #23: 2000003 nodes / 1233181 free / 42960 previously freed  / 0.0s / 0.7s total
+c Garbage collection #24: 2000003 nodes / 1192890 free / 56273 previously freed  / 0.0s / 0.8s total
+c Garbage collection #25: 2000003 nodes / 1182679 free / 77290 previously freed  / 0.1s / 0.8s total
+c Garbage collection #26: 2000003 nodes / 1140231 free / 42318 previously freed  / 0.0s / 0.9s total
+c Garbage collection #27: 2000003 nodes / 1097557 free / 42705 previously freed  / 0.0s / 0.9s total
+c Garbage collection #28: 2000003 nodes / 1055226 free / 57238 previously freed  / 0.0s / 0.9s total
+c Garbage collection #29: 2000003 nodes / 1008926 free / 40515 previously freed  / 0.0s / 1.0s total
+c Bucket 1848 Reduced to term with 4291 nodes
+c Garbage collection #30: 2000003 nodes / 972294 free / 45576 previously freed  / 0.0s / 1.0s total
+c Garbage collection #31: 2000003 nodes / 924407 free / 65677 previously freed  / 0.1s / 1.1s total
+c Garbage collection #32: 2000003 nodes / 886961 free / 41040 previously freed  / 0.0s / 1.1s total
+c Garbage collection #33: 2000003 nodes / 869269 free / 66552 previously freed  / 0.1s / 1.2s total
+c Garbage collection #34: 2000003 nodes / 850096 free / 47677 previously freed  / 0.0s / 1.2s total
+c Garbage collection #35: 2000003 nodes / 786169 free / 30678 previously freed  / 0.0s / 1.2s total
+c Garbage collection #36: 2000003 nodes / 777127 free / 62119 previously freed  / 0.1s / 1.3s total
+c Garbage collection #37: 2000003 nodes / 739964 free / 28084 previously freed  / 0.0s / 1.3s total
+c Garbage collection #38: 2000003 nodes / 676626 free / 38908 previously freed  / 0.0s / 1.4s total
+c Garbage collection #39: 2000003 nodes / 659509 free / 45329 previously freed  / 0.0s / 1.4s total
+c Garbage collection #40: 2000003 nodes / 616699 free / 68271 previously freed  / 0.1s / 1.5s total
+c Garbage collection #41: 2000003 nodes / 583995 free / 37925 previously freed  / 0.0s / 1.5s total
+c Garbage collection #42: 2000003 nodes / 542284 free / 40969 previously freed  / 0.0s / 1.6s total
+c Garbage collection #43: 2000003 nodes / 491692 free / 34644 previously freed  / 0.0s / 1.6s total
+c Garbage collection #44: 2000003 nodes / 455058 free / 56993 previously freed  / 0.1s / 1.7s total
+c Garbage collection #45: 2000003 nodes / 393563 free / 35266 previously freed  / 0.0s / 1.7s total
+c Garbage collection #46: 2000003 nodes / 375718 free / 63170 previously freed  / 0.1s / 1.8s total
+c Garbage collection #47: 2000003 nodes / 332305 free / 47971 previously freed  / 0.1s / 1.8s total
+c Garbage collection #48: 2000003 nodes / 275018 free / 48841 previously freed  / 0.1s / 1.9s total
+c Garbage collection #49: 2000003 nodes / 238961 free / 51788 previously freed  / 0.1s / 1.9s total
+c Garbage collection #50: 2000003 nodes / 194881 free / 58193 previously freed  / 0.1s / 2.0s total
+c Garbage collection #51: 2000003 nodes / 171306 free / 45773 previously freed  / 0.1s / 2.0s total
+c Garbage collection #52: 2000003 nodes / 110994 free / 58881 previously freed  / 0.1s / 2.1s total
+c Bucket 2112 Reduced to term with 3557 nodes
+c Garbage collection #53: 2000003 nodes / 58597 free / 46608 previously freed  / 0.1s / 2.1s total
+c Garbage collection #54: 2000003 nodes / 22610 free / 22610 previously freed  / 0.0s / 2.2s total
+c Garbage collection #55: 3999971 nodes / 2012540 free / 23545 previously freed  / 0.0s / 2.2s total
+c Garbage collection #56: 3999971 nodes / 1994090 free / 79297 previously freed  / 0.1s / 2.3s total
+c Garbage collection #57: 3999971 nodes / 1977806 free / 66681 previously freed  / 0.1s / 2.4s total
+c Garbage collection #58: 3999971 nodes / 1927464 free / 45118 previously freed  / 0.1s / 2.4s total
+c Garbage collection #59: 3999971 nodes / 1895287 free / 50563 previously freed  / 0.1s / 2.5s total
+c Bucket 2200 Reduced to term with 3169 nodes
+c Garbage collection #60: 3999971 nodes / 1860939 free / 39291 previously freed  / 0.1s / 2.5s total
+c Garbage collection #61: 3999971 nodes / 1802016 free / 46514 previously freed  / 0.1s / 2.6s total
+c Garbage collection #62: 3999971 nodes / 1770559 free / 40162 previously freed  / 0.1s / 2.7s total
+c Garbage collection #63: 3999971 nodes / 1717676 free / 40759 previously freed  / 0.1s / 2.7s total
+c Bucket 2288 Reduced to term with 2899 nodes
+c Garbage collection #64: 3999971 nodes / 1695644 free / 67860 previously freed  / 0.1s / 2.8s total
+c Garbage collection #65: 3999971 nodes / 1660125 free / 46836 previously freed  / 0.1s / 2.9s total
+c Garbage collection #66: 3999971 nodes / 1623132 free / 42497 previously freed  / 0.1s / 2.9s total
+c Garbage collection #67: 3999971 nodes / 1587412 free / 41996 previously freed  / 0.1s / 3.0s total
+c Garbage collection #68: 3999971 nodes / 1565561 free / 63081 previously freed  / 0.1s / 3.1s total
+c Garbage collection #69: 3999971 nodes / 1522014 free / 48288 previously freed  / 0.1s / 3.1s total
+c Garbage collection #70: 3999971 nodes / 1476841 free / 47996 previously freed  / 0.1s / 3.2s total
+c Garbage collection #71: 3999971 nodes / 1448200 free / 46597 previously freed  / 0.1s / 3.3s total
+c Garbage collection #72: 3999971 nodes / 1429971 free / 59270 previously freed  / 0.1s / 3.4s total
+c Garbage collection #73: 3999971 nodes / 1402900 free / 58949 previously freed  / 0.1s / 3.4s total
+c Garbage collection #74: 3999971 nodes / 1374286 free / 55289 previously freed  / 0.1s / 3.5s total
+c Garbage collection #75: 3999971 nodes / 1353305 free / 63358 previously freed  / 0.1s / 3.6s total
+c Garbage collection #76: 3999971 nodes / 1312641 free / 41713 previously freed  / 0.1s / 3.7s total
+c Garbage collection #77: 3999971 nodes / 1279333 free / 46912 previously freed  / 0.1s / 3.7s total
+c Garbage collection #78: 3999971 nodes / 1252343 free / 40460 previously freed  / 0.1s / 3.8s total
+c Garbage collection #79: 3999971 nodes / 1218998 free / 53771 previously freed  / 0.1s / 3.9s total
+c Garbage collection #80: 3999971 nodes / 1169981 free / 40111 previously freed  / 0.1s / 4.0s total
+c Garbage collection #81: 3999971 nodes / 1137264 free / 49270 previously freed  / 0.1s / 4.0s total
+c Bucket 2816 Reduced to term with 1659 nodes
+c Garbage collection #82: 3999971 nodes / 1100246 free / 56524 previously freed  / 0.1s / 4.1s total
+c Garbage collection #83: 3999971 nodes / 1073318 free / 59383 previously freed  / 0.1s / 4.2s total
+c Garbage collection #84: 3999971 nodes / 1028361 free / 45121 previously freed  / 0.1s / 4.3s total
+c Garbage collection #85: 3999971 nodes / 1006465 free / 52634 previously freed  / 0.1s / 4.4s total
+c Garbage collection #86: 3999971 nodes / 971563 free / 48349 previously freed  / 0.1s / 4.5s total
+c Garbage collection #87: 3999971 nodes / 944138 free / 53683 previously freed  / 0.1s / 4.5s total
+c Garbage collection #88: 3999971 nodes / 906345 free / 42363 previously freed  / 0.1s / 4.6s total
+c Garbage collection #89: 3999971 nodes / 876300 free / 43666 previously freed  / 0.1s / 4.7s total
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  10560844
+c Unique Chain:   4150134
+c Unique Hit:     2955244
+c Unique Miss:    7591626
+c => Hit rate =   0.28
+c Operator Hits:  12702135
+c Operator Miss:  13137639
+c => Hit rate =   0.49
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 7591626
+c Input variables: 6168
+c Input clauses: 60194
+c Total clauses: 51037502
+c Unused+non-BDD clause IDs: 253545 (0.5%)
+c Maximum live clauses: 12789329
+c Deleted clauses: 50977308
+c Final live clauses: 60194
+c Total variables: 7597792
+c Elapsed seconds: 81.360
+-rw-r--r--  1 bryant  staff  3334115124 Mar 12 08:46 urquhart-simon-35-123456.lrat
+c parsed a formula with 6168 variables and 60194 clauses
+c topTable reallocation from 1024 to 1536
+c increasing the number of buckets from 1024 to 1536
+c topTable reallocation from 1536 to 2304
+c increasing the number of buckets from 1536 to 2304
+c topTable reallocation from 2304 to 3456
+c increasing the number of buckets from 2304 to 3456
+c topTable reallocation from 3456 to 5184
+c topTable reallocation from 5184 to 7776
+c increasing the number of buckets from 3456 to 5184
+c VERIFIED
+c allocated 5184 79075522 138780
+c Added clauses = 51037502.  Deleted clauses = 38483587.  Max live clauses = 12789329
+c verification time = 36.55 secs
