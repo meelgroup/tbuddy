@@ -1,0 +1,68 @@
+c Read 12020 clauses.  1273 variables
+c Breaking ties randomly with seed 1
+c Placed 12020 terms into 376 buckets.
+c Bucket 18 Reduced to term with 13 nodes
+c Bucket 36 Reduced to term with 11 nodes
+c Bucket 54 Reduced to term with 17 nodes
+c Bucket 72 Reduced to term with 11 nodes
+c Bucket 90 Reduced to term with 21 nodes
+c Garbage collection #1: 2000003 nodes / 1971186 free / 54100 previously freed  / 0.0s / 0.0s total
+c Bucket 108 Reduced to term with 13 nodes
+c Bucket 126 Reduced to term with 33 nodes
+c Bucket 144 Reduced to term with 15 nodes
+c Bucket 162 Reduced to term with 13 nodes
+c Bucket 180 Reduced to term with 21 nodes
+c Bucket 198 Reduced to term with 45 nodes
+c Bucket 216 Reduced to term with 11 nodes
+c Bucket 234 Reduced to term with 131 nodes
+c Bucket 252 Reduced to term with 35 nodes
+c Garbage collection #2: 2000003 nodes / 1969809 free / 52436 previously freed  / 0.0s / 0.1s total
+c Bucket 270 Reduced to term with 31 nodes
+c Bucket 288 Reduced to term with 75 nodes
+c Bucket 306 Reduced to term with 19 nodes
+c Bucket 324 Reduced to term with 227 nodes
+c Bucket 342 Reduced to term with 701 nodes
+c Garbage collection #3: 2000003 nodes / 1938849 free / 52667 previously freed  / 0.0s / 0.1s total
+c Bucket 360 Reduced to term with 15 nodes
+c Bucket 396 Reduced to term with 15 nodes
+c Garbage collection #4: 2000003 nodes / 1912007 free / 52413 previously freed  / 0.0s / 0.1s total
+c Bucket 450 Reduced to term with 773 nodes
+c Garbage collection #5: 2000003 nodes / 1871235 free / 47274 previously freed  / 0.0s / 0.1s total
+c Bucket 468 Reduced to term with 687 nodes
+c Bucket 504 Reduced to term with 505 nodes
+c Bucket 540 Reduced to term with 371 nodes
+c Bucket 594 Reduced to term with 275 nodes
+c Garbage collection #6: 2000003 nodes / 1830773 free / 47983 previously freed  / 0.0s / 0.2s total
+c Bucket 702 Reduced to term with 119 nodes
+s UNSATISFIABLE
+
+c Cache statistics
+c ----------------
+c Unique Access:  689884
+c Unique Chain:   24372
+c Unique Hit:     202384
+c Unique Miss:    484664
+c => Hit rate =   0.29
+c Operator Hits:  689722
+c Operator Miss:  776157
+c => Hit rate =   0.47
+c Swap count =    0
+
+c BDD statistics
+c ----------------
+c Total BDD nodes produced: 484664
+c Input variables: 1273
+c Input clauses: 12020
+c Total clauses: 3142259
+c Unused+non-BDD clause IDs: 50260 (1.6%)
+c Maximum live clauses: 965126
+c Deleted clauses: 3130239
+c Final live clauses: 12020
+c Total variables: 485935
+c Elapsed seconds: 4.622
+-rw-r--r--  1 bryant  staff  180693219 Mar 12 23:14 urquhart-simon-16-123458.lrat
+c parsed a formula with 1273 variables and 12020 clauses
+c VERIFIED
+c allocated 1024 4678614 96666
+c Added clauses = 3142259.  Deleted clauses = 2414813.  Max live clauses = 965126
+c verification time = 2.05 secs
