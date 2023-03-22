@@ -26,7 +26,8 @@ import re
 # Extracts problem size from file name.
 
 def usage(name):
-    print("Usage: %s N1 TPHRASE1 N2 TPHRASE2 file ...")
+    print("Usage: %s [OP] N1 TPHRASE1 N2 TPHRASE2 file ...")
+    print("   OP:       a (add) or d (divide)")
     print("   Nx:       Look for Nth numeric field in line (count from 1)")
     print("   TPHRASEx: Trigger phrase identifying line")
 
@@ -56,6 +57,9 @@ def lineSplit(s):
 
 def nthNumber(fields, n = 1):
     count = 0
+    if n < 0:
+        fields.reverse()
+        n = -n
     for field in fields:
         try:
             val = int(field)
@@ -102,18 +106,23 @@ def extract(fname):
     return (val1, val2)
 
 def run(name, args):
+    operation = None
     if len(args) < 2 or args[0] == '-h':
         usage(name)
         return
     global triggerPhrase1, triggerPhrase2
     global triggerField1, triggerField2
     vals = {}
+    i = 0
+    if args[0] in ['d', 'a']:
+        operation = args[0]
+        i+= 1
     try:
-        triggerField1 = int(args[0])
-        triggerPhrase1 = args[1]
-        triggerField2 = int(args[2])
-        triggerPhrase2 = args[3]
-        names = args[4:]
+        triggerField1 = int(args[i])
+        triggerPhrase1 = args[i+1]
+        triggerField2 = int(args[i+2])
+        triggerPhrase2 = args[i+3]
+        names = args[i+4:]
     except:
         usage(name)
         return
@@ -126,7 +135,18 @@ def run(name, args):
                 vals[pair[0]] = [pair]
     for k in sorted(vals.keys()):
         for p in vals[k]:
-            print("%s,%s" % p)
+            if operation is not None:
+                val = 1.0
+                try:
+                    val1 = float(p[0])
+                    val2 = float(p[1])
+                    val = val1+val2 if operation == 'a' else 1000000000000 if val2 == 0 else float(val1)/val2
+                except:
+                    print("Couldn't get number(s) from %s,%s" % p)
+                    sys.exit(1)
+                print("%s,%s,%s" % (p[0], p[1], str(val)))
+            else:
+                print("%s,%s" % p)
 
 if __name__ == "__main__":
     run(sys.argv[0], sys.argv[1:])
