@@ -37,7 +37,7 @@ def csvWrite(csvFile, ls):
     csvFile.write(",".join(slist) + '\n')
 
 def usage(name):
-    exutil.ewrite("Usage: %s [-v VLEVEL] [-h] [-c] [-l CFILE] [-i IN.cnf] [-o OUT.schedule] [-d DIR] [-m MAXCLAUSE]\n" % name, 0)
+    exutil.ewrite("Usage: %s [-v VLEVEL] [-h] [-c] [-l CFILE] [-i IN.cnf] [-o OUT.schedule] [-p DIR] [-m MAXCLAUSE]\n" % name, 0)
     exutil.ewrite("  -h       Print this message\n", 0)
     exutil.ewrite("  -v VERB  Set verbosity level (1-4)\n", 0)
     exutil.ewrite("  -c       Careful checking of CNF\n", 0)
@@ -68,10 +68,10 @@ class Xor:
         self.csvFile = csvFile
         if iname is None:
             self.msgPrefix = iname
-            dataList = [""]
+            self.dataList = [""]
         else:
             self.msgPrefix = "File %s: " % iname
-            dataList = [iname]
+            self.dataList = [iname]
         for idx in range(1, len(clauses)+1):
             clause = self.getClause(idx)
             clause.sort(key = lambda lit : abs(lit))
