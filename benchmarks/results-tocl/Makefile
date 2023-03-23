@@ -18,12 +18,12 @@ data:
 #	$(INTERP) $(PAIR) d 1 "verification time" 1 "Elapsed" */*.nqdata  | grep -v "0.0,0" > all-tbsat-noquant-check-pair.csv
 #	$(INTERP) $(PAIR) d 1 "verification time" -1 "process-time" */*.kdata | grep -v "0.0,0" | grep -v "1000000000000" > all-kissat-check-pair.csv
 
-	$(INTERP) $(PAIR) d 1 "verification time" 1 "Total clauses" */*.ldata > all-tbsat-linear-pair.csv
-	$(INTERP) $(PAIR) d 1 "verification time" 1 "Total clauses" */*.bdata > all-tbsat-bucket-pair.csv
-	$(INTERP) $(PAIR) d 1 "verification time" 1 "Total clauses" */*.rdata > all-tbsat-rbucket-pair.csv
-	$(INTERP) $(PAIR) d 1 "verification time" 1 "Total clauses" */*.sdata > all-tbsat-scan-pair.csv
-	$(INTERP) $(PAIR) d 1 "verification time" 1 "Total clauses" */*.nqdata > all-tbsat-noquant-pair.csv
-	$(INTERP) $(PAIR) d 1 "verification time" 1 "proof_added" */*.kdata | grep -v "0.0," > all-kissat-pair.csv
+	$(INTERP) $(PAIR) d 1 "verification time" 1 "Total clauses" */*.ldata > all-tbsat-linear-check-pair.csv
+	$(INTERP) $(PAIR) d 1 "verification time" 1 "Total clauses" */*.bdata > all-tbsat-bucket-check-pair.csv
+	$(INTERP) $(PAIR) d 1 "verification time" 1 "Total clauses" */*.rdata > all-tbsat-rbucket-check-pair.csv
+	$(INTERP) $(PAIR) d 1 "verification time" 1 "Total clauses" */*.sdata > all-tbsat-scan-check-pair.csv
+	$(INTERP) $(PAIR) d 1 "verification time" 1 "Total clauses" */*.nqdata > all-tbsat-noquant-check-pair.csv
+	$(INTERP) $(PAIR) d 1 "verification time" 1 "proof_added" */*.kdata | grep -v "0.0," > all-kissat-check-pair.csv
 
 
 #	$(INTERP) $(GRAB) "Total clauses" */*.ldata > all-tbsat-linear-clauses.csv
