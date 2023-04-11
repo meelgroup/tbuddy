@@ -135,6 +135,7 @@ static int supportID;               /* Current ID (true value) for support */
 static int supportMin;              /* Min. used level in support calc. */
 static int supportMax;              /* Max. used level in support calc. */
 static int* supportSet;             /* The found support set */
+static int supportSize;             /* Number of int's allocated for supportSet */
 static BddCache opcache;            /* Cache for all operations */
 static int cacheratio;
 static BDD satPolarity;
@@ -221,6 +222,7 @@ int bdd_operator_init(int cachesize)
    quantvarset = NULL;
    cacheratio = 0;
    supportSet = NULL;
+   supportSize = 0;
    
    return 0;
 }
@@ -239,6 +241,8 @@ void bdd_operator_done(void)
 
    if (supportSet != NULL)
      free(supportSet);
+   supportSize = 0;
+   supportSet = NULL;
 }
 
 
@@ -2727,7 +2731,6 @@ RETURN  {* A BDD variable set. *}
 */
 BDD bdd_support(BDD r)
 {
-   static int  supportSize = 0;
    int n;
    int res=1;
 
@@ -2759,6 +2762,7 @@ BDD bdd_support(BDD r)
    {
         /* We probably don't get here -- but let's just be sure */
      memset(supportSet, 0, bddvarnum*sizeof(int));
+     supportSize = bddvarnum;
      supportID = 0;
    }
    ++supportID;
