@@ -5,8 +5,8 @@ OPT=-O2
 CFLAGS=-g $(OPT) -Wno-nullability-completeness -std=c++11
 INC=-I../../buddy/include
 LDIR = ../../buddy/lib
-LIB = $(LDIR)/buddy.a
-TLIB = $(LDIR)/tbuddy.a
+LIB = $(LDIR)/libbuddy.a
+TLIB = $(LDIR)/libtbuddy.a
 
 all: tbsat sat_check
 

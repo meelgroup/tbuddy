@@ -23,13 +23,13 @@ TFILES = tbdd.to prover.to \
 	bddio.to bddop.to bvec.to cache.to fdd.to ilist.to imatrix.to kernel.to pairs.to prime.to reorder.to tree.to cppext.to \
 	pseudoboolean.to
 
-all: buddy.a tbuddy.a libtbuddy.so
+all: libbuddy.a libtbuddy.a libtbuddy.so
 	rm -rf $(LDIR)
 	mkdir $(LDIR)
 	rm -rf $(IDIR)
 	mkdir $(IDIR)
-	cp -p buddy.a $(LDIR)
-	cp -p tbuddy.a $(LDIR)
+	cp -p libbuddy.a $(LDIR)
+	cp -p libtbuddy.a $(LDIR)
 	cp -p bdd.h $(IDIR)
 	cp -p tbdd.h $(IDIR)
 	cp -p ilist.h $(IDIR)
@@ -46,17 +46,17 @@ install: all
 	install -m 644 tbdd.h $(PREFIX)/include/
 
 
-buddy.a: $(FILES)
-	ar cr buddy.a $(FILES)
+libbuddy.a: $(FILES)
+	ar cr libbuddy.a $(FILES)
 
 libtbuddy.so: $(TFILES)
 	$(CXX) -shared -o libtbuddy.so $(TFILES)
 
-tbuddy.a: $(TFILES)
-	ar cr tbuddy.a $(TFILES)
+libtbuddy.a: $(TFILES)
+	ar cr libtbuddy.a $(TFILES)
 
-bddtest: bddtest.cxx buddy.a
-	$(CXX) $(CFLAGS) -o bddtest bddtest.cxx buddy.a
+bddtest: bddtest.cxx libbuddy.a
+	$(CXX) $(CFLAGS) -o bddtest bddtest.cxx libbuddy.a
 
 .SUFFIXES: .c .cxx .o .to
 
