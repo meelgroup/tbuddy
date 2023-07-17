@@ -2,7 +2,7 @@ include_directories( ${PROJECT_SOURCE_DIR} )
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_definitions(-DENABLE_TBDD)
-add_definitions(-DENABLE_BTRACE)
+# add_definitions(-DENABLE_BTRACE)
 add_definitions(-DCACHE_STATS)
 
 if (NOT WIN32)

@@ -1,6 +1,6 @@
 /*========================================================================
   Copyright (c) 2022 Randal E. Bryant, Carnegie Mellon University
-  
+
   As noted below, this code is a modified version of code authored and
   copywrited by Jorn Lind-Nielsen.  Permisssion to use the original
   code is subject to the terms noted below.
@@ -14,10 +14,10 @@
   and/or sell copies of the Software, and to permit persons to whom
   the Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -102,7 +102,7 @@
 #define OPERATOR_NUM    11
 
    /* Operator results - entry = left<<1 | right  (left,right in {0,1}) */
-static int oprres[OPERATOR_NUM][4] = 
+static int oprres[OPERATOR_NUM][4] =
 { {0,0,0,1},  /* and                       ( & )         */
   {0,1,1,0},  /* xor                       ( ^ )         */
   {0,1,1,1},  /* or                        ( | )         */
@@ -223,7 +223,7 @@ int bdd_operator_init(int cachesize)
    cacheratio = 0;
    supportSet = NULL;
    supportSize = 0;
-   
+
    return 0;
 }
 
@@ -232,7 +232,7 @@ void bdd_operator_done(void)
 {
    if (quantvarset != NULL)
       free(quantvarset);
-   
+
 #if ENABLE_TBDD
    BddCache_clear_clauses(&opcache);
    process_deferred_deletions();
@@ -273,7 +273,7 @@ static void bdd_operator_noderesize(void)
    if (cacheratio > 0)
    {
       int newcachesize = bddnodesize / cacheratio;
-      
+
 #if ENABLE_TBDD
       BddCache_clear_clauses(&opcache);
 #endif
@@ -305,12 +305,12 @@ ALSO    {* bdd\_init *}
 int bdd_setcacheratio(int r)
 {
    int old = cacheratio;
-   
+
    if (r <= 0)
       return bdd_error(BDD_RANGE);
    if (bddnodesize == 0)
       return old;
-   
+
    cacheratio = r;
    bdd_operator_noderesize();
    return old;
@@ -361,7 +361,7 @@ BDD bdd_buildcube(int value, int width, BDD *variables)
    {
       BDD tmp;
       BDD v;
-      
+
       if (value & 0x1)
 	 v = bdd_addref( variables[width-z-1] );
       else
@@ -388,7 +388,7 @@ BDD bdd_ibuildcube(int value, int width, int *variables)
    {
       BDD tmp;
       BDD v;
-      
+
       if (value & 0x1)
 	 v = BDD_ithvar(variables[width-z-1]);
       else
@@ -427,7 +427,7 @@ BDD bdd_not(BDD r)
    if (setjmp(bddexception) == 0)
    {
       INITREF;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = not_rec(r);
@@ -456,9 +456,9 @@ static BDD not_rec(BDD r)
       return BDDONE;
    if (ISONE(r))
       return BDDZERO;
-   
+
    entry = BddCache_lookup(&opcache, NOTHASH(r));
-      
+
    if (entry->a == r  &&  entry->op == bddop_not)
    {
 #ifdef CACHESTATS
@@ -469,15 +469,15 @@ static BDD not_rec(BDD r)
 #ifdef CACHESTATS
    bddcachestats.opMiss++;
 #endif
-   
+
    PUSHREF( not_rec(LOW(r)) );
    PUSHREF( not_rec(HIGH(r)) );
    res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
    POPREF(2);
-   
+
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
    entry->a = r;
    entry->b = -1;
@@ -501,7 +501,7 @@ DESCR   {* The {\tt bdd\_apply} function performs all of the basic
 	   The {\tt left} argument is the left bdd operand and {\tt right}
 	   is the right operand. The {\tt opr} argument is the requested
 	   operation and must be one of the following\\
-	   
+
    \begin{tabular}{lllc}
      {\bf Identifier}    & {\bf Description} & {\bf Truth table}
         & {\bf C++ opr.} \\
@@ -532,7 +532,7 @@ BDD bdd_apply(BDD l, BDD r, int op)
    BDD res;
    this_apply_counter = 0;
    firstReorder = 1;
-   
+
    CHECKa(l, bddfalse);
    CHECKa(r, bddfalse);
 
@@ -547,7 +547,7 @@ BDD bdd_apply(BDD l, BDD r, int op)
    {
       INITREF;
       applyop = op;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = apply_rec(l, r);
@@ -562,7 +562,7 @@ BDD bdd_apply(BDD l, BDD r, int op)
 	 goto again;
       res = BDDZERO;  /* avoid warning about res being uninitialized */
    }
-   
+
    checkresize();
    return res;
 }
@@ -573,7 +573,7 @@ static BDD apply_rec(BDD l, BDD r)
    BddCacheData *entry;
    BDD res;
    bool done = false;
-   
+
    switch (applyop)
    {
     case bddop_and:
@@ -635,7 +635,7 @@ static BDD apply_rec(BDD l, BDD r)
    else
    {
       entry = BddCache_lookup(&opcache, APPLYHASH(l,r,applyop));
-      
+
       if (entry->a == l  &&  entry->b == r  &&  entry->op == applyop)
       {
 #ifdef CACHESTATS
@@ -646,7 +646,7 @@ static BDD apply_rec(BDD l, BDD r)
 #ifdef CACHESTATS
       bddcachestats.opMiss++;
 #endif
-      
+
       this_apply_counter++;
       if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
 	  fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
@@ -676,7 +676,7 @@ static BDD apply_rec(BDD l, BDD r)
 
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
       entry->a = l;
       entry->b = r;
@@ -791,7 +791,7 @@ DESCR   {* The {\tt tbdd\_apply} function performs basic
 	   The {\tt left} argument is the left bdd operand and {\tt right}
 	   is the right operand. The {\tt opr} argument is the requested
 	   operation and must be one of the following\\
-	   
+
    \begin{tabular}{llllc}
      {\bf Identifier}    & {\bf Description} & {\bf Proof} & {\bf Truth table}
         & {\bf C++ opr.} \\
@@ -810,7 +810,7 @@ static pcbdd bdd_applyj(BDD l, BDD r, int op)
 
    this_apply_counter = 0;
    firstReorder = 1;
-   
+
    CHECKa(l, pcbdd_null());
    CHECKa(r, pcbdd_null());
 
@@ -826,7 +826,7 @@ static pcbdd bdd_applyj(BDD l, BDD r, int op)
    {
       INITREF;
       applyop = op;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = applyj_rec(l, r);
@@ -841,7 +841,7 @@ static pcbdd bdd_applyj(BDD l, BDD r, int op)
 	 goto again;
       res = pcbdd_tautology();
    }
-   
+
    checkresize();
    return res;
 }
@@ -864,7 +864,7 @@ static pcbdd bdd_apply_aij(BDD l, BDD r, BDD t)
 
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(l, pcbdd_null());
    CHECKa(r, pcbdd_null());
    CHECKa(t, pcbdd_null());
@@ -874,8 +874,8 @@ static pcbdd bdd_apply_aij(BDD l, BDD r, BDD t)
    {
       INITREF;
       /* Some of the cases degenerate to implication checks */
-      applyop = bddop_imptstj; 
-      
+      applyop = bddop_imptstj;
+
       if (!firstReorder)
 	 bdd_disable_reorder();
 
@@ -892,7 +892,7 @@ static pcbdd bdd_apply_aij(BDD l, BDD r, BDD t)
 	 goto again;
       res = pcbdd_tautology();
    }
-   
+
    checkresize();
 
    return res;
@@ -903,7 +903,7 @@ static pcbdd applyj_rec(BDD l, BDD r)
 {
    BddCacheData *entry;
    pcbdd tres;
-   
+
    //   printf("applyj_rec called with l=%d (N%d), r=%d (N%d), op = %d\n", (int) l, NNAME(l), (int) r, NNAME(r), applyop);
 
    tres.root = BDDZERO;
@@ -940,7 +940,7 @@ static pcbdd applyj_rec(BDD l, BDD r)
 	   { tres.root = BDDONE; done = true; }
        else if (ISONE(l))
 	   /* Implication cannot hold for all arguments */
-	   { 
+	   {
 	       tres.root = BDDZERO;
 	       fprintf(ERROUT, "Implication failure.  N%d -/-> N%d\n", bdd_nameid(l), bdd_nameid(r));
 	       bdd_error(TBDD_PROOF);
@@ -948,13 +948,13 @@ static pcbdd applyj_rec(BDD l, BDD r)
 	   }
        else if (ISZERO(r))
 	   /* Implication cannot hold for all arguments */
-	   { 
+	   {
 	       tres.root = BDDZERO;
 	       fprintf(ERROUT, "Implication failure.  N%d -/-> N%d\n", bdd_nameid(l), bdd_nameid(r));
 	       bdd_error(TBDD_PROOF);
 	       done = true;
 	   }
-       
+
        if (done) {
 #if ENABLE_BTRACE
 	   if (bdd_trace_file) {
@@ -990,7 +990,7 @@ static pcbdd applyj_rec(BDD l, BDD r)
 #ifdef CACHESTATS
       bddcachestats.opMiss++;
 #endif
-      
+
       pcbdd tresh;
       pcbdd tresl;
       int splitVar;
@@ -1029,7 +1029,7 @@ static pcbdd applyj_rec(BDD l, BDD r)
       splitVar = bdd_level2var(splitLevel);
       if (applyop == bddop_imptstj)
 	  tres.root = ISONE(tresl.root) && ISONE(tresh.root) ? BDDONE : BDDZERO;
-      else 
+      else
 	  tres.root = bdd_makenode(splitLevel, READREF(2), READREF(1));
       tres.clause_id = justify_apply(applyop, l, r, splitVar, tresl, tresh, tres.root);
 
@@ -1077,7 +1077,7 @@ static pcbdd apply_aij_rec(BDD l, BDD r, BDD t)
 {
    BddCacheData *entry;
    pcbdd tres;
-   
+
    //   printf("apply_aij_rec called with l=%d (N%d), r=%d (N%d), t = %d (N%d)\n", (int) l, NNAME(l), (int) r, NNAME(r), int(t), NNAME(t));
 
    tres.root = BDDONE;
@@ -1120,7 +1120,7 @@ static pcbdd apply_aij_rec(BDD l, BDD r, BDD t)
 #ifdef CACHESTATS
       bddcachestats.opMiss++;
 #endif
-      
+
       pcbdd tresh;
       pcbdd tresl;
       int splitVar;
@@ -1301,7 +1301,7 @@ BDD bdd_ite(BDD f, BDD g, BDD h)
    BDD res;
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(f, bddfalse);
    CHECKa(g, bddfalse);
    CHECKa(h, bddfalse);
@@ -1310,7 +1310,7 @@ BDD bdd_ite(BDD f, BDD g, BDD h)
    if (setjmp(bddexception) == 0)
    {
       INITREF;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = ite_rec(f,g,h);
@@ -1358,7 +1358,7 @@ static BDD ite_rec(BDD f, BDD g, BDD h)
 #ifdef CACHESTATS
    bddcachestats.opMiss++;
 #endif
-      
+
    this_apply_counter++;
    if (0 && this_apply_counter % THIS_APPLY_REPORT == 0) {
        fprintf(stdout, "Current apply operation has %d recursive calls\n", this_apply_counter);
@@ -1436,7 +1436,7 @@ static BDD ite_rec(BDD f, BDD g, BDD h)
 
 #if ENABLE_TBDD
    BddCache_clause_evict(entry);
-#endif      
+#endif
 
    entry->a = f;
    entry->b = g;
@@ -1480,13 +1480,13 @@ BDD bdd_restrict(BDD r, BDD var)
 {
    BDD res;
    firstReorder = 1;
-   
+
    CHECKa(r,bddfalse);
    CHECKa(var,bddfalse);
-   
+
    if (var < 2)  /* Empty set */
       return r;
-   
+
  again:
    if (setjmp(bddexception) == 0)
    {
@@ -1495,7 +1495,7 @@ BDD bdd_restrict(BDD r, BDD var)
 
       INITREF;
       miscid = (var << 3) | CACHEID_RESTRICT;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = restrict_rec(r);
@@ -1520,7 +1520,7 @@ static int restrict_rec(int r)
 {
    BddCacheData *entry;
    int res;
-   
+
    if (ISCONST(r)  ||  LEVEL(r) > quantlast)
       return r;
 
@@ -1535,7 +1535,7 @@ static int restrict_rec(int r)
 #ifdef CACHESTATS
    bddcachestats.opMiss++;
 #endif
-   
+
    if (INSVARSET(LEVEL(r)))
    {
       if (quantvarset[LEVEL(r)] > 0)
@@ -1553,7 +1553,7 @@ static int restrict_rec(int r)
 
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
    entry->a = r;
    entry->b = -1;
@@ -1582,16 +1582,16 @@ BDD bdd_constrain(BDD f, BDD c)
    BDD res;
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(f,bddfalse);
    CHECKa(c,bddfalse);
-   
+
  again:
    if (setjmp(bddexception) == 0)
    {
       INITREF;
       miscid = CACHEID_CONSTRAIN;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = constrain_rec(f, c);
@@ -1683,7 +1683,7 @@ static BDD constrain_rec(BDD f, BDD c)
 
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
 
    entry->a = f;
@@ -1716,9 +1716,9 @@ BDD bdd_replace(BDD r, bddPair *pair)
    BDD res;
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(r, bddfalse);
-   
+
  again:
    if (setjmp(bddexception) == 0)
    {
@@ -1726,7 +1726,7 @@ BDD bdd_replace(BDD r, bddPair *pair)
       replacepair = pair->result;
       replacelast = pair->last;
       replaceid = (pair->id << 2) | CACHEID_REPLACE;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = replace_rec(r);
@@ -1751,7 +1751,7 @@ static BDD replace_rec(BDD r)
 {
    BddCacheData *entry;
    BDD res;
-   
+
    if (ISCONST(r)  ||  LEVEL(r) > replacelast)
       return r;
 
@@ -1780,7 +1780,7 @@ static BDD replace_rec(BDD r)
 
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
 
    entry->a = r;
@@ -1796,7 +1796,7 @@ static BDD replace_rec(BDD r)
 static BDD bdd_correctify(int level, BDD l, BDD r)
 {
    BDD res;
-   
+
    if (level < LEVEL(l)  &&  level < LEVEL(r))
       return bdd_makenode(level, l, r);
 
@@ -1831,7 +1831,7 @@ static BDD bdd_correctify(int level, BDD l, BDD r)
       res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
    }
    POPREF(2);
-   
+
    return res; /* FIXME: cache ? */
 }
 
@@ -1853,7 +1853,7 @@ BDD bdd_compose(BDD f, BDD g, int var)
    BDD res;
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(f, bddfalse);
    CHECKa(g, bddfalse);
    if (var < 0 || var >= bddvarnum)
@@ -1861,14 +1861,14 @@ BDD bdd_compose(BDD f, BDD g, int var)
       bdd_error(BDD_VAR);
       return bddfalse;
    }
-   
+
  again:
    if (setjmp(bddexception) == 0)
    {
       INITREF;
       composelevel = bddvar2level[var];
       replaceid = (composelevel << 2) | CACHEID_COMPOSE;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = compose_rec(f, g);
@@ -1946,7 +1946,7 @@ static BDD compose_rec(BDD f, BDD g)
 
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
 
    entry->a = f;
@@ -1984,9 +1984,9 @@ BDD bdd_veccompose(BDD f, bddPair *pair)
    BDD res;
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(f, bddfalse);
-   
+
  again:
    if (setjmp(bddexception) == 0)
    {
@@ -1994,7 +1994,7 @@ BDD bdd_veccompose(BDD f, bddPair *pair)
       replacepair = pair->result;
       replaceid = (pair->id << 2) | CACHEID_VECCOMPOSE;
       replacelast = pair->last;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = veccompose_rec(f);
@@ -2019,10 +2019,10 @@ static BDD veccompose_rec(BDD f)
 {
    BddCacheData *entry;
    register BDD res;
-   
+
    if (LEVEL(f) > replacelast)
       return f;
-   
+
    entry = BddCache_lookup(&opcache, VECCOMPOSEHASH(f));
    if (entry->a == f  &&  entry->c == replaceid && entry->op == bddop_replace)
    {
@@ -2048,7 +2048,7 @@ static BDD veccompose_rec(BDD f)
 
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
 
    entry->a = f;
@@ -2079,16 +2079,16 @@ BDD bdd_simplify(BDD f, BDD d)
 {
    BDD res;
    firstReorder = 1;
-   
+
    CHECKa(f, bddfalse);
    CHECKa(d, bddfalse);
-   
+
  again:
    if (setjmp(bddexception) == 0)
    {
       INITREF;
       applyop = bddop_or;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = simplify_rec(f, d);
@@ -2122,7 +2122,7 @@ static BDD simplify_rec(BDD f, BDD d)
       return BDDZERO;
 
    entry = BddCache_lookup(&opcache, APPLYHASH(f,d,bddop_simplify));
-   
+
    if (entry->a == f  &&  entry->b == d  &&  entry->op == bddop_simplify)
    {
 #ifdef CACHESTATS
@@ -2133,7 +2133,7 @@ static BDD simplify_rec(BDD f, BDD d)
 #ifdef CACHESTATS
    bddcachestats.opMiss++;
 #endif
-   
+
    if (LEVEL(f) == LEVEL(d))
    {
       if (ISZERO(LOW(d)))
@@ -2166,7 +2166,7 @@ static BDD simplify_rec(BDD f, BDD d)
 
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
    entry->a = f;
    entry->b = d;
@@ -2195,10 +2195,10 @@ BDD bdd_exist(BDD r, BDD var)
    BDD res;
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(r, bddfalse);
    CHECKa(var, bddfalse);
-   
+
    if (var < 2)  /* Empty set */
       return r;
 
@@ -2247,10 +2247,10 @@ BDD bdd_forall(BDD r, BDD var)
    BDD res;
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(r, bddfalse);
    CHECKa(var, bddfalse);
-   
+
    if (var < 2)  /* Empty set */
       return r;
 
@@ -2263,7 +2263,7 @@ BDD bdd_forall(BDD r, BDD var)
       INITREF;
       quantid = (var << 3) | CACHEID_FORALL;
       applyop = bddop_and;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = quant_rec(r);
@@ -2302,10 +2302,10 @@ BDD bdd_unique(BDD r, BDD var)
    BDD res;
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(r, bddfalse);
    CHECKa(var, bddfalse);
-   
+
    if (var < 2)  /* Empty set */
       return r;
 
@@ -2318,7 +2318,7 @@ BDD bdd_unique(BDD r, BDD var)
       INITREF;
       quantid = (var << 3) | CACHEID_UNIQUE;
       applyop = bddop_xor;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = quant_rec(r);
@@ -2343,7 +2343,7 @@ static int quant_rec(int r)
 {
    BddCacheData *entry;
    int res;
-   
+
    if (r < 2  ||  LEVEL(r) > quantlast)
       return r;
 
@@ -2366,17 +2366,17 @@ static int quant_rec(int r)
 
    PUSHREF( quant_rec(LOW(r)) );
    PUSHREF( quant_rec(HIGH(r)) );
-   
+
    if (INVARSET(LEVEL(r)))
       res = apply_rec(READREF(2), READREF(1));
    else
       res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
 
    POPREF(2);
-   
+
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
    entry->a = r;
    entry->b = -1;
@@ -2413,17 +2413,17 @@ BDD bdd_appex(BDD l, BDD r, int opr, BDD var)
    BDD res;
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(l, bddfalse);
    CHECKa(r, bddfalse);
    CHECKa(var, bddfalse);
-   
+
    if (opr<0 || opr>bddop_invimp)
    {
       bdd_error(BDD_OP);
       return bddfalse;
    }
-   
+
    if (var < 2)  /* Empty set */
       return bdd_apply(l,r,opr);
 
@@ -2432,13 +2432,13 @@ BDD bdd_appex(BDD l, BDD r, int opr, BDD var)
    {
       if (varset2vartable(var) < 0)
 	 return bddfalse;
-   
+
       INITREF;
       applyop = bddop_or;
       appexop = opr;
       appexid = (var << 5) | (appexop << 1); /* FIXME: range! */
       quantid = (appexid << 3) | CACHEID_APPEX;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = appquant_rec(l, r);
@@ -2453,7 +2453,7 @@ BDD bdd_appex(BDD l, BDD r, int opr, BDD var)
 	 goto again;
       res = BDDZERO;  /* avoid warning about res being uninitialized */
    }
-   
+
    checkresize();
    return res;
 }
@@ -2480,17 +2480,17 @@ BDD bdd_appall(BDD l, BDD r, int opr, BDD var)
    BDD res;
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(l, bddfalse);
    CHECKa(r, bddfalse);
    CHECKa(var, bddfalse);
-   
+
    if (opr<0 || opr>bddop_invimp)
    {
       bdd_error(BDD_OP);
       return bddfalse;
    }
-   
+
    if (var < 2)  /* Empty set */
       return bdd_apply(l,r,opr);
 
@@ -2505,7 +2505,7 @@ BDD bdd_appall(BDD l, BDD r, int opr, BDD var)
       appexop = opr;
       appexid = (var << 5) | (appexop << 1) | 1; /* FIXME: range! */
       quantid = (appexid << 3) | CACHEID_APPAL;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = appquant_rec(l, r);
@@ -2547,17 +2547,17 @@ BDD bdd_appuni(BDD l, BDD r, int opr, BDD var)
    BDD res;
    firstReorder = 1;
    this_apply_counter = 0;
-   
+
    CHECKa(l, bddfalse);
    CHECKa(r, bddfalse);
    CHECKa(var, bddfalse);
-   
+
    if (opr<0 || opr>bddop_invimp)
    {
       bdd_error(BDD_OP);
       return bddfalse;
    }
-   
+
    if (var < 2)  /* Empty set */
       return bdd_apply(l,r,opr);
 
@@ -2572,7 +2572,7 @@ BDD bdd_appuni(BDD l, BDD r, int opr, BDD var)
       appexop = opr;
       appexid = (var << 5) | (appexop << 1) | 1; /* FIXME: range! */
       quantid = (appexid << 3) | CACHEID_APPUN;
-      
+
       if (!firstReorder)
 	 bdd_disable_reorder();
       res = appquant_rec(l, r);
@@ -2637,7 +2637,7 @@ static int appquant_rec(int l, int r)
 	  return 0;
        break;
    }
-   
+
    if (ISCONST(l)  &&  ISCONST(r))
       res = oprres[appexop][(l<<1) | r];
    else
@@ -2697,10 +2697,10 @@ static int appquant_rec(int l, int r)
       }
 
       POPREF(2);
-      
+
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
       entry->a = l;
       entry->b = r;
@@ -2735,7 +2735,7 @@ BDD bdd_support(BDD r)
    int res=1;
 
    CHECKa(r, bddfalse);
-   
+
    if (r < 2)
       return bddfalse;
 
@@ -2783,7 +2783,7 @@ BDD bdd_support(BDD r)
 	 bdd_delref(res);
 	 res = tmp;
       }
-   
+
    bdd_enable_reorder();
 
    return res;
@@ -2793,7 +2793,7 @@ BDD bdd_support(BDD r)
 static void support_rec(int r, int* support)
 {
    BddNode *node;
-   
+
    if (r < 2)
       return;
 
@@ -2802,12 +2802,12 @@ static void support_rec(int r, int* support)
       return;
 
    support[LEVELp(node)] = supportID;
-   
+
    if (LEVELp(node) > supportMax)
      supportMax = LEVELp(node);
-   
+
    LEVELp(node) |= MARKON;
-   
+
    support_rec(LOWp(node), support);
    support_rec(HIGHp(node), support);
 }
@@ -2835,7 +2835,7 @@ BDD bdd_satone(BDD r)
       return r;
 
    bdd_disable_reorder();
-   
+
    INITREF;
    res = satone_rec(r);
 
@@ -2893,7 +2893,7 @@ BDD bdd_satoneset(BDD r, BDD var, BDD pol)
    }
 
    bdd_disable_reorder();
-   
+
    INITREF;
    satPolarity = pol;
    res = satoneset_rec(r, var);
@@ -2944,7 +2944,7 @@ static BDD satoneset_rec(BDD r, BDD var)
 	 return PUSHREF( bdd_makenode(LEVEL(r), res, BDDZERO) );
       }
    }
-   
+
 }
 
 
@@ -2971,7 +2971,7 @@ BDD bdd_fullsatone(BDD r)
       return 0;
 
    bdd_disable_reorder();
-   
+
    INITREF;
    res = fullsatone_rec(r);
 
@@ -2979,7 +2979,7 @@ BDD bdd_fullsatone(BDD r)
    {
       res = PUSHREF( bdd_makenode(v, res, 0) );
    }
-   
+
    bdd_enable_reorder();
 
    checkresize();
@@ -2991,12 +2991,12 @@ static int fullsatone_rec(int r)
 {
    if (r < 2)
       return r;
-   
+
    if (LOW(r) != 0)
    {
       int res = fullsatone_rec(LOW(r));
       int v;
-      
+
       for (v=LEVEL(LOW(r))-1 ; v>LEVEL(r) ; v--)
       {
 	 res = PUSHREF( bdd_makenode(v, res, 0) );
@@ -3008,7 +3008,7 @@ static int fullsatone_rec(int r)
    {
       int res = fullsatone_rec(HIGH(r));
       int v;
-      
+
       for (v=LEVEL(HIGH(r))-1 ; v>LEVEL(r) ; v--)
       {
 	 res = PUSHREF( bdd_makenode(v, res, 0) );
@@ -3050,13 +3050,13 @@ void allsatPrintHandler(char* varset, int size)
            \noindent
 	   The handler can be used like this:
 	   {\tt bdd\_allsat(r, allsatPrintHandler); } *}
-	   
+
 ALSO    {* bdd\_satone bdd\_satoneset, bdd\_fullsatone, bdd\_satcount, bdd\_satcountln *}
 */
 void bdd_allsat(BDD r, bddallsathandler handler)
 {
    int v;
-  
+
    CHECKn(r);
 
    if ((allsatProfile=(char*)malloc(bddvarnum)) == NULL)
@@ -3067,10 +3067,10 @@ void bdd_allsat(BDD r, bddallsathandler handler)
 
    for (v=LEVEL(r)-1 ; v>=0 ; --v)
      allsatProfile[bddlevel2var[v]] = -1;
-   
+
    allsatHandler = handler;
    INITREF;
-   
+
    allsat_rec(r);
 
    free(allsatProfile);
@@ -3084,35 +3084,35 @@ static void allsat_rec(BDD r)
       allsatHandler(allsatProfile, bddvarnum);
       return;
    }
-  
+
    if (ISZERO(r))
       return;
-   
+
    if (!ISZERO(LOW(r)))
    {
       int v;
 
       allsatProfile[bddlevel2var[LEVEL(r)]] = 0;
-	 
+
       for (v=LEVEL(LOW(r))-1 ; v>LEVEL(r) ; --v)
       {
 	 allsatProfile[bddlevel2var[v]] = -1;
       }
-      
+
       allsat_rec(LOW(r));
    }
-   
+
    if (!ISZERO(HIGH(r)))
    {
       int v;
 
       allsatProfile[bddlevel2var[LEVEL(r)]] = 1;
-	 
+
       for (v=LEVEL(HIGH(r))-1 ; v>LEVEL(r) ; --v)
       {
 	 allsatProfile[bddlevel2var[v]] = -1;
       }
-      
+
       allsat_rec(HIGH(r));
    }
 }
@@ -3144,7 +3144,7 @@ double bdd_satcount(BDD r)
 
    miscid = CACHEID_SATCOU;
    size = pow(2.0, (double)LEVEL(r));
-   
+
    return size * satcount_rec(r);
 }
 
@@ -3171,7 +3171,7 @@ static double satcount_rec(int root)
    BddCacheData *entry;
    BddNode *node;
    double size, s;
-   
+
    if (root < 2)
       return root;
 
@@ -3192,14 +3192,14 @@ static double satcount_rec(int root)
 
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
    entry->a = root;
    entry->b = -1;
    entry->c = miscid;
    entry->op = bddop_misc;
    entry->r.dres = size;
-   
+
    return size;
 }
 
@@ -3261,7 +3261,7 @@ static double satcountln_rec(int root)
    BddCacheData *entry;
    BddNode *node;
    double size, s1,s2;
-   
+
    if (root == 0)
       return -1.0;
    if (root == 1)
@@ -3276,11 +3276,11 @@ static double satcountln_rec(int root)
    s1 = satcountln_rec(LOWp(node));
    if (s1 >= 0.0)
       s1 += LEVEL(LOWp(node)) - LEVELp(node) - 1;
-   
+
    s2 = satcountln_rec(HIGHp(node));
    if (s2 >= 0.0)
       s2 += LEVEL(HIGHp(node)) - LEVELp(node) - 1;
-   
+
    if (s1 < 0.0)
       size = s2;
    else if (s2 < 0.0)
@@ -3289,17 +3289,17 @@ static double satcountln_rec(int root)
       size = s2 + log1p(pow(2.0,s1-s2)) / M_LN2;
    else
       size = s1 + log1p(pow(2.0,s2-s1)) / M_LN2;
-   
+
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
    entry->a = root;
    entry->b = -1;
    entry->c = miscid;
    entry->op = bddop_misc;
    entry->r.dres = size;
-   
+
    return size;
 }
 
@@ -3321,7 +3321,7 @@ int bdd_nodecount(BDD r)
    int num=0;
 
    CHECK(r);
-   
+
    bdd_markcount(r, &num);
    bdd_unmark(r);
 
@@ -3348,7 +3348,7 @@ int bdd_anodecount(BDD *r, int num)
 
    for (n=0 ; n<num ; n++)
       bdd_markcount(r[n], &cou);
-   
+
    for (n=0 ; n<num ; n++)
       bdd_unmark(r[n]);
 
@@ -3374,7 +3374,7 @@ RETURN  {* A pointer to an integer array with the profile or NULL if an
 int *bdd_varprofile(BDD r)
 {
    CHECKa(r, NULL);
-   
+
    if ((varprofile=(int*)malloc(sizeof(int)*bddvarnum)) == NULL)
    {
       bdd_error(BDD_MEMORY);
@@ -3391,7 +3391,7 @@ int *bdd_varprofile(BDD r)
 static void varprofile_rec(int r)
 {
    BddNode *node;
-   
+
    if (r < 2)
       return;
 
@@ -3401,7 +3401,7 @@ static void varprofile_rec(int r)
 
    varprofile[bddlevel2var[LEVELp(node)]]++;
    LEVELp(node) |= MARKON;
-   
+
    varprofile_rec(LOWp(node));
    varprofile_rec(HIGHp(node));
 }
@@ -3447,14 +3447,14 @@ static double bdd_pathcount_rec(BDD r)
 
 #if ENABLE_TBDD
       BddCache_clause_evict(entry);
-#endif      
+#endif
 
    entry->a = r;
    entry->b = -1;
    entry->c = miscid;
    entry->op = bddop_misc;
    entry->r.dres = size;
-   
+
    return size;
 }
 
@@ -3466,12 +3466,12 @@ static double bdd_pathcount_rec(BDD r)
 static int varset2vartable(BDD r)
 {
    BDD n;
-   
+
    if (r < 2)
       return bdd_error(BDD_VARSET);
-   
+
    quantvarsetID++;
-   
+
    if (quantvarsetID == INT_MAX)
    {
       memset(quantvarset, 0, sizeof(int)*bddvarnum);
@@ -3483,7 +3483,7 @@ static int varset2vartable(BDD r)
       quantvarset[LEVEL(n)] = quantvarsetID;
       quantlast = LEVEL(n);
    }
-   
+
    return 0;
 }
 
@@ -3491,12 +3491,12 @@ static int varset2vartable(BDD r)
 static int varset2svartable(BDD r)
 {
    BDD n;
-   
+
    if (r < 2)
       return bdd_error(BDD_VARSET);
-   
+
    quantvarsetID++;
-   
+
    if (quantvarsetID == INT_MAX/2)
    {
       memset(quantvarset, 0, sizeof(int)*bddvarnum);
@@ -3517,7 +3517,7 @@ static int varset2svartable(BDD r)
       }
       quantlast = LEVEL(n);
    }
-   
+
    return 0;
 }
 

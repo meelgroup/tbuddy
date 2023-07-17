@@ -1,6 +1,6 @@
 /*========================================================================
   Copyright (c) 2022 Randal E. Bryant, Carnegie Mellon University
-  
+
   This code was not included in the original BuDDy distribution and is
   therefore not subject to any of its licensing terms.
 
@@ -12,10 +12,10 @@
   and/or sell copies of the Software, and to permit persons to whom
   the Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -50,9 +50,9 @@
 #include "bdd.h"
 
 /* Value representing logical truth */
-#define TAUTOLOGY INT_MAX 
+#define TAUTOLOGY INT_MAX
 
-/* 
+/*
    A trusted BDD is one for which a proof has
    been generated showing that it is logically
    entailed by a set of input clauses.
@@ -61,7 +61,7 @@
   A trusted BDD must have a reference count >= 1, or else
   it's validating clause will be deleted.
   Consequently, all operations that a return a TBDD
-  have an incremented reference count.  
+  have an incremented reference count.
  */
 typedef struct {
     BDD root;
@@ -82,7 +82,7 @@ extern "C" {
   Package setup.
 ============================================*/
 
-/* 
+/*
   Set up package.  Arguments:
   - proof output file
   - number of variables in CNF
@@ -90,7 +90,7 @@ extern "C" {
   When generating LRAT proofs, also require arguments:
   - Number of clauses in CNF
   - The list of clauses, where clause i is at clauses[i-1]
-  
+
   These functions also initialize BuDDy, using parameters tuned according
   to the predicted complexity of the operations.
 
@@ -102,7 +102,7 @@ extern "C" {
 
    extern int tbdd_init(FILE *pfile, int *variable_counter, int *clause_id_counter, ilist *input_clauses, ilist variable_ordering, proof_type_t ptype, bool binary);
 
-/* 
+/*
    Initializers specific for the seven combinations of proof formats
  */
 extern int tbdd_init_lrat(FILE *pfile, int variable_count, int clause_count, ilist *input_clauses, ilist variable_ordering);
@@ -121,7 +121,7 @@ extern void tbdd_done();
 
 /*
   Report statistics for BDDs and TBDDs
- */    
+ */
 extern void bdd_report();
 extern void tbdd_report();
 
@@ -150,7 +150,7 @@ void tbdd_add_done_fun(tbdd_done_fun f);
 */
 extern void tbdd_set_verbose(int level);
 
-/* 
+/*
    Set limit on the number of input+proof clauses.
    Setting to 0 will keep at default limit (1<<30).
  */
@@ -177,13 +177,13 @@ TBDD tbdd_create(BDD r, int clause_id);
 extern TBDD tbdd_addref(TBDD tr);
 extern void tbdd_delref(TBDD tr);
 
-/* 
+/*
    proof_step = TAUTOLOGY
    root = 1
  */
 extern TBDD TBDD_tautology();
 
-/* 
+/*
    proof_step = TAUTOLOGY
    root = 0 (Used as an error return)
  */
@@ -291,8 +291,8 @@ class tbdd
 
     tbdd(const bdd &r, const int &id) { tb = tbdd_create(r.get_BDD(), id); }
     tbdd(const tbdd &t)               { tb = tbdd_addref(t.tb); }
-    tbdd(TBDD tr)                     { tb = tr; }  
-    tbdd(void)                        { tb = TBDD_tautology(); } 
+    tbdd(TBDD tr)                     { tb = tr; }
+    tbdd(void)                        { tb = TBDD_tautology(); }
 
     ~tbdd(void)                       { tbdd_delref(tb); }
 
@@ -326,7 +326,7 @@ class tbdd
 };
 
 inline void tbdd_print(tbdd &tr, FILE *out)
-{ tbdd_print(tr.tb, out); } 
+{ tbdd_print(tr.tb, out); }
 
 inline tbdd tbdd_tautology(void)
 { return tbdd(TBDD_tautology()); }

@@ -1,6 +1,6 @@
 /*========================================================================
   Copyright (c) 2022 Randal E. Bryant, Carnegie Mellon University
-  
+
   As noted below, this code is a modified version of code authored and
   copywrited by Jorn Lind-Nielsen.  Permisssion to use the original
   code is subject to the terms noted below.
@@ -14,10 +14,10 @@
   and/or sell copies of the Software, and to permit persons to whom
   the Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -282,13 +282,13 @@ typedef void (*bdd2inthandler)(int,int);
 typedef int  (*bddsizehandler)(void);
 typedef void (*bddfilehandler)(FILE *, int);
 typedef void (*bddallsathandler)(char*, int);
-   
+
 extern bddinthandler  bdd_error_hook(bddinthandler);
 extern bddgbchandler  bdd_gbc_hook(bddgbchandler);
 extern bdd2inthandler bdd_resize_hook(bdd2inthandler);
 extern bddinthandler  bdd_reorder_hook(bddinthandler);
 extern bddfilehandler bdd_file_hook(bddfilehandler);
-   
+
 extern int      bdd_init(int, int);
 extern void     bdd_done(void);
 extern int      bdd_setvarnum(int);
@@ -337,12 +337,12 @@ extern void     bdd_freepair(bddPair*);
 extern int      bdd_xvar(BDD);
 extern int      bdd_nameid(BDD);
 extern int      bdd_dclause(BDD, dclause_t);
-#endif     
+#endif
 
 #if ENABLE_BTRACE
 extern void   bdd_start_trace(FILE *tfile);
 #endif
-    
+
   /* In bddop.c */
 
 extern int      bdd_setcacheratio(int);
@@ -492,7 +492,7 @@ extern const BDD bddtrue;
 
 
 /*************************************************************************
- The following hack gives functions the names expected from the C interface 
+ The following hack gives functions the names expected from the C interface
  When writing C++, can still access the BDD functions
 *************************************************************************/
 
@@ -523,9 +523,9 @@ class bdd
    ~bdd(void)        { bdd_delref(root); }
 
    int id(void) const;
-   
+
    bdd operator=(const bdd &r);
-   
+
    bdd operator&(const bdd &r) const;
    bdd operator&=(const bdd &r);
    bdd operator^(const bdd &r) const;
@@ -543,7 +543,7 @@ class bdd
    bdd operator<<=(const bdd &r);
    int operator==(const bdd &r) const;
    int operator!=(const bdd &r) const;
-   
+
    // Backdoor to access private value.  Not for general use.
    inline BDD get_BDD() const { return root; }
    // Backdoor to create bdd from BDD.  Not for general use.
@@ -616,7 +616,7 @@ private:
    friend int    bdd_save(FILE*, const bdd &);
    friend int    bdd_fnload(char*, bdd &);
    friend int    bdd_load(FILE*, bdd &);
-   
+
    friend bdd    fdd_ithvarpp(int, int);
    friend bdd    fdd_ithsetpp(int);
    friend bdd    fdd_domainpp(int);
