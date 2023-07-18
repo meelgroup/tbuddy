@@ -726,8 +726,6 @@ static jtype_t hint_l_order[HINT_COUNT/2+1] =
     { HINT_EXTRA, HINT_RESLU, HINT_ARG1LD, HINT_ARG2LD, HINT_OPL };
 
 
-static char hstring[1024];
-
 static void initialize_hints() {
     jtype_t hi;
     for (hi = (jtype_t) 0; hi < HINT_COUNT+1; hi++) {

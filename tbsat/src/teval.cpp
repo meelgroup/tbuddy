@@ -431,7 +431,7 @@ private:
 public:
 
     TermSet(CNF &cnf, FILE *proof_file, ilist variable_ordering, int verb, proof_type_t ptype,
-            bool binary, Solver *sol, int clause_limit, unsigned s) {
+            bool binary, Solver *sol, unsigned s) {
         verblevel = verb;
         seed = s;
         proof_type = ptype;
@@ -556,13 +556,7 @@ public:
 
 };
 
-bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file, FILE *bdd_trace_file,
-           bool bucket,
-           int verblevel, proof_type_t ptype, bool binary, int max_solutions, int clause_limit, unsigned seed) {
-    assert(bdd_trace_file == NULL);
-    assert(sched_file == NULL);
-    assert(clause_limit == 0);
-    assert(bucket == 0);
+bool solve(FILE *cnf_file, int verblevel, bool binary, int max_solutions, unsigned seed) {
 
     CNF cset = CNF(cnf_file);
     fclose(cnf_file);
@@ -580,14 +574,7 @@ bool solve(FILE *cnf_file, FILE *proof_file, FILE *order_file, FILE *sched_file,
     PhaseGenerator pg(GENERATE_RANDOM, DEFAULT_SEED);
     Solver solver(&pg);
     ilist variable_ordering = NULL;
-    if (order_file != NULL) {
-        variable_ordering = ilist_read_file(order_file);
-        if (variable_ordering == NULL) {
-            std::cerr << "c ERROR: Invalid number encountered in ordering file" << std::endl;
-            return false;
-        }
-    }
-    TermSet tset(cset, proof_file, variable_ordering, verblevel, ptype, binary, &solver, clause_limit, seed);
+    TermSet tset(cset, NULL, variable_ordering, verblevel, PROOF_NONE, binary, &solver, seed);
     tbdd tr = tbdd_tautology();
     {
         tr = tset.tree_reduce();
