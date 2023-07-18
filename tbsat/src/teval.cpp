@@ -36,6 +36,9 @@
 #include "clause.h"
 #include "pseudoboolean.h"
 
+using std::endl;
+using std::cout;
+
 
 using namespace trustbdd;
 
@@ -488,18 +491,19 @@ bool solve(FILE *cnf_file, int verblevel, bool binary, int max_solutions, unsign
         std::cout << "s UNSATISFIABLE" << std::endl;
     else {
         std::cout << "s SATISFIABLE" << std::endl;
+        cout << "cnt: " << bdd_satcount(r) << endl;
         // Generate solutions
-        solver.set_constraint(r);
-        for (int i = 0; i < max_solutions; i++) {
-            bdd s = solver.next_solution();
-            if (s == bdd_false()) break;
-            ilist slist = bdd_decode_cube(s);
-            printf("v "); ilist_print(slist, stdout, " "); printf(" 0\n");
-            ilist_free(slist);
-            // Now exclude this solution from future enumerations.
-            if (i < max_solutions-1)
-                solver.impose_constraint(bdd_not(s));
-        }
+        /* solver.set_constraint(r); */
+        /* for (int i = 0; i < max_solutions; i++) { */
+        /*     bdd s = solver.next_solution(); */
+        /*     if (s == bdd_false()) break; */
+        /*     ilist slist = bdd_decode_cube(s); */
+        /*     printf("v "); ilist_print(slist, stdout, " "); printf(" 0\n"); */
+        /*     ilist_free(slist); */
+        /*     // Now exclude this solution from future enumerations. */
+        /*     if (i < max_solutions-1) */
+        /*         solver.impose_constraint(bdd_not(s)); */
+        /* } */
     }
     tbdd_done();
     return true;

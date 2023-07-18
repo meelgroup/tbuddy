@@ -86,7 +86,7 @@ static int rc_freepos;
 ============================================*/
 static int new_unit_clause(int id) {
     if (id != TAUTOLOGY)
-	created_unit_clauses = ilist_push(created_unit_clauses, id);
+        created_unit_clauses = ilist_push(created_unit_clauses, id);
     return id;
 }
 
@@ -95,14 +95,14 @@ static void rc_init() {
     rc_allocated_count = TABLE_INIT_SIZE;
     rc_table = calloc(rc_allocated_count, sizeof(int));
     if (!rc_table) {
-	fprintf(ERROUT, "Couldn't allocate space for %d RC table entries\n", rc_allocated_count);
-	bdd_error(BDD_MEMORY);
-	return;
+        fprintf(ERROUT, "Couldn't allocate space for %d RC table entries\n", rc_allocated_count);
+        bdd_error(BDD_MEMORY);
+        return;
     }
     rc_table[rc_allocated_count-1] = -1;
     int rci;
     for (rci = rc_allocated_count-2; rci >= 0; rci--)
-	rc_table[rci] = rci+1;
+        rc_table[rci] = rci+1;
     rc_freepos = 0;
 }
 
@@ -116,23 +116,23 @@ static void rc_grow() {
     int nsize = rc_allocated_count * TABLE_SCALE;
     rc_table = realloc(rc_table, nsize*sizeof(int));
     if (!rc_table) {
-	fprintf(ERROUT, "Couldn't allocate space for %d RC table entries\n", rc_allocated_count);
-	bdd_error(BDD_MEMORY);
-	return;
+        fprintf(ERROUT, "Couldn't allocate space for %d RC table entries\n", rc_allocated_count);
+        bdd_error(BDD_MEMORY);
+        return;
     }
     rc_table[nsize-1] = -1;
     int rci;
     for (rci = nsize-2; rci >= rc_allocated_count; rci--)
-	rc_table[rci] = rci+1;
+        rc_table[rci] = rci+1;
     rc_freepos = rc_allocated_count;
     rc_allocated_count = nsize;
 }
 
 static int rc_new_entry(int clause_id) {
     if (clause_id == TAUTOLOGY)
-	return -1;
+        return -1;
     if (rc_freepos == -1)
-	rc_grow();
+        rc_grow();
     int rci = rc_freepos;
     rc_freepos = rc_table[rci];
     rc_table[rci] = 1;
@@ -146,41 +146,41 @@ static void rc_dispose(int rci) {
 
 static int rc_get(int rci) {
     if (rci == -1)
-	return 1;
+        return 1;
     if (rci < -1 || rci >= rc_allocated_count) {
-	fprintf(ERROUT, "Invalid RC index %d\n", rci);
-	bdd_error(BDD_RANGE);
-	return 0;
+        fprintf(ERROUT, "Invalid RC index %d\n", rci);
+        bdd_error(BDD_RANGE);
+        return 0;
     }
     return rc_table[rci];
 }
 
 static void rc_increment(int rci) {
     if (rci == -1)
-	/* TAUTOLOGY */
-	return;
+        /* TAUTOLOGY */
+        return;
     if (rci < -1 || rci >= rc_allocated_count) {
-	fprintf(ERROUT, "Invalid RC index %d\n", rci);
-	bdd_error(BDD_RANGE);
-	return;
+        fprintf(ERROUT, "Invalid RC index %d\n", rci);
+        bdd_error(BDD_RANGE);
+        return;
     }
     if (rc_table[rci] == 0)
-	fprintf(ERROUT, "WARNING: Incrementing RC[%d] to 1\n", rci);
+        fprintf(ERROUT, "WARNING: Incrementing RC[%d] to 1\n", rci);
     rc_table[rci]++;
 }
 
 static int rc_decrement(int rci) {
     if (rci == -1)
-	/* TAUTOLOGY */
-	return 1;
+        /* TAUTOLOGY */
+        return 1;
     if (rci < -1 || rci >= rc_allocated_count) {
-	fprintf(ERROUT, "Invalid RC index %d\n", rci);
-	bdd_error(BDD_RANGE);
-	return 0;
+        fprintf(ERROUT, "Invalid RC index %d\n", rci);
+        bdd_error(BDD_RANGE);
+        return 0;
     }
     int nval = rc_table[rci]-1;
     if (nval < 0)
-	fprintf(ERROUT, "WARNING.  Decrementing RC[%d] to %d\n", rci, nval);
+        fprintf(ERROUT, "WARNING.  Decrementing RC[%d] to %d\n", rci, nval);
     rc_table[rci] = nval;
     return nval;
 }
@@ -263,45 +263,45 @@ int tbdd_init_noproof(int variable_count) {
 void tbdd_set_verbose(int level) {
     // Temporary
     if (level > 0)
-	verbosity_level = level;
+        verbosity_level = level;
 }
 
 void tbdd_set_clause_limit(int clim) {
     if (clim <= 0)
-	return;
+        return;
     if (clim > INT_MAX-4)
-	clim = INT_MAX-4;
+        clim = INT_MAX-4;
     /* clause_limit = clim; */
 }
 
 void bdd_report() {
     if (verbosity_level >= 1) {
-	bddStat s;
-	bdd_stats(&s);
-	bdd_printstat();
-	printf("\nc BDD statistics\n");
-	printf("c ----------------\n");
-	printf("c Total BDD nodes produced: %ld\n", s.produced);
+        bddStat s;
+        bdd_stats(&s);
+        bdd_printstat();
+        printf("\nc BDD statistics\n");
+        printf("c ----------------\n");
+        printf("c Total BDD nodes produced: %ld\n", s.produced);
     }
 }
 
 void tbdd_report() {
     int i;
     if (verbosity_level >= 1) {
-	printf("c Input variables: %d\n", input_variable_count);
-	printf("c Input clauses: %d\n", input_clause_count);
-	printf("c Total clauses: %d\n", total_clause_count);
-	int unused = *clause_id_counter - total_clause_count;
-	double upct = 100.0 * (double) unused/total_clause_count;
-	printf("c Unused+non-BDD clause IDs: %d (%.1f%%)\n", unused, upct);
-	printf("c Maximum live clauses: %d\n", max_live_clause_count);
-	printf("c Deleted clauses: %d\n", deleted_clause_count);
-	printf("c Final live clauses: %d\n", total_clause_count-deleted_clause_count);
-	if (variable_counter)
-	    printf("c Total variables: %d\n", *variable_counter);
+        printf("c Input variables: %d\n", input_variable_count);
+        printf("c Input clauses: %d\n", input_clause_count);
+        printf("c Total clauses: %d\n", total_clause_count);
+        int unused = *clause_id_counter - total_clause_count;
+        double upct = 100.0 * (double) unused/total_clause_count;
+        printf("c Unused+non-BDD clause IDs: %d (%.1f%%)\n", unused, upct);
+        printf("c Maximum live clauses: %d\n", max_live_clause_count);
+        printf("c Deleted clauses: %d\n", deleted_clause_count);
+        printf("c Final live clauses: %d\n", total_clause_count-deleted_clause_count);
+        if (variable_counter)
+            printf("c Total variables: %d\n", *variable_counter);
     }
     for (i = 0; i < ifun_count; i++) {
-	ifuns[i](verbosity_level);
+        ifuns[i](verbosity_level);
     }
 }
 
@@ -314,39 +314,39 @@ void tbdd_done() {
     int id = 0;
     ilist live_unit_clauses = ilist_new(100);
     while (ic < ilist_length(created_unit_clauses) && id < ilist_length(dead_unit_clauses)) {
-	int cc = created_unit_clauses[ic];
-	int cd = dead_unit_clauses[id];
-	if (cc < cd) {
-	    live_unit_clauses = ilist_push(live_unit_clauses, cc);
-	    ic++;
-	} else if (cc == cd) {
-	    ic++; id++;
-	} else {
-	    fprintf(ERROUT, "ERROR: Unit clause %d dead but never created\n", cd);
-	    id++;
-	}
+        int cc = created_unit_clauses[ic];
+        int cd = dead_unit_clauses[id];
+        if (cc < cd) {
+            live_unit_clauses = ilist_push(live_unit_clauses, cc);
+            ic++;
+        } else if (cc == cd) {
+            ic++; id++;
+        } else {
+            fprintf(ERROUT, "ERROR: Unit clause %d dead but never created\n", cd);
+            id++;
+        }
     }
     while (ic < ilist_length(created_unit_clauses))
-	live_unit_clauses = ilist_push(live_unit_clauses, created_unit_clauses[ic++]);
+        live_unit_clauses = ilist_push(live_unit_clauses, created_unit_clauses[ic++]);
     while (id < ilist_length(dead_unit_clauses))
-	fprintf(ERROUT, "ERROR: Unit clause %d dead but never created\n", dead_unit_clauses[id++]);
+        fprintf(ERROUT, "ERROR: Unit clause %d dead but never created\n", dead_unit_clauses[id++]);
 
     /* Delete outstanding unit clauses */
     if (ilist_length(live_unit_clauses) > 0) {
-	print_proof_comment(2, "Delete remaining unit clauses");
-	delete_clauses(live_unit_clauses);
+        print_proof_comment(2, "Delete remaining unit clauses");
+        delete_clauses(live_unit_clauses);
     }
     if (verbosity_level >= 2) {
-	printf("c Unit clauses: Created %d.  Deleted %d.  Remaining = [",
-	       ilist_length(created_unit_clauses), ilist_length(dead_unit_clauses));
-	if (ilist_length(live_unit_clauses) > 20) {
-	    ilist_resize(live_unit_clauses, 20);
-	    ilist_print(live_unit_clauses, stdout, " ");
-	    printf(" ...]\n");
-	} else {
-	    ilist_print(live_unit_clauses, stdout, " ");
-	    printf("]\n");
-	}
+        printf("c Unit clauses: Created %d.  Deleted %d.  Remaining = [",
+               ilist_length(created_unit_clauses), ilist_length(dead_unit_clauses));
+        if (ilist_length(live_unit_clauses) > 20) {
+            ilist_resize(live_unit_clauses, 20);
+            ilist_print(live_unit_clauses, stdout, " ");
+            printf(" ...]\n");
+        } else {
+            ilist_print(live_unit_clauses, stdout, " ");
+            printf("]\n");
+        }
     }
 
     ilist_free(created_unit_clauses);
@@ -356,7 +356,7 @@ void tbdd_done() {
     /* Free RC table */
     rc_done();
     for (i = 0; i < dfun_count; i++)
-	dfuns[i]();
+        dfuns[i]();
     bdd_report();
     bdd_done();
     prover_done();
@@ -365,16 +365,16 @@ void tbdd_done() {
 
 void tbdd_add_info_fun(tbdd_info_fun f) {
     if (ifun_count >= FUN_MAX) {
-	fprintf(ERROUT, "Limit of %d TBDD information functions.  Request ignored\n", FUN_MAX);
-	return;
+        fprintf(ERROUT, "Limit of %d TBDD information functions.  Request ignored\n", FUN_MAX);
+        return;
     }
     ifuns[ifun_count++] = f;
 }
 
 void tbdd_add_done_fun(tbdd_done_fun f) {
     if (dfun_count >= FUN_MAX) {
-	fprintf(ERROUT, "Limit of %d TBDD done functions.  Request ignored\n", FUN_MAX);
-	return;
+        fprintf(ERROUT, "Limit of %d TBDD done functions.  Request ignored\n", FUN_MAX);
+        return;
     }
     dfuns[dfun_count++] = f;
 }
@@ -432,20 +432,20 @@ TBDD tbdd_addref(TBDD tr) {
 
 void tbdd_delref(TBDD tr) {
     if (!bddnodes)
-	return;
+        return;
     bdd_delref(tr.root);
     int rc = rc_decrement(tr.rc_index);
     if (rc == 0) {
-	int dbuf[1+ILIST_OVHD];
-	ilist dlist = ilist_make(dbuf, 1);
-	ilist_fill1(dlist, tr.clause_id);
-	if (tr.root != bdd_false()) {
-	    print_proof_comment(2, "Deleting unit clause #%d for node N%d", tr.clause_id, NNAME(tr.root));
-	    delete_clauses(dlist);
-	}
-	/* Empty clause will be marked as "dead" so that is not later deleted */
-	dead_unit_clauses = ilist_push(dead_unit_clauses, tr.clause_id);
-	rc_dispose(tr.rc_index);
+        int dbuf[1+ILIST_OVHD];
+        ilist dlist = ilist_make(dbuf, 1);
+        ilist_fill1(dlist, tr.clause_id);
+        if (tr.root != bdd_false()) {
+            print_proof_comment(2, "Deleting unit clause #%d for node N%d", tr.clause_id, NNAME(tr.root));
+            delete_clauses(dlist);
+        }
+        /* Empty clause will be marked as "dead" so that is not later deleted */
+        dead_unit_clauses = ilist_push(dead_unit_clauses, tr.clause_id);
+        rc_dispose(tr.rc_index);
     }
 }
 
@@ -467,7 +467,7 @@ static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     clause = clean_clause(clause);
     BDD r = BDD_build_clause(clause);
     if (proof_type == PROOF_NONE) {
-	return tbdd_create(r, TAUTOLOGY);
+        return tbdd_create(r, TAUTOLOGY);
     }
     int len = ilist_length(clause);
     int nlits = 2*len+1;
@@ -478,16 +478,16 @@ static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
     BDD nd = r;
     int i;
     for (i = 0; i < len; i++) {
-	int lit = clause[i];
-	if (lit < 0) {
-	    ilist_push(ant, bdd_dclause(nd, DEF_LU));
-	    ilist_push(ant, bdd_dclause(nd, DEF_HU));
-	    nd = bdd_high(nd);
-	} else {
-	    ilist_push(ant, bdd_dclause(nd, DEF_HU));
-	    ilist_push(ant, bdd_dclause(nd, DEF_LU));
-	    nd = bdd_low(nd);
-	}
+        int lit = clause[i];
+        if (lit < 0) {
+            ilist_push(ant, bdd_dclause(nd, DEF_LU));
+            ilist_push(ant, bdd_dclause(nd, DEF_HU));
+            nd = bdd_high(nd);
+        } else {
+            ilist_push(ant, bdd_dclause(nd, DEF_HU));
+            ilist_push(ant, bdd_dclause(nd, DEF_LU));
+            nd = bdd_low(nd);
+        }
     }
     ilist_push(ant, id);
     int cbuf[1+ILIST_OVHD];
@@ -512,13 +512,13 @@ TBDD tbdd_from_clause(ilist clause) {
 TBDD tbdd_from_clause_id(int id) {
     ilist clause = get_input_clause(id);
     if (clause == NULL) {
-	fprintf(ERROUT, "Invalid input clause #%d\n", id);
-	exit(1);
+        fprintf(ERROUT, "Invalid input clause #%d\n", id);
+        exit(1);
     }
     TBDD tr = tbdd_from_clause_with_id(clause, id);
 #if ENABLE_BTRACE
     if (bdd_trace_file)
-	fprintf(bdd_trace_file, "tc %d %d\n", tr.root, id);
+        fprintf(bdd_trace_file, "tc %d %d\n", tr.root, id);
 #endif
     return tr;
 }
@@ -563,25 +563,25 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
     ilist_resize(lits, len);
     TBDD result = TBDD_tautology();
     for (bits = 0; bits < elen; bits++) {
-	int i;
-	if (parity(bits) == phase)
-	    continue;
-	for (i = 0; i < len; i++)
-	    lits[i] = (bits >> i) & 0x1 ? -vars[i] : vars[i];
-	TBDD tc = tbdd_from_clause(lits);
-	if (tbdd_is_true(result)) {
-	    result = tc;
-	} else {
-	    TBDD nresult = tbdd_and(result, tc);
-	    tbdd_delref(tc);
-	    tbdd_delref(result);
-	    result = nresult;
-	}
+        int i;
+        if (parity(bits) == phase)
+            continue;
+        for (i = 0; i < len; i++)
+            lits[i] = (bits >> i) & 0x1 ? -vars[i] : vars[i];
+        TBDD tc = tbdd_from_clause(lits);
+        if (tbdd_is_true(result)) {
+            result = tc;
+        } else {
+            TBDD nresult = tbdd_and(result, tc);
+            tbdd_delref(tc);
+            tbdd_delref(result);
+            result = nresult;
+        }
     }
     if (verbosity_level >= 2) {
-	ilist_format(vars, ibuf, " ^ ", BUFLEN);
-	print_proof_comment(2, "N%d is BDD representation of %s = %d",
-			    bdd_nameid(result.root), ibuf, phase);
+        ilist_format(vars, ibuf, " ^ ", BUFLEN);
+        print_proof_comment(2, "N%d is BDD representation of %s = %d",
+        		    bdd_nameid(result.root), ibuf, phase);
     }
     return result;
 }
@@ -593,9 +593,9 @@ TBDD TBDD_from_xor(ilist vars, int phase) {
  */
 TBDD tbdd_validate(BDD r, TBDD tr) {
     if (r == tr.root)
-	return tbdd_duplicate(tr);
+        return tbdd_duplicate(tr);
     if (proof_type == PROOF_NONE) {
-	return tbdd_create(r, TAUTOLOGY);
+        return tbdd_create(r, TAUTOLOGY);
     }
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
@@ -603,8 +603,8 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     ilist ant = ilist_make(abuf, 2);
     pcbdd p = bdd_imptst_justify(tr.root, r);
     if (p.root != bdd_true()) {
-	fprintf(ERROUT, "Failed to prove implication N%d --> N%d\n", NNAME(tr.root), NNAME(r));
-	exit(1);
+        fprintf(ERROUT, "Failed to prove implication N%d --> N%d\n", NNAME(tr.root), NNAME(r));
+        exit(1);
     }
     print_proof_comment(2, "Validation of unit clause for N%d by implication from N%d",NNAME(r), NNAME(tr.root));
     ilist_fill1(clause, XVAR(r));
@@ -612,7 +612,7 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
     int clause_id = generate_clause(clause, ant);
 #if ENABLE_BTRACE
     if (bdd_trace_file)
-	fprintf(bdd_trace_file, "ti %d %d\n", r, tr.root);
+        fprintf(bdd_trace_file, "ti %d %d\n", r, tr.root);
 #endif
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
@@ -626,7 +626,7 @@ TBDD tbdd_validate(BDD r, TBDD tr) {
  */
 TBDD tbdd_trust(BDD r) {
     if (proof_type == PROOF_NONE) {
-	return tbdd_create(r, TAUTOLOGY);
+        return tbdd_create(r, TAUTOLOGY);
     }
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
@@ -644,13 +644,13 @@ TBDD tbdd_trust(BDD r) {
  */
 TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     if (proof_type == PROOF_NONE) {
-	BDD r = bdd_and(tr1.root, tr2.root);
-	return tbdd_create(r, TAUTOLOGY);
+        BDD r = bdd_and(tr1.root, tr2.root);
+        return tbdd_create(r, TAUTOLOGY);
     }
     if (tbdd_is_true(tr1))
-	return tbdd_duplicate(tr2);
+        return tbdd_duplicate(tr2);
     if (tbdd_is_true(tr2))
-	return tbdd_duplicate(tr1);
+        return tbdd_duplicate(tr1);
     pcbdd p = bdd_and_justify(tr1.root, tr2.root);
     BDD r = p.root;
     int cbuf[1+ILIST_OVHD];
@@ -658,16 +658,16 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
     int abuf[3+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 3);
     if (r == bdd_false())
-	print_proof_comment(2, "Validate empty clause for node N%d = N%d & N%d", NNAME(r), NNAME(tr1.root), NNAME(tr2.root));
+        print_proof_comment(2, "Validate empty clause for node N%d = N%d & N%d", NNAME(r), NNAME(tr1.root), NNAME(tr2.root));
     else
-	print_proof_comment(2, "Validate unit clause for node N%d = N%d & N%d", NNAME(r), NNAME(tr1.root), NNAME(tr2.root));
+        print_proof_comment(2, "Validate unit clause for node N%d = N%d & N%d", NNAME(r), NNAME(tr1.root), NNAME(tr2.root));
     ilist_fill1(clause, XVAR(r));
     ilist_fill3(ant, tr1.clause_id, tr2.clause_id, p.clause_id);
     /* Insert proof of unit clause into t's justification */
     int clause_id = generate_clause(clause, ant);
 #if ENABLE_BTRACE
     if (bdd_trace_file)
-	fprintf(bdd_trace_file, "ta %d %d %d\n", r, tr1.root, tr2.root);
+        fprintf(bdd_trace_file, "ta %d %d %d\n", r, tr1.root, tr2.root);
 #endif
     /* Now we can handle any deletions caused by GC */
     process_deferred_deletions();
@@ -680,15 +680,15 @@ TBDD tbdd_and(TBDD tr1, TBDD tr2) {
  */
 TBDD tbdd_validate_with_and(BDD r, TBDD tr1, TBDD tr2) {
     if (proof_type == PROOF_NONE)
-	return tbdd_trust(r);
+        return tbdd_trust(r);
     if (tbdd_is_true(tr1))
-	return tbdd_validate(r, tr2);
+        return tbdd_validate(r, tr2);
     if (tbdd_is_true(tr2))
-	return tbdd_validate(r, tr1);
+        return tbdd_validate(r, tr1);
     pcbdd p = bdd_and_imptst_justify(tr1.root, tr2.root, r);
     if (p.root != bdd_true()) {
-	fprintf(ERROUT, "Failed to prove implication N%d & N%d --> N%d\n", NNAME(tr1.root), NNAME(tr2.root), NNAME(r));
-	exit(1);
+        fprintf(ERROUT, "Failed to prove implication N%d & N%d --> N%d\n", NNAME(tr1.root), NNAME(tr2.root), NNAME(r));
+        exit(1);
     }
     int cbuf[1+ILIST_OVHD];
     ilist clause = ilist_make(cbuf, 1);
@@ -719,19 +719,19 @@ static bool test_validation_path(ilist clause, TBDD tr) {
     int i;
     BDD r = tr.root;
     for (i = len-1; i >= 0; i--) {
-	int lit = clause[i];
-	int var = ABS(lit);
-	int level = bdd_var2level(var);
-	if (LEVEL(r) > level)
-	    // Function does not depend on this variable
-	    continue;
-	if (LEVEL(r) < level)
-	    // Cannot validate clause directly
-	    return false;
-	if (lit < 0)
-	    r = HIGH(r);
-	else
-	    r = LOW(r);
+        int lit = clause[i];
+        int var = ABS(lit);
+        int level = bdd_var2level(var);
+        if (LEVEL(r) > level)
+            // Function does not depend on this variable
+            continue;
+        if (LEVEL(r) < level)
+            // Cannot validate clause directly
+            return false;
+        if (lit < 0)
+            r = HIGH(r);
+        else
+            r = LOW(r);
     }
     return ISZERO(r);
 }
@@ -744,29 +744,29 @@ static int tbdd_validate_clause_path(ilist clause, TBDD tr) {
     ilist ant = ilist_make(abuf, 1+len);
     ilist_fill1(ant, tr.clause_id);
     for (i = len-1; i >= 0; i--) {
-	int lit = clause[i];
-	int var = ABS(lit);
-	int id;
-	if (LEVEL(r) > var)
-	    // Function does not depend on this variable
-	    continue;
-	if (LEVEL(r) < var)
-	    // Cannot validate clause directly
-	    return -1;
-	if (lit < 0) {
-	    id = bdd_dclause(r, DEF_HD);
-	    r = HIGH(r);
-	} else {
-	    id = bdd_dclause(r, DEF_LD);
-	    r = LOW(r);
-	}
-	if (id != TAUTOLOGY)
-	    ilist_push(ant, id);
+        int lit = clause[i];
+        int var = ABS(lit);
+        int id;
+        if (LEVEL(r) > var)
+            // Function does not depend on this variable
+            continue;
+        if (LEVEL(r) < var)
+            // Cannot validate clause directly
+            return -1;
+        if (lit < 0) {
+            id = bdd_dclause(r, DEF_HD);
+            r = HIGH(r);
+        } else {
+            id = bdd_dclause(r, DEF_LD);
+            r = LOW(r);
+        }
+        if (id != TAUTOLOGY)
+            ilist_push(ant, id);
     }
     if (verbosity_level >= 2) {
-	char buf[BUFLEN];
-	ilist_format(clause, buf, " ", BUFLEN);
-	print_proof_comment(2, "Validation of clause [%s] from N%d", buf, NNAME(tr.root));
+        char buf[BUFLEN];
+        ilist_format(clause, buf, " ", BUFLEN);
+        print_proof_comment(2, "Validation of clause [%s] from N%d", buf, NNAME(tr.root));
     }
     int id =  generate_clause(clause, ant);
     return id;
@@ -774,28 +774,28 @@ static int tbdd_validate_clause_path(ilist clause, TBDD tr) {
 
 int tbdd_validate_clause(ilist clause, TBDD tr) {
     if (proof_type == PROOF_NONE)
-	return TAUTOLOGY;
+        return TAUTOLOGY;
     clause = clean_clause(clause);
     if (test_validation_path(clause, tr)) {
-	return tbdd_validate_clause_path(clause, tr);
+        return tbdd_validate_clause_path(clause, tr);
     } else {
-	if (verbosity_level >= 2) {
-	    char buf[BUFLEN];
-	    ilist_format(clause, buf, " ", BUFLEN);
-	    print_proof_comment(2, "Validation of clause [%s] from N%d requires generating intermediate BDD", buf, NNAME(tr.root));
-	}
-	BDD cr = BDD_build_clause(clause);
-	bdd_addref(cr);
-	TBDD tcr = tbdd_validate(cr, tr);
-	bdd_delref(cr);
-	int id = tbdd_validate_clause_path(clause, tcr);
-	if (id < 0) {
-	    char buf[BUFLEN];
-	    ilist_format(clause, buf, " ", BUFLEN);
-	    print_proof_comment(2, "Oops.  Couldn't validate clause [%s] from N%d", buf, NNAME(tr.root));
-	}
-	tbdd_delref(tcr);
-	return id;
+        if (verbosity_level >= 2) {
+            char buf[BUFLEN];
+            ilist_format(clause, buf, " ", BUFLEN);
+            print_proof_comment(2, "Validation of clause [%s] from N%d requires generating intermediate BDD", buf, NNAME(tr.root));
+        }
+        BDD cr = BDD_build_clause(clause);
+        bdd_addref(cr);
+        TBDD tcr = tbdd_validate(cr, tr);
+        bdd_delref(cr);
+        int id = tbdd_validate_clause_path(clause, tcr);
+        if (id < 0) {
+            char buf[BUFLEN];
+            ilist_format(clause, buf, " ", BUFLEN);
+            print_proof_comment(2, "Oops.  Couldn't validate clause [%s] from N%d", buf, NNAME(tr.root));
+        }
+        tbdd_delref(tcr);
+        return id;
     }
 }
 
@@ -808,13 +808,13 @@ int tbdd_validate_clause(ilist clause, TBDD tr) {
  */
 int assert_clause(ilist clause) {
     if (proof_type == PROOF_NONE)
-	return TAUTOLOGY;
+        return TAUTOLOGY;
     int abuf[1+ILIST_OVHD];
     ilist ant = ilist_make(abuf, 1);
     if (verbosity_level >= 2) {
-	char buf[BUFLEN];
-	ilist_format(clause, buf, " ", BUFLEN);
-	print_proof_comment(2, "Assertion of clause [%s]", buf);
+        char buf[BUFLEN];
+        ilist_format(clause, buf, " ", BUFLEN);
+        print_proof_comment(2, "Assertion of clause [%s]", buf);
     }
     return generate_clause(clause, ant);
 }
@@ -828,7 +828,7 @@ int assert_clause(ilist clause) {
 */
 BDD BDD_build_xor(ilist vars, int phase) {
     if (ilist_length(vars) == 0)
-	return phase ? bdd_false() : bdd_true();
+        return phase ? bdd_false() : bdd_true();
     ilist variables = ilist_copy(vars);
     /* Put into descending order by level */
     variables = clean_clause(variables);
@@ -841,14 +841,14 @@ BDD BDD_build_xor(ilist vars, int phase) {
     //    printf("]\n");
 
     for (i = 0; i < n-1; i++) {
-	var = variables[i];
-	level = bdd_var2level(var);
-	BDD neven = bdd_addref(bdd_makenode(level, even, odd));
-	BDD nodd = bdd_addref(bdd_makenode(level, odd, even));
-	bdd_delref(even);
-	bdd_delref(odd);
-	even = neven;
-	odd = nodd;
+        var = variables[i];
+        level = bdd_var2level(var);
+        BDD neven = bdd_addref(bdd_makenode(level, even, odd));
+        BDD nodd = bdd_addref(bdd_makenode(level, odd, even));
+        bdd_delref(even);
+        bdd_delref(odd);
+        even = neven;
+        odd = nodd;
     }
     var = variables[n-1];
     level = bdd_var2level(var);
@@ -866,20 +866,20 @@ BDD BDD_build_clause(ilist literals) {
     /* Put into descending order by level */
     literals = clean_clause(literals);
     if (literals == TAUTOLOGY_CLAUSE)
-	return bdd_true();
+        return bdd_true();
     //    printf("Building BDD for clause [");
     //    ilist_print(literals, stdout, " ");
     //    printf("]\n");
     BDD r = bdd_false();
     int i, lit, var, level;
     for (i = 0; i < ilist_length(literals); i++) {
-	bdd_addref(r);
-	lit = literals[i];
-	var = ABS(lit);
-	level = bdd_var2level(var);
-	BDD nr = lit < 0 ? bdd_makenode(level, bdd_true(), r) : bdd_makenode(level, r, bdd_true());
-	bdd_delref(r);
-	r = nr;
+        bdd_addref(r);
+        lit = literals[i];
+        var = ABS(lit);
+        level = bdd_var2level(var);
+        BDD nr = lit < 0 ? bdd_makenode(level, bdd_true(), r) : bdd_makenode(level, r, bdd_true());
+        bdd_delref(r);
+        r = nr;
     }
     return r;
 }
@@ -889,19 +889,19 @@ BDD BDD_build_clause(ilist literals) {
  */
 BDD BDD_build_cube(ilist literals) {
     if (literals == FALSE_CUBE)
-	return bdd_false();
+        return bdd_false();
     /* Put into descending order by level */
     literals = clean_clause(literals);
     BDD r = bdd_true();
     int i, lit, var, level;
     for (i = 0; i < ilist_length(literals); i++) {
-	bdd_addref(r);
-	lit = literals[i];
-	var = ABS(lit);
-	level = bdd_var2level(var);
-	BDD nr = lit < 0 ? bdd_makenode(level, r, bdd_false()) : bdd_makenode(level, bdd_false(), r);
-	bdd_delref(r);
-	r = nr;
+        bdd_addref(r);
+        lit = literals[i];
+        var = ABS(lit);
+        level = bdd_var2level(var);
+        BDD nr = lit < 0 ? bdd_makenode(level, r, bdd_false()) : bdd_makenode(level, bdd_false(), r);
+        bdd_delref(r);
+        r = nr;
     }
     return r;
 }
@@ -909,16 +909,16 @@ BDD BDD_build_cube(ilist literals) {
 ilist BDD_decode_cube(BDD r) {
     ilist literals = ilist_new(1);
     if (r == bdd_false())
-	return FALSE_CUBE;
+        return FALSE_CUBE;
     while (r != bdd_true()) {
-	int var = bdd_var(r);
-	if (bdd_high(r) == bdd_false()) {
-	    literals = ilist_push(literals, -var);
-	    r = bdd_low(r);
-	} else {
-	    literals = ilist_push(literals, var);
-	    r = bdd_high(r);
-	}
+        int var = bdd_var(r);
+        if (bdd_high(r) == bdd_false()) {
+            literals = ilist_push(literals, -var);
+            r = bdd_low(r);
+        } else {
+            literals = ilist_push(literals, var);
+            r = bdd_high(r);
+        }
     }
     return literals;
 
