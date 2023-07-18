@@ -44,13 +44,8 @@ extern bool solve(FILE *cnf_file, int verblevel, bool binary, int max_solutions,
 void usage(char *name) {
     printf("Usage: %s [-h] [-b] [-v VERB] [-i FILE.cnf] [-o FILE.lrat(b)] [-p FILE.order] [-s FILE.schedule] [-T FILE.btrace] [-m SOLNS] [-t TLIM] [-c CLIM] [-r SEED]\n", name);
     printf("  -h               Print this message\n");
-    printf("  -b               Use bucket elimination\n");
     printf("  -v VERB          Set verbosity level (0-3)\n");
     printf("  -i FILE.cnf      Specify input file (otherwise use standard input)\n");
-    printf("  -o FILE.lrat(b)  Specify output proof file (otherwise no proof)\n");
-    printf("  -p FILE.order    Specify variable ordering file\n");
-    printf("  -s FILE.schedule Specify schedule file\n");
-    printf("  -T FILE.btrace Specify file to dump detailed trace of BDD operations\n");
     printf("  -m SOLNS         Generate up to specified number of solutions\n");
     printf("  -t TLIM          Set time limit for execution (seconds)\n");
     printf("  -c CLIM          Set limit on number of input+proof clauses\n");
@@ -90,27 +85,16 @@ char *get_extension(char *name) {
 
 int main(int argc, char *argv[]) {
     FILE *cnf_file = stdin;
-    FILE *sched_file = NULL;
-    FILE *order_file = NULL;
-    FILE *proof_file = NULL;
-    FILE *bdd_trace_file = NULL;
-    bool bucket = false;
-    proof_type_t ptype = PROOF_NONE;
     bool binary = false;
     int c;
     int verb = 1;
     unsigned seed = 1;
     int max_solutions = 1;
-    int clause_limit = 0;
     while ((c = getopt(argc, argv, "hbv:i:o:p:s:m:t:T:c:r:")) != -1) {
         char buf[2] = { (char) c, '\0' };
-        char *extension;
         switch (c) {
         case 'h':
             usage(argv[0]);
-        case 'b':
-            bucket = true;
-            break;
         case 'v':
             verb = atoi(optarg);
             break;
@@ -120,69 +104,12 @@ int main(int argc, char *argv[]) {
         case 't':
             set_timeout(atoi(optarg));
             break;
-        case 'c':
-            clause_limit = atoi(optarg);
-            break;
         case 'r':
             seed = atoi(optarg);
             break;
         case 'i':
             cnf_file = fopen(optarg, "r");
             if (cnf_file == NULL) {
-        	std::cerr << "Couldn't open file " << optarg << std::endl;
-        	exit(1);
-            }
-            break;
-        case 'p':
-            order_file = fopen(optarg, "r");
-            if (order_file == NULL) {
-        	std::cerr << "Couldn't open file " << optarg << std::endl;
-        	exit(1);
-            }
-            break;
-        case 's':
-            sched_file = fopen(optarg, "r");
-            if (sched_file == NULL) {
-        	std::cerr << "Couldn't open file " << optarg << std::endl;
-        	exit(1);
-            }
-            break;
-        case 'o':
-            proof_file = fopen(optarg, "w");
-            if (proof_file == NULL) {
-        	std::cerr << "Couldn't open file " << optarg << std::endl;
-        	exit(1);
-            }
-            if (strcmp(optarg, "/dev/null") == 0) {
-        	binary = false;
-        	ptype = PROOF_LRAT;
-        	break;
-            }
-            extension = get_extension(optarg);
-            if (!extension) {
-        	std::cerr << "Unknown file type '" << optarg << "'" << std::endl;
-        	usage(argv[0]);
-            }
-            if (strcmp(extension, "drat") == 0) {
-        	binary = false;
-        	ptype = PROOF_DRAT;
-            } else if (strcmp(extension, "dratb") == 0) {
-        	binary = true;
-        	ptype = PROOF_DRAT;
-            } else if (strcmp(extension, "lrat") == 0) {
-        	binary = false;
-        	ptype = PROOF_LRAT;
-            } else if (strcmp(extension, "lratb") == 0) {
-        	binary = true;
-        	ptype = PROOF_LRAT;
-            } else {
-        	std::cerr << "Unknown file type '" << optarg << "'" << std::endl;
-        	usage(argv[0]);
-            }
-            break;
-        case 'T':
-            bdd_trace_file = fopen(optarg, "w");
-            if (bdd_trace_file == NULL) {
         	std::cerr << "Couldn't open file " << optarg << std::endl;
         	exit(1);
             }
@@ -198,9 +125,5 @@ int main(int argc, char *argv[]) {
             printf("c Elapsed seconds: %.3f\n", tod()-start);
         }
     }
-    if (proof_file != NULL)
-        fclose(proof_file);
-    if (sched_file != NULL)
-        fclose(sched_file);
     return 0;
 }

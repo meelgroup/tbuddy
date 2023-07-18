@@ -1,6 +1,6 @@
 /*========================================================================
   Copyright (c) 2022 Randal E. Bryant, Carnegie Mellon University
-  
+
   As noted below, this code is a modified version of code authored and
   copywrited by Jorn Lind-Nielsen.  Permisssion to use the original
   code is subject to the terms noted below.
@@ -14,10 +14,10 @@
   and/or sell copies of the Software, and to permit persons to whom
   the Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -141,7 +141,7 @@ bddCacheStat bddcachestats;
 
 #if ENABLE_BTRACE
 FILE *bdd_trace_file = NULL;
-#endif 
+#endif
 
 
 /*=== PRIVATE KERNEL VARIABLES =========================================*/
@@ -179,7 +179,7 @@ static char *errorstrings[BDD_ERRNUM] =
   "Bad size argument",
   "Mismatch in bitvector size",
   "Illegal shift-left/right parameter",
-  "Division by zero" 
+  "Division by zero"
 #if INCLUDE_TBDD
   ,
   "Cannot (re)allocate ilist",
@@ -196,25 +196,23 @@ static char *errorstrings[BDD_ERRNUM] =
 
 #define CHECKNODE(n) (n)
 //#define CHECKNODE(n) checknode(n)
-
-static BDD checknode(BDD n) {
-    if (n < 0 || n >= bddnodesize) { 
-	fprintf(ERROUT, "Invalid node %d detected.  Raising error\n", n);
-	bdd_error(BDD_ORDER);
-    }
-    return n;
-}
+/* static BDD checknode(BDD n) { */
+/*     if (n < 0 || n >= bddnodesize) { */
+/* 	fprintf(ERROUT, "Invalid node %d detected.  Raising error\n", n); */
+/* 	bdd_error(BDD_ORDER); */
+/*     } */
+/*     return n; */
+/* } */
 
 #define CHECKRANGE(v) (v)
 //#define CHECKRANGE(v) checkrange(v)
-
-static int checkrange(int v) {
-    if (v < 0 || v >= bddnodesize) { 
-	fprintf(ERROUT, "Invalid value %d detected.  Raising error\n", v);
-	bdd_error(BDD_ORDER);
-    }
-    return v;
-}
+/* static int checkrange(int v) { */
+/*     if (v < 0 || v >= bddnodesize) { */
+/* 	fprintf(ERROUT, "Invalid value %d detected.  Raising error\n", v); */
+/* 	bdd_error(BDD_ORDER); */
+/*     } */
+/*     return v; */
+/* } */
 
 #if ENABLE_TBDD
 static int bdd_dclause_p(BddNode *n, dclause_t dtype);
@@ -240,7 +238,7 @@ DESCR  {* This function initiates the bdd package and {\em must} be called
 
 	  The number of cache entries can also be set to depend on the size
 	  of the nodetable using a call to {\tt bdd\_setcacheratio}.
-	  
+
 	  The initial number of nodes is not critical for any bdd operation
 	  as the table will be resized whenever there are to few nodes left
 	  after a garbage collection. But it does have some impact on the
@@ -252,17 +250,17 @@ ALSO   {* bdd\_done, bdd\_resize\_hook *}
 int bdd_init(int initnodesize, int cs)
 {
    int n, err;
-   
+
    if (bddrunning)
       return bdd_error(BDD_RUNNING);
-   
+
    bddnodesize = bdd_prime_gte(initnodesize);
-   
+
    if ((bddnodes=(BddNode*)malloc(sizeof(BddNode)*bddnodesize)) == NULL)
       return bdd_error(BDD_MEMORY);
 
    bddresized = 0;
-   
+
    for (n=0 ; n<bddnodesize ; n++)
    {
       bddnodes[n].refcou = 0;
@@ -281,7 +279,7 @@ int bdd_init(int initnodesize, int cs)
    XVAR(0) = -TAUTOLOGY;
    XVAR(1) = TAUTOLOGY;
 #endif
-   
+
    if ((err=bdd_operator_init(cs)) < 0)
    {
       bdd_done();
@@ -299,7 +297,7 @@ int bdd_init(int initnodesize, int cs)
    bddmaxnodeincrease = DEFAULTMAXNODEINC;
 
    bdderrorcond = 0;
-   
+
    bddcachestats.uniqueAccess = 0;
    bddcachestats.uniqueChain = 0;
    bddcachestats.uniqueHit = 0;
@@ -307,7 +305,7 @@ int bdd_init(int initnodesize, int cs)
    bddcachestats.opHit = 0;
    bddcachestats.opMiss = 0;
    bddcachestats.swapCount = 0;
- 
+
    bdd_gbc_hook(bdd_default_gbchandler);
    bdd_error_hook(bdd_default_errhandler);
    bdd_resize_hook(NULL);
@@ -337,7 +335,7 @@ void bdd_done(void)
    bdd_fdd_done();
    bdd_reorder_done();
    bdd_pairs_done();
-   
+
 #if ENABLE_TBDD
    if (proof_type != PROOF_NONE) {
        int dbuf[4+ILIST_OVHD];
@@ -376,7 +374,7 @@ void bdd_done(void)
    free(bddvarset);
    free(bddvar2level);
    free(bddlevel2var);
-   
+
    bddnodes = NULL;
    bddrefstack = NULL;
    bddvarset = NULL;
@@ -388,7 +386,7 @@ void bdd_done(void)
    bddmaxnodesize = 0;
    bddvarnum = 0;
    bddproduced = 0;
-   
+
    err_handler = NULL;
    gbc_handler = NULL;
    resize_handler = NULL;
@@ -440,7 +438,7 @@ int bdd_setvarnum_ordered(int num, int *varlist)
    int oldbddvarnum = bddvarnum;
 
    bdd_disable_reorder();
-      
+
    if (num < 1  ||  num >= MAXVAR)
    {
       bdd_error(BDD_RANGE);
@@ -531,13 +529,13 @@ int bdd_setvarnum_ordered(int num, int *varlist)
       bddvarset[bdv*2] = PUSHREF( bdd_makenode(level, 0, 1) );
       bddvarset[bdv*2+1] = bdd_makenode(level, 1, 0);
       POPREF(1);
-      
+
       if (bdderrorcond)
       {
 	 bddvarnum = oldbddvarnum;
 	 return -bdderrorcond;
       }
-      
+
       bddnodes[bddvarset[bdv*2]].refcou = MAXREF;
       bddnodes[bddvarset[bdv*2+1]].refcou = MAXREF;
    }
@@ -546,12 +544,12 @@ int bdd_setvarnum_ordered(int num, int *varlist)
    LEVEL(1) = num;
    bddvar2level[num] = num;
    bddlevel2var[num] = num;
-   
+
    bdd_pairs_resize(oldbddvarnum, bddvarnum);
    bdd_operator_varresize();
-   
+
    bdd_enable_reorder();
-   
+
    return 0;
 }
 
@@ -569,7 +567,7 @@ ALSO    {* bdd\_setvarnum, BDD\_ithvar, BDD\_nithvar *}
 int bdd_extvarnum(int num)
 {
    int start = bddvarnum;
-   
+
    if (num < 0  ||  num > 0x3FFFFFFF)
       return bdd_error(BDD_RANGE);
 
@@ -719,7 +717,7 @@ ALSO    {* bdd\_setmaxnodenum, bdd\_setminfreenodes *}
 int bdd_setmaxincrease(int size)
 {
    int old = bddmaxnodeincrease;
-   
+
    if (size < 0)
       return bdd_error(BDD_SIZE);
 
@@ -778,7 +776,7 @@ ALSO    {* bdd\_setmaxnodenum, bdd\_setmaxincrease *}
 int bdd_setminfreenodes(int mf)
 {
    int old = minfreenodes;
-   
+
    if (mf<0 || mf>100)
       return bdd_error(BDD_RANGE);
 
@@ -929,21 +927,21 @@ void bdd_fprintstat(FILE *ofile)
 {
    bddCacheStat s;
    bdd_cachestats(&s);
-   
+
    fprintf(ofile, "\nc Cache statistics\n");
    fprintf(ofile, "c ----------------\n");
-   
+
    fprintf(ofile, "c Unique Access:  %ld\n", s.uniqueAccess);
    fprintf(ofile, "c Unique Chain:   %ld\n", s.uniqueChain);
    fprintf(ofile, "c Unique Hit:     %ld\n", s.uniqueHit);
    fprintf(ofile, "c Unique Miss:    %ld\n", s.uniqueMiss);
    fprintf(ofile, "c => Hit rate =   %.2f\n",
-	   (s.uniqueHit+s.uniqueMiss > 0) ? 
+	   (s.uniqueHit+s.uniqueMiss > 0) ?
 	   ((float)s.uniqueHit)/((float)s.uniqueHit+s.uniqueMiss) : 0);
    fprintf(ofile, "c Operator Hits:  %ld\n", s.opHit);
    fprintf(ofile, "c Operator Miss:  %ld\n", s.opMiss);
    fprintf(ofile, "c => Hit rate =   %.2f\n",
-	   (s.opHit+s.opMiss > 0) ? 
+	   (s.opHit+s.opMiss > 0) ?
 	   ((float)s.opHit)/((float)s.opHit+s.opMiss) : 0);
    fprintf(ofile, "c Swap count =    %ld\n", s.swapCount);
 }
@@ -993,7 +991,7 @@ int bdd_error(int e)
 {
    if (err_handler != NULL)
       err_handler(e);
-   
+
    return e;
 }
 
@@ -1076,7 +1074,7 @@ DESCR   {* This function is used to get a bdd representing the negation of
 	   {\tt bdd\_setvarnum} starting with 0 being the first. For ease of
 	   use then the bdd returned from {\tt BDD\_nithvar} does not have
 	   to be referenced counted with a call to {\tt bdd\_addref}. *}
-RETURN  {* The negated I'th variable on succes, otherwise the constant false bdd *}	   
+RETURN  {* The negated I'th variable on succes, otherwise the constant false bdd *}
 ALSO    {* bdd\_setvarnum, BDD\_ithvar, bddtrue, bddfalse *}
 */
 BDD BDD_nithvar(int var)
@@ -1086,7 +1084,7 @@ BDD BDD_nithvar(int var)
       bdd_error(BDD_VAR);
       return bddfalse;
    }
-   
+
    return bddvarset[var*2+1];
 }
 
@@ -1305,7 +1303,7 @@ void bdd_gbc(void)
 
 #if DO_TRACE
    printf("Starting GC\n");
-#endif   
+#endif
 #endif
 
 
@@ -1319,7 +1317,7 @@ void bdd_gbc(void)
       s.num = gbcollectnum;
       gbc_handler(1, &s);
    }
-   
+
    for (r=bddrefstack ; r<bddrefstacktop ; r++) {
        bdd_mark(*r);
    }
@@ -1331,7 +1329,7 @@ void bdd_gbc(void)
        }
       bddnodes[n].hash = 0;
    }
-   
+
    bddfreepos = 0;
    bddfreenum = 0;
 
@@ -1354,7 +1352,7 @@ void bdd_gbc(void)
       }
       else
       {
-#if ENABLE_TBDD	  
+#if ENABLE_TBDD
 	  if (LOWp(node) != -1) {
 	      freed++;
 	      if (proof_type != PROOF_NONE) {
@@ -1377,7 +1375,7 @@ void bdd_gbc(void)
 #if DO_TRACE && ENABLE_TBDD
 	      if (XVARp(node) == TRACE_NNAME)
 		  printf("TRACE: Deleted node N%d from unique table\n", TRACE_NNAME);
-#endif 	 
+#endif
 
 	  }
 #else
@@ -1397,7 +1395,7 @@ void bdd_gbc(void)
 
 #if DO_TRACE
    printf("Flushing caches\n");
-#endif   
+#endif
 
 
    bdd_operator_reset();
@@ -1408,7 +1406,7 @@ void bdd_gbc(void)
 
 #if DO_TRACE
    printf("Completed GC\n");
-#endif   
+#endif
 
    if (gbc_handler != NULL)
    {
@@ -1471,9 +1469,9 @@ BDD bdd_delref(BDD root)
    if (LOW(root) == -1)
       return bdd_error(BDD_ILLBDD);
 
-   /* if the following line is present, fails there much earlier */ 
+   /* if the following line is present, fails there much earlier */
    if (!HASREF(root)) bdd_error(BDD_BREAK); /* distinctive */
-   
+
    DECREF(root);
    return root;
 }
@@ -1484,16 +1482,16 @@ BDD bdd_delref(BDD root)
 void bdd_mark(int i)
 {
    BddNode *node;
-   
+
    if (i < 2)
       return;
 
    node = &bddnodes[i];
    if (LEVELp(node) & MARKON  ||  LOWp(node) == -1)
       return;
-   
+
    LEVELp(node) |= MARKON;
-   
+
    bdd_mark(LOWp(node));
    bdd_mark(HIGHp(node));
 }
@@ -1502,13 +1500,13 @@ void bdd_mark(int i)
 void bdd_mark_upto(int i, int level)
 {
    BddNode *node = &bddnodes[i];
-   
+
    if (i < 2)
       return;
-   
+
    if (LEVELp(node) & MARKON  ||  LOWp(node) == -1)
       return;
-   
+
    if (LEVELp(node) > level)
       return;
 
@@ -1522,17 +1520,17 @@ void bdd_mark_upto(int i, int level)
 void bdd_markcount(int i, int *cou)
 {
    BddNode *node;
-   
+
    if (i < 2)
       return;
 
    node = &bddnodes[i];
    if (MARKEDp(node)  ||  LOWp(node) == -1)
       return;
-   
+
    SETMARKp(node);
    *cou += 1;
-   
+
    bdd_markcount(LOWp(node), cou);
    bdd_markcount(HIGHp(node), cou);
 }
@@ -1541,7 +1539,7 @@ void bdd_markcount(int i, int *cou)
 void bdd_unmark(int i)
 {
    BddNode *node;
-   
+
    if (i < 2)
       return;
 
@@ -1550,7 +1548,7 @@ void bdd_unmark(int i)
    if (!MARKEDp(node)  ||  LOWp(node) == -1)
       return;
    UNMARKp(node);
-   
+
    bdd_unmark(LOWp(node));
    bdd_unmark(HIGHp(node));
 }
@@ -1562,12 +1560,12 @@ void bdd_unmark_upto(int i, int level)
 
    if (i < 2)
       return;
-   
+
    if (!(LEVELp(node) & MARKON))
       return;
-   
+
    LEVELp(node) &= MARKOFF;
-   
+
    if (LEVELp(node) > level)
       return;
 
@@ -1589,7 +1587,7 @@ int bdd_makenode(unsigned int level, int low, int high)
 #ifdef CACHESTATS
    bddcachestats.uniqueAccess++;
 #endif
-   
+
       /* check whether children are equal */
    if (low == high)
       return low;
@@ -1609,7 +1607,7 @@ int bdd_makenode(unsigned int level, int low, int high)
 #if DO_TRACE && ENABLE_TBDD
 	 if (NNAME(res) == TRACE_NNAME)
 	     printf("Found node N%d in unique table\n", TRACE_NNAME);
-#endif 	 
+#endif
       }
 
       res = CHECKNODE(bddnodes[res].next);
@@ -1617,7 +1615,7 @@ int bdd_makenode(unsigned int level, int low, int high)
       bddcachestats.uniqueChain++;
 #endif
    }
-   
+
    /* Error checking */
    if (level >= LEVEL(low))
    {
@@ -1643,7 +1641,7 @@ int bdd_makenode(unsigned int level, int low, int high)
    {
       if (bdderrorcond)
 	 return 0;
-      
+
          /* Try to allocate more nodes */
       bdd_gbc();
 
@@ -1678,7 +1676,7 @@ int bdd_makenode(unsigned int level, int low, int high)
    LEVELp(node) = level;
    LOWp(node) = low;
    HIGHp(node) = high;
-   
+
 #if ENABLE_BTRACE
    if (bdd_trace_file)
        fprintf(bdd_trace_file, "n %d %d %d %d\n", res, level, high, low);
@@ -1710,8 +1708,8 @@ int bdd_makenode(unsigned int level, int low, int high)
 	       ilist_push(alist, -huid);
 	   if (luid != TAUTOLOGY)
 	       ilist_push(alist, -luid);
-	   generate_clause(defining_clause(dlist, DEF_HD, nid, vid, hid, lid), alist);              
-	   generate_clause(defining_clause(dlist, DEF_LD, nid, vid, hid, lid), alist);       
+	   generate_clause(defining_clause(dlist, DEF_HD, nid, vid, hid, lid), alist);
+	   generate_clause(defining_clause(dlist, DEF_LD, nid, vid, hid, lid), alist);
        }
    }
    #endif
@@ -1722,7 +1720,7 @@ int bdd_makenode(unsigned int level, int low, int high)
 #if DO_TRACE && ENABLE_TBDD
 	 if (NNAME(res) == TRACE_NNAME)
 	     printf("TRACE: Added node N%d to unique table\n", TRACE_NNAME);
-#endif 	 
+#endif
    return res;
 }
 
@@ -1735,7 +1733,7 @@ int bdd_noderesize(int doRehash)
 
    if (bddnodesize >= bddmaxnodesize  &&  bddmaxnodesize > 0)
       return -1;
-   
+
    bddnodesize = bddnodesize << 1;
 
    if (bddnodesize > oldsize + bddmaxnodeincrease)
@@ -1745,7 +1743,7 @@ int bdd_noderesize(int doRehash)
       bddnodesize = bddmaxnodesize;
 
    bddnodesize = bdd_prime_lte(bddnodesize);
-   
+
    if (resize_handler != NULL)
       resize_handler(oldsize, bddnodesize);
 
@@ -1757,7 +1755,7 @@ int bdd_noderesize(int doRehash)
    if (doRehash)
       for (n=0 ; n<oldsize ; n++)
 	 bddnodes[n].hash = 0;
-   
+
    for (n=oldsize ; n<bddnodesize ; n++)
    {
       bddnodes[n].refcou = 0;
@@ -1784,7 +1782,7 @@ void bdd_checkreorder(void)
 
       /* Do not reorder before twice as many nodes have been used */
    usednodes_nextreorder = 2 * (bddnodesize - bddfreenum);
-   
+
       /* And if very little was gained this time (< 20%) then wait until
        * even more nodes (upto twice as many again) have been used */
    if (bdd_reorder_gain() < 20)
@@ -1823,13 +1821,13 @@ int bdd_scanset(BDD r, int **varset, int *varnum)
       *varset = NULL;
       return 0;
    }
-   
+
    for (n=r, num=0 ; n > 1 ; n=HIGH(n))
       num++;
 
    if (((*varset) = (int *)malloc(sizeof(int)*num)) == NULL)
       return bdd_error(BDD_MEMORY);
-   
+
    for (n=r, num=0 ; n > 1 ; n=HIGH(n))
       (*varset)[num++] = bddlevel2var[LEVEL(n)];
 
@@ -1858,7 +1856,7 @@ RETURN {* A BDD variable set. *} */
 BDD BDD_makeset(int *varset, int varnum)
 {
    int v, res=1;
-   
+
    for (v=varnum-1 ; v>=0 ; v--)
    {
       BDD tmp;

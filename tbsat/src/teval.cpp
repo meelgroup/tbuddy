@@ -54,108 +54,6 @@ using namespace trustbdd;
 // Indicate Clause ID every 100 million clauses
 #define REPORT_CLAUSE (100*1000*1000)
 
-// Functions to aid parsing of schedule lines
-
-// Skip line.  Return either \n or EOF
-static int skip_line(FILE *infile) {
-    int c;
-    while ((c = getc(infile)) != EOF) {
-        if (c == '\n')
-            return c;
-    }
-    return c;
-}
-
-// Skip any whitespace characters other than newline
-// Read and return either EOF or first non-space character (possibly newline)
-static int skip_space(FILE *infile) {
-    int c;
-    while ((c = getc(infile)) != EOF) {
-        if (c == '\n')
-            return c;
-        if (!isspace(c)) {
-            return c;
-        }
-    }
-    return c;
-}
-
-// Read rest of line, trimming off leading spaces and trailing newline.
-// Return line length
-static int get_line(FILE *infile, char *buf, int maxlen) {
-    int c = skip_space(infile);
-    int pos = 0;
-    if (c == EOF || c == '\n') {
-        buf[pos] = 0;
-        return pos;
-    }
-    buf[pos++] = c;
-    while (true) {
-        c = getc(infile);
-        if (c == '\n' || c == EOF) {
-            if (pos < maxlen)
-                buf[pos] = 0;
-            else
-                buf[--pos] = 0;
-            break;
-        }
-        if (pos < maxlen)
-            buf[pos++] = c;
-    }
-    return pos;
-}
-
-
-// Read line and parse as set of numbers.  Return either \n or EOF
-static int get_numbers(FILE *infile, std::vector<int> &numbers) {
-    int c;
-    int val;
-    numbers.resize(0,0);
-    while ((c = getc(infile)) != EOF) {
-        if (c == '\n')
-            break;
-        if (isspace(c))
-            continue;
-        ungetc(c, infile);
-        if (fscanf(infile, "%d", &val) != 1) {
-            break;
-        }
-        numbers.push_back(val);
-    }
-    return c;
-}
-
-// Read line and parse as set of numbers.  Return either \n or EOF
-static int get_number_pairs(FILE *infile, std::vector<int> &numbers1, std::vector<int> &numbers2, char sep) {
-    int c;
-    int val;
-    numbers1.resize(0,0);
-    numbers2.resize(0,0);
-    while ((c = getc(infile)) != EOF) {
-        if (c == '\n')
-            break;
-        if (isspace(c))
-            continue;
-        ungetc(c, infile);
-        if (fscanf(infile, "%d", &val) != 1) {
-            break;
-        }
-        numbers1.push_back(val);
-        c = getc(infile);
-        if (c != sep) {
-            /** ERROR **/
-            c = 0;
-            break;
-        }
-        if (fscanf(infile, "%d", &val) != 1) {
-            c = 0;
-            break;
-        }
-        numbers2.push_back(val);
-    }
-    return c;
-}
-
 // Global variables and functions to aid in pseudo-random number generation
 Sequencer global_sequencer;
 
@@ -305,7 +203,7 @@ public:
 
     // Impose additional constraint on set of solutions
     void impose_constraint(bdd constraint) {
-        for (int i = 0; i < qsteps.size(); i++) {
+        for (unsigned i = 0; i < qsteps.size(); i++) {
             constraint = qsteps[i]->exclude_step(constraint);
             if (constraint == bdd_true())
                 break;
@@ -379,7 +277,7 @@ private:
 
 class TermSet {
 private:
-    int min_active;
+    unsigned min_active;
     std::vector<Term *> terms;
     int clause_count;
     int32_t max_variable;
@@ -395,7 +293,6 @@ private:
     int last_clause_id;
 
     // For generating solutions
-    bool generate_solution;
     Solver *solver;
 
     // For managing bucket elimination
