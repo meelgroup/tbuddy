@@ -1,6 +1,6 @@
 /*========================================================================
   Copyright (c) 2022 Randal E. Bryant, Carnegie Mellon University
-  
+
   This code was not included in the original BuDDy distribution and is
   therefore not subject to any of its licensing terms.
 
@@ -12,10 +12,10 @@
   and/or sell copies of the Software, and to permit persons to whom
   the Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -31,6 +31,9 @@
 
 #ifndef PROVER_H
 #define PROVER_H
+
+#include "ilist.h"
+#include "tbdd.h"
 
 #include <stdarg.h>
 
@@ -52,7 +55,7 @@ extern "C" {
 /* Global variables exported by prover */
 extern proof_type_t proof_type;
 extern int verbosity_level;
-extern int clause_limit;
+/* extern int clause_limit; */
 extern int *variable_counter;
 extern int *clause_id_counter;
 extern int total_clause_count;
@@ -82,14 +85,14 @@ extern void defer_delete_clause(int clause_id);
 extern void process_deferred_deletions();
 
 
-    
+
 /* Retrieve input clause.  NULL if invalid */
 extern ilist get_input_clause(int id);
 
-/* 
+/*
    Fill ilist with defining clause.
    ils should be big enough for 3 elemeents.
-   Return either the list of literals or TAUTOLOGY_CLAUSE 
+   Return either the list of literals or TAUTOLOGY_CLAUSE
 */
 extern ilist defining_clause(ilist ils, dclause_t dtype, int nid, int vid, int hid, int lid);
 
@@ -114,7 +117,7 @@ extern void print_proof_comment(int vlevel, const char *fmt, ...);
   Support for generating apply operation proofs.
  */
 
-    
+
 
 #ifdef CPLUSPLUS
 }

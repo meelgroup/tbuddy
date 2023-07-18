@@ -25,7 +25,7 @@
 // Trusted SAT evaluation
 
 /* Enable generation of BDD trace file */
-#define ENABLE_BTRACE 1
+/* #define ENABLE_BTRACE 1 */
 
 #include <ctype.h>
 #include <cassert>

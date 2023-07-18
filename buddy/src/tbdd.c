@@ -1,6 +1,6 @@
 /*========================================================================
   Copyright (c) 2022 Randal E. Bryant, Carnegie Mellon University
-  
+
   This code was not included in the original BuDDy distribution and is
   therefore not subject to any of its licensing terms.
 
@@ -12,10 +12,10 @@
   and/or sell copies of the Software, and to permit persons to whom
   the Software is furnished to do so, subject to the following
   conditions:
-  
+
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -190,7 +190,7 @@ static int rc_decrement(int rci) {
   Package setup.
 ============================================*/
 
-/* 
+/*
   Set up package.  Arguments:
   - proof output file
   - number of variables in CNF
@@ -198,7 +198,7 @@ static int rc_decrement(int rci) {
   When generating LRAT proofs, also require arguments:
   - Number of clauses in CNF
   - The list of clauses, where clause i is at clauses[i-1]
-  
+
   When generating DRAT proofs, can provide NULL for argument input_clauses.
 
   These functions also initialize BuDDy, using parameters tuned according
@@ -271,7 +271,7 @@ void tbdd_set_clause_limit(int clim) {
 	return;
     if (clim > INT_MAX-4)
 	clim = INT_MAX-4;
-    clause_limit = clim;
+    /* clause_limit = clim; */
 }
 
 void bdd_report() {
@@ -397,7 +397,7 @@ TBDD tbdd_create(BDD r, int clause_id) {
     return res;
 }
 
-/* 
+/*
    proof_step = TAUTOLOGY
    root = 1
  */
@@ -405,7 +405,7 @@ TBDD TBDD_tautology() {
     return tbdd_create(bdd_true(), TAUTOLOGY);
 }
 
-/* 
+/*
    proof_step = TAUTOLOGY
    root = 0
  */
@@ -488,7 +488,7 @@ static TBDD tbdd_from_clause_with_id(ilist clause, int id) {
 	    ilist_push(ant, bdd_dclause(nd, DEF_LU));
 	    nd = bdd_low(nd);
 	}
-    } 
+    }
     ilist_push(ant, id);
     int cbuf[1+ILIST_OVHD];
     ilist uclause = ilist_make(cbuf, 1);
