@@ -189,11 +189,9 @@ public:
     }
 
 
-
     // Generate another solution BDD
     bdd next_solution() {
-        if (constraint_function == bdd_false())
-            return bdd_false();
+        if (constraint_function == bdd_false()) return bdd_false();
         bdd solution = bdd_true();
         bdd constraint = bdd_true();
         for (int i = qsteps.size()-1; i >= 0; i--)
@@ -454,7 +452,6 @@ public:
 };
 
 bool solve(FILE *cnf_file, int verblevel, bool binary, int max_solutions, unsigned seed) {
-
     CNF cset = CNF(cnf_file);
     fclose(cnf_file);
     if (cset.failed()) {
@@ -462,12 +459,11 @@ bool solve(FILE *cnf_file, int verblevel, bool binary, int max_solutions, unsign
             std::cout << "c Aborted" << std::endl;
         return false;
     }
-    if (verblevel >= 1)
-        if (verblevel >= 1) {
-            std::cout << "c Read " << cset.clause_count() << " clauses.  "
-                      << cset.max_variable() << " variables" << std::endl;
-            std::cout << "c Breaking ties randomly with seed " << seed << std::endl;
-        }
+    if (verblevel >= 1) {
+        std::cout << "c Read " << cset.clause_count() << " clauses.  "
+                  << cset.max_variable() << " variables" << std::endl;
+        std::cout << "c Breaking ties randomly with seed " << seed << std::endl;
+    }
     PhaseGenerator pg(GENERATE_RANDOM, DEFAULT_SEED);
     Solver solver(&pg);
     ilist variable_ordering = NULL;
@@ -496,8 +492,7 @@ bool solve(FILE *cnf_file, int verblevel, bool binary, int max_solutions, unsign
         solver.set_constraint(r);
         for (int i = 0; i < max_solutions; i++) {
             bdd s = solver.next_solution();
-            if (s == bdd_false())
-                break;
+            if (s == bdd_false()) break;
             ilist slist = bdd_decode_cube(s);
             printf("v "); ilist_print(slist, stdout, " "); printf(" 0\n");
             ilist_free(slist);

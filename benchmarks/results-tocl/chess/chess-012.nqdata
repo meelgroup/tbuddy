@@ -1,8 +1,0 @@
-c Read 856 clauses.  260 variables
-c Breaking ties randomly with seed 1
-c Garbage collection #1: 200003 nodes / 56492 free / 56492 previously freed  / 0.0s / 0.0s total
-c Garbage collection #2: 200003 nodes / 63102 free / 63102 previously freed  / 0.0s / 0.0s total
-c Garbage collection #3: 200003 nodes / 0 free / 0 previously freed  / 0.0s / 0.0s total
-c Garbage collection #4: 299993 nodes / 0 free / 0 previously freed  / 0.0s / 0.1s total
-Timeout after 1000 seconds
--rw-r--r--  1 bryant  staff  39470174208 Mar 10 19:21 chess-012.lrat
