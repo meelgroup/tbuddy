@@ -53,7 +53,7 @@ if(POLICY CMP0104)
 endif()
 
 
-project (tbsat) 
+project (tbuddy)
 
 # -----------------------------------------------------------------------------
 # Make RelWithDebInfo the default build type if otherwise not set
@@ -319,17 +319,6 @@ if (SANITIZE)
     #add_compile_options("-Wconversion")
 endif()
 
-
-# -----------------------------------------------------------------------------
-# Dependencies
-# -----------------------------------------------------------------------------
-set (boost_components "")
-set(boost_components ${boost_components} program_options serialization)
-find_package( Boost 1.46 COMPONENTS ${boost_components})
-
-find_library(GMP_LIB gmp REQUIRED)
-find_library(GMPXX_LIB gmpxx REQUIRED)
-
 # add compile defines
 set(COMPILE_DEFINES)
 foreach( d ${DirDefs} )
@@ -358,14 +347,74 @@ if (GIT_EXECUTABLE)
 else()
   set(GIT_SHA "GIT-hash-notfound")
 endif()
-set(TBSAT_FULL_VERSION "1.0.1")
+set(tbuddy_FULL_VERSION "1.0.1")
 
-string(REPLACE "." ";" TBSAT_FULL_VERSION_LIST ${TBSAT_FULL_VERSION})
-SetVersionNumber("PROJECT" ${TBSAT_FULL_VERSION_LIST})
+string(REPLACE "." ";" tbuddy_FULL_VERSION_LIST ${tbuddy_FULL_VERSION})
+SetVersionNumber("PROJECT" ${tbuddy_FULL_VERSION_LIST})
 MESSAGE(STATUS "PROJECT_VERSION: ${PROJECT_VERSION}")
 MESSAGE(STATUS "PROJECT_VERSION_MAJOR: ${PROJECT_VERSION_MAJOR}")
 MESSAGE(STATUS "PROJECT_VERSION_MINOR: ${PROJECT_VERSION_MINOR}")
 MESSAGE(STATUS "PROJECT_VERSION_PATCH: ${PROJECT_VERSION_PATCH}")
 
 add_subdirectory(buddy/)
-add_subdirectory(tbsat/)
+# add_subdirectory(tbuddy/)
+
+
+# -----------------------------------------------------------------------------
+# Export our targets so that other CMake based projects can interface with
+# the build of tbuddy in the build-tree
+# -----------------------------------------------------------------------------
+set(TBUDDY_TARGETS_FILENAME "tbuddyTargets.cmake")
+set(TBUDDY_CONFIG_FILENAME "tbuddyConfig.cmake")
+set(TBUDDY_VERSION_FILENAME "tbuddyConfigVersion.cmake")
+
+# Export targets
+set(MY_TARGETS tbuddy)
+export(
+    TARGETS ${MY_TARGETS}
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/${TBUDDY_TARGETS_FILENAME}"
+)
+
+# Create tbuddyConfig file
+set(EXPORT_TYPE "Build-tree")
+set(CONF_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/include")
+configure_file(tbuddyConfig.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/${TBUDDY_CONFIG_FILENAME}" @ONLY
+)
+
+# Export this package to the CMake user package registry
+# Now the user can just use find_package(tbuddy) on their system
+export(PACKAGE tbuddy)
+
+set(DEF_INSTALL_CMAKE_DIR lib/cmake/tbuddy)
+set(TBUDDY_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
+    "Installation directory for tbuddy CMake files")
+
+# Create tbuddyConfig file
+set(EXPORT_TYPE "installed")
+set(CONF_INCLUDE_DIRS "${CMAKE_INSTALL_PREFIX}/include")
+configure_file(tbuddyConfig.cmake.in
+   "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/${TBUDDY_CONFIG_FILENAME}" @ONLY
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/${TBUDDY_VERSION_FILENAME}"
+  COMPATIBILITY SameMajorVersion)
+
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/${TBUDDY_VERSION_FILENAME}"
+    DESTINATION "${TBUDDY_INSTALL_CMAKE_DIR}"
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/${TBUDDY_CONFIG_FILENAME}"
+    DESTINATION "${TBUDDY_INSTALL_CMAKE_DIR}"
+)
+
+# Install the export set for use with the install-tree
+install(
+    EXPORT ${TBUDDY_EXPORT_NAME}
+    DESTINATION "${TBUDDY_INSTALL_CMAKE_DIR}"
+)
