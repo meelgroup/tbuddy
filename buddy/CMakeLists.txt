@@ -40,17 +40,17 @@ set(SOURCES
     src/pseudoboolean.cxx
 )
 
-set(buddy_public_headers
+set(tbuddy_public_headers
     bdd.h 
     ilist.h 
     # prover.h
     # pseudoboolean.h 
 )
 
-add_library(buddy ${SOURCES})
+add_library(tbuddy ${SOURCES})
 
-set_target_properties(buddy PROPERTIES
-    PUBLIC_HEADER "${buddy_public_headers}"
+set_target_properties(tbuddy PROPERTIES
+    PUBLIC_HEADER "${tbuddy_public_headers}"
     VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
 )

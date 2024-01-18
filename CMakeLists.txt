@@ -377,7 +377,7 @@ export(
 
 # Create tbuddyConfig file
 set(EXPORT_TYPE "Build-tree")
-set(CONF_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/include")
+set(CONF_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/buddy/include")
 configure_file(tbuddyConfig.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/${TBUDDY_CONFIG_FILENAME}" @ONLY
 )
